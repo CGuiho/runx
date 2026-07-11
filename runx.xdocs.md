@@ -7,7 +7,6 @@ children:
   - runx-scripts
   - runx-skills
   - runx-devops
-  - runx-github
   - runx-docs
 files:
   .gitignore: Ignores local dependencies and generated build outputs.
