@@ -1,0 +1,18 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "Preserve",
+    "moduleResolution": "bundler",
+    "verbatimModuleSyntax": true,
+    "allowImportingTsExtensions": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "types": ["bun"],
+    "rootDir": "source",
+    "outDir": "library",
+    "declaration": true,
+    "declarationMap": true
+  },
+  "include": ["source/**/*.ts"],
+  "exclude": ["source/**/*.spec.ts", "library", "bin", "node_modules"]
+}
