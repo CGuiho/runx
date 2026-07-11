@@ -15,6 +15,12 @@ owner: runx
 
 # Changelog
 
+## 0.1.1 - 2026-07-12
+
+### Changed
+
+- Finalized task completion and validation evidence for the initial alpha release.
+
 ## 0.1.0 - 2026-07-12
 
 ### Added
