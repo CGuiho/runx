@@ -134,4 +134,6 @@ const resolveOptions = (flags: Record<string, boolean | string | string[]>): Cli
   return { cwd: resolve(stringFlag(flags, 'cwd') ?? process.cwd()), file: stringFlag(flags, 'file'), format: format as OutputFormat, verbose: booleanFlag(flags, 'verbose') }
 }
 
-const write = (value: string): void => process.stdout.write(value)
+const write = (value: string): void => {
+  process.stdout.write(value)
+}
