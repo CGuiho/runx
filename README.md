@@ -13,7 +13,7 @@ keywords:
 owner: runx
 ---
 
-# RunX
+# GUIHO RunX
 
 RunX is a local, language-agnostic command catalog. Put documented commands in
 `runx.yaml`; use `runx list` to discover them and `runx run` to execute one.
