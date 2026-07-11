@@ -1,0 +1,4 @@
+interface:
+  display_name: "RunX"
+  short_description: "Manage documented RunX command catalogs safely."
+  default_prompt: "Use the RunX CLI to inspect, validate, and run commands from runx.yaml safely."
