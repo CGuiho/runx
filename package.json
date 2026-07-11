@@ -66,5 +66,12 @@
     "_tc": "bun run typecheck",
     "_ci": "bun run clean && bun run clean-build && bun run clean-installation",
     "_uid": "bun nanoid --alphabet abcdefghijklmnopqrstuvwxyz0123456789"
+  },
+  "dependencies": {
+    "@sinclair/typebox": "^0.34.52"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.14",
+    "typescript": "^7.0.2"
   }
 }
