@@ -1,3 +1,19 @@
+---
+name: RunX Agent Instructions
+purpose: Give coding agents the durable repository context and operating constraints for RunX.
+description: Defines package ownership, command behavior, parent coordination, XDocs, and Mirror rules.
+created: 2026-07-12
+flags: []
+tags:
+  - agents
+  - cli
+keywords:
+  - runx
+  - xdocs
+  - mirror
+owner: runx
+---
+
 # RunX Agent
 
 ## Repository Notes
