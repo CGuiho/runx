@@ -1,8 +1,9 @@
+import { existsSync } from 'node:fs'
 import type { ResolvedCommand } from './types.js'
 import { RunXError } from './errors.js'
 
 export const runCommand = async (command: ResolvedCommand): Promise<number> => {
-  if (!(await Bun.file(command.cwd).exists())) throw new RunXError(`Command working directory does not exist: ${command.cwd}`)
+  if (!existsSync(command.cwd)) throw new RunXError(`Command working directory does not exist: ${command.cwd}`)
 
   const process = Bun.spawn(shellArguments(command), {
     cwd: command.cwd,
