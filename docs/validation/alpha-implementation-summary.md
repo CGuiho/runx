@@ -39,13 +39,14 @@ validates only; npm and release publishing are intentionally absent.
 - `bun run build` passed and emitted the ignored TypeScript library output.
 - `bun run binary` passed and emitted the ignored Windows native executable.
 - The Bun source CLI displayed `--help`, `--help-tree`, and `--help-docs`.
-- `xdocs tree`, `xdocs scan`, and `xdocs doctor --format json` are required
-  final checks after this record is added.
-- `mirror config check` passed; the package has not been published or pushed.
+- `xdocs tree`, `xdocs scan`, and `xdocs doctor --format json` passed. The
+  doctor reported only metadata warnings for the special-purpose skill file;
+  there were no descriptor, document, or tree errors.
+- `mirror config check` passed. Mirror applied the local `0.1.0` minor release
+  and created `@guiho/runx@0.1.0`; the configuration did not push or publish.
 
 ## Release Boundary
 
-The initial external capability warrants a Mirror minor transition from `0.0.0`
-to `0.1.0`. Applying the version creates the configured local version commit
-and Git tag, but does not push either because `mirror.config.toml` sets
-`push = false`.
+The initial external capability warranted and received a Mirror minor transition
+from `0.0.0` to `0.1.0`. It created the configured local version commit and Git
+tag without pushing either because `mirror.config.toml` sets `push = false`.
