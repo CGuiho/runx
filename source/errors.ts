@@ -8,6 +8,6 @@ export class RunXError extends Error {
   }
 }
 
-export const invariant = (condition: unknown, message: string): asserts condition => {
+export const invariant: (condition: unknown, message: string) => asserts condition = (condition, message) => {
   if (!condition) throw new RunXError(message)
 }
