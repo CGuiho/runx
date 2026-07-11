@@ -1,3 +1,17 @@
+---
+name: RunX Security Policy
+purpose: Explain private vulnerability reporting and the RunX manifest trust boundary.
+description: Documents responsible disclosure and the risks of executable local manifests.
+created: 2026-07-12
+flags: []
+tags:
+  - security
+keywords:
+  - runx
+  - security
+owner: runx
+---
+
 # Security Policy
 
 ## Reporting
