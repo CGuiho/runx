@@ -1,0 +1,18 @@
+schema = 1
+
+[extensions]
+supported = [".xdocs.md"]
+
+[ai]
+mode = "prompt"
+
+[scan]
+exclude = ["node_modules", ".git", "dist", "build", "library", "bin", "bundle"]
+
+[project]
+name = "runx"
+
+[agents]
+auto_agents_md = true
+auto_skill_install = true
+skill_tool = "agents"
