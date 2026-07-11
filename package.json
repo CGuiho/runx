@@ -54,7 +54,7 @@
   },
   "scripts": {
     "dev": "bun run --watch source/guiho-runx-bin.ts",
-    "build": "rm -rf library && tsc -p tsconfig.build.json",
+    "build": "rm -rf library && tsc -p .",
     "binary": "bun build source/guiho-runx-native-bin.ts --compile --outfile bin/runx",
     "binaries": "bun run devops/build-binaries.ts",
     "test": "bun test",
