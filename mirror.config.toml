@@ -1,0 +1,32 @@
+#:schema ./node_modules/@guiho/mirror/schema/mirror.config.schema.json
+
+schema = 1
+
+[project]
+name_source = "package.json"
+
+[version]
+scheme = "semver"
+source = "package.json"
+output = ["package.json", "git"]
+prerelease_id = ""
+
+[package]
+path = "package.json"
+auxiliary_paths = []
+
+[jsr]
+path = "jsr.json"
+
+[git]
+tag_template = "{name}@{version}"
+commit = true
+push = false
+allow_dirty = false
+
+[agents]
+write_changelog = true
+changelog_path = "CHANGELOG.md"
+auto_agents_md = true
+auto_skill_install = true
+skill_tool = "agents"
