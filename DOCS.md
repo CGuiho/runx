@@ -1,3 +1,18 @@
+---
+name: RunX Documentation
+purpose: Provide the canonical user-facing RunX CLI and manifest reference.
+description: Documents command behavior, manifest schema, safety model, agent workflow, and native distribution.
+created: 2026-07-12
+flags: []
+tags:
+  - documentation
+  - cli
+keywords:
+  - runx
+  - manifest
+owner: runx
+---
+
 # RunX Documentation
 
 ## Purpose
