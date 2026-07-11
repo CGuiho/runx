@@ -4,6 +4,7 @@ description: Open-source Bun CLI package for documented, language-agnostic local
 parent: null
 children:
   - runx-source
+  - runx-scripts
   - runx-skills
   - runx-devops
   - runx-github
