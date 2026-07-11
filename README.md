@@ -1,3 +1,18 @@
+---
+name: RunX README
+purpose: Introduce RunX and give users the shortest installation and command-catalog path.
+description: Public overview, direct installation commands, quick manifest example, and documentation links.
+created: 2026-07-12
+flags: []
+tags:
+  - documentation
+  - cli
+keywords:
+  - runx
+  - readme
+owner: runx
+---
+
 # RunX
 
 RunX is a local, language-agnostic command catalog. Put documented commands in
