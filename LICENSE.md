@@ -1,3 +1,18 @@
+---
+name: RunX MIT License
+purpose: State the open-source license for RunX.
+description: MIT license grant and warranty disclaimer.
+created: 2026-07-12
+flags: []
+tags:
+  - legal
+  - license
+keywords:
+  - runx
+  - mit
+owner: runx
+---
+
 MIT License
 
 Copyright (c) 2026 Cristovao GUIHO
