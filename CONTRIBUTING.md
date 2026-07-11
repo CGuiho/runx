@@ -1,3 +1,18 @@
+---
+name: Contributing to RunX
+purpose: Explain the repository rules for contributing safely to RunX.
+description: Covers Bun validation, documentation, agent-skill, and release workflow expectations.
+created: 2026-07-12
+flags: []
+tags:
+  - documentation
+  - contributing
+keywords:
+  - runx
+  - contributing
+owner: runx
+---
+
 # Contributing to RunX
 
 RunX is a Bun/TypeScript CLI. Keep changes focused and preserve the distinction
