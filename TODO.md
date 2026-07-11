@@ -1,3 +1,17 @@
+---
+name: RunX TODO List
+purpose: Track package-owned RunX work and link the task specifications that define it.
+description: Local task index for the RunX CLI package.
+created: 2026-07-12
+flags: []
+tags:
+  - todo
+keywords:
+  - runx
+  - tasks
+owner: runx
+---
+
 #### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Crist&oacute;v&atilde;o GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
 # RunX TODO List
