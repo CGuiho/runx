@@ -1,0 +1,70 @@
+{
+  "name": "@guiho/runx",
+  "description": "A language-agnostic, documented command catalog and local CLI executor.",
+  "version": "0.0.0",
+  "type": "module",
+  "main": "./library/guiho-runx.js",
+  "types": "./library/guiho-runx.d.ts",
+  "exports": {
+    ".": {
+      "types": "./library/guiho-runx.d.ts",
+      "import": "./library/guiho-runx.js"
+    }
+  },
+  "bin": {
+    "runx": "scripts/runx-bin.ts"
+  },
+  "files": [
+    "library/",
+    "scripts/",
+    "skills/",
+    "docs/",
+    "devops/",
+    "README.md",
+    "DOCS.md",
+    "CHANGELOG.md",
+    "LICENSE.md",
+    "SECURITY.md"
+  ],
+  "keywords": [
+    "automation",
+    "bun",
+    "cli",
+    "commands",
+    "runx",
+    "task-runner",
+    "yaml"
+  ],
+  "license": "MIT",
+  "author": {
+    "name": "Cristovao GUIHO",
+    "email": "cg@guiho.co",
+    "url": "https://guiho.co/cg"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CGuiho/runx.git"
+  },
+  "homepage": "https://github.com/CGuiho/runx#readme",
+  "bugs": {
+    "url": "https://github.com/CGuiho/runx/issues"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "dev": "bun run --watch source/guiho-runx-bin.ts",
+    "build": "rm -rf library && tsc -p tsconfig.build.json",
+    "binary": "bun build source/guiho-runx-native-bin.ts --compile --outfile bin/runx",
+    "binaries": "bun run devops/build-binaries.ts",
+    "test": "bun test",
+    "typecheck": "tsc -p . --noEmit",
+    "check": "bun run typecheck && bun test",
+    "clean": "rm -rf .temp",
+    "clean-build": "rm -rf library bundle bin",
+    "clean-installation": "rm -rf node_modules bun.lock",
+    "_tc": "bun run typecheck",
+    "_ci": "bun run clean && bun run clean-build && bun run clean-installation",
+    "_uid": "bun nanoid --alphabet abcdefghijklmnopqrstuvwxyz0123456789"
+  }
+}
