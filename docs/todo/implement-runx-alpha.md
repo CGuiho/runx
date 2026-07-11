@@ -19,7 +19,7 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `1. Implement RunX Alpha Command Catalog`
-- Status: in progress
+- Status: completed
 - Index: [TODO.md](../../TODO.md)
 
 ## Outcome
