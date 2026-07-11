@@ -37,6 +37,19 @@ describe('RunX manifests', () => {
     expect(booleanFlag(parsed.flags, 'dryRun')).toBe(true)
     expect(stringFlag(parsed.flags, 'format')).toBe('json')
   })
+
+  test('runs the r alias and keeps dry runs read-only', async () => {
+    const root = await fixture(manifest())
+    const manifestPath = join(root, 'runx.yaml')
+    const cliPath = Bun.fileURLToPath(new URL('./guiho-runx-bin.ts', import.meta.url))
+    const dryRun = Bun.spawn([process.execPath, cliPath, 'r', 'dev-start', '--file', manifestPath, '--dry-run'], { stdout: 'pipe', stderr: 'pipe' })
+    expect(await dryRun.exited).toBe(0)
+    expect(await new Response(dryRun.stdout).text()).toContain('uid: dev-start')
+
+    const run = Bun.spawn([process.execPath, cliPath, 'r', 'dev-start', '--file', manifestPath], { stdout: 'pipe', stderr: 'pipe' })
+    expect(await run.exited).toBe(0)
+    expect(await new Response(run.stdout).text()).toContain('start')
+  })
 })
 
 const fixture = async (content: string): Promise<string> => {
