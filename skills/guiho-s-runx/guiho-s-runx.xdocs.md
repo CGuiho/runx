@@ -5,7 +5,8 @@ parent: runx-skills
 children: []
 files:
   SKILL.md: RunX-specific agent instructions and safe execution workflow.
-documents: {}
+documents:
+  SKILL.md: RunX-specific agent instructions and safe execution workflow.
 tags:
   - agents
   - runx
