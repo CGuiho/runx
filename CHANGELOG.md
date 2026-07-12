@@ -15,6 +15,17 @@ owner: runx
 
 # Changelog
 
+## 0.2.0 - 2026-07-12
+
+### Added
+
+- Added `publish.yml` GitHub Actions workflow to compile and upload release binaries to GitHub releases on version tag pushes.
+
+### Changed
+
+- Updated `devops/build-binaries.ts` to compile the full 12 binary target matrix in parallel using optimized build flags.
+- Replaced `devops/install.sh` and `devops/install.ps1` with robust, parameter-driven installers.
+
 ## 0.1.1 - 2026-07-12
 
 ### Changed
