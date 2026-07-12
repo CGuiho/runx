@@ -1,0 +1,66 @@
+name: Publish
+
+on:
+  push:
+    tags:
+      - '@guiho/runx@*'
+
+permissions:
+  contents: write
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Checkout
+        run: |
+          git init .
+          git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
+          git fetch --depth=1 origin "${GITHUB_REF}"
+          git checkout --detach FETCH_HEAD
+
+      - name: Install Bun
+        run: |
+          curl -fsSL https://bun.sh/install | bash
+          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
+          "$HOME/.bun/bin/bun" --version
+
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run build
+      - run: bun run binaries
+
+      - name: Publish native binaries to GitHub release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          VERSION=$(bun -e "const p = await Bun.file('./package.json').json(); console.log(p.version)")
+          RELEASE_FLAGS=()
+
+          if [[ "$VERSION" == *-* ]]; then
+            RELEASE_FLAGS+=(--prerelease)
+          else
+            RELEASE_FLAGS+=(--latest)
+          fi
+
+          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release upload "${GITHUB_REF_NAME}" bin/runx-* --clobber
+          else
+            gh release create "${GITHUB_REF_NAME}" bin/runx-* --title "${GITHUB_REF_NAME}" --notes-file CHANGELOG.md --verify-tag "${RELEASE_FLAGS[@]}"
+          fi
+
+      - name: Verify GitHub release binary assets
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          COUNT=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '[.assets[] | select(.name | startswith("runx-"))] | length')
+
+          if [ "$COUNT" -ne 12 ]; then
+            echo "Expected 12 runx native binary assets, found $COUNT" >&2
+            gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name' >&2
+            exit 1
+          fi
