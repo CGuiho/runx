@@ -1,23 +1,99 @@
-const targets = [
-  ['bun-linux-x64', 'runx-linux-x64'],
-  ['bun-linux-arm64', 'runx-linux-arm64'],
-  ['bun-darwin-x64', 'runx-darwin-x64'],
-  ['bun-darwin-arm64', 'runx-darwin-arm64'],
-  ['bun-windows-x64', 'runx-windows-x64.exe'],
-  ['bun-windows-arm64', 'runx-windows-arm64.exe'],
-] as const
+/**
+ * @copyright Copyright (c) 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ *
+ * Build release binaries for the supported RunX platform matrix.
+ */
 
-for (const [target, output] of targets) {
-  const child = Bun.spawn([
-    process.execPath,
-    'build',
-    'source/guiho-runx-native-bin.ts',
-    '--compile',
-    `--target=${target}`,
-    '--minify',
-    '--outfile',
-    `bin/${output}`,
-  ], { stdin: 'inherit', stdout: 'inherit', stderr: 'inherit' })
-  const code = await child.exited
-  if (code !== 0) process.exit(code)
+import { mkdir, rm, stat } from 'node:fs/promises'
+import { join } from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+type BinaryTarget = {
+  readonly bunTarget: string
+  readonly assetName: string
 }
+
+const targets: readonly BinaryTarget[] = [
+  { bunTarget: 'bun-linux-arm64', assetName: 'runx-linux-arm64' },
+  { bunTarget: 'bun-linux-x64', assetName: 'runx-linux-x64' },
+  { bunTarget: 'bun-linux-x64-baseline', assetName: 'runx-linux-x64-baseline' },
+  { bunTarget: 'bun-linux-x64-modern', assetName: 'runx-linux-x64-modern' },
+  { bunTarget: 'bun-darwin-arm64', assetName: 'runx-macos-arm64' },
+  { bunTarget: 'bun-darwin-x64', assetName: 'runx-macos-x64' },
+  { bunTarget: 'bun-darwin-x64-baseline', assetName: 'runx-macos-x64-baseline' },
+  { bunTarget: 'bun-darwin-x64-modern', assetName: 'runx-macos-x64-modern' },
+  { bunTarget: 'bun-windows-arm64', assetName: 'runx-windows-arm64.exe' },
+  { bunTarget: 'bun-windows-x64', assetName: 'runx-windows-x64.exe' },
+  { bunTarget: 'bun-windows-x64-baseline', assetName: 'runx-windows-x64-baseline.exe' },
+  { bunTarget: 'bun-windows-x64-modern', assetName: 'runx-windows-x64-modern.exe' },
+]
+
+const expectedAssetCount = 12
+const assetNames = targets.map((target) => target.assetName)
+const uniqueAssetNames = new Set(assetNames)
+
+if (targets.length !== expectedAssetCount) {
+  throw new Error(`Expected ${expectedAssetCount} binary targets, found ${targets.length}`)
+}
+
+if (uniqueAssetNames.size !== assetNames.length) {
+  throw new Error('Binary target matrix contains duplicate asset names')
+}
+
+const root = fileURLToPath(new URL('..', import.meta.url))
+const binDirectory = join(root, 'bin')
+const bunExecutable = process.execPath
+
+await rm(binDirectory, { recursive: true, force: true })
+await mkdir(binDirectory, { recursive: true })
+
+const builds = targets.map(async (target) => {
+  const outputPath = join(binDirectory, target.assetName)
+  const proc = Bun.spawn({
+    cmd: [
+      bunExecutable,
+      'build',
+      'source/guiho-runx-native-bin.ts',
+      '--compile',
+      '--production',
+      '--minify-whitespace',
+      '--minify-syntax',
+      '--target',
+      target.bunTarget,
+      '--outfile',
+      outputPath,
+    ],
+    cwd: root,
+    stdout: 'pipe',
+    stderr: 'pipe',
+  })
+
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(proc.stdout).text(),
+    new Response(proc.stderr).text(),
+    proc.exited,
+  ])
+
+  if (exitCode !== 0) {
+    throw new Error([
+      `Failed to build ${target.bunTarget} -> ${target.assetName}`,
+      stdout.trim(),
+      stderr.trim(),
+    ].filter(Boolean).join('\n'))
+  }
+
+  process.stdout.write(`built: ${target.bunTarget} -> bin/${target.assetName}\n`)
+})
+
+await Promise.all(builds)
+
+for (const target of targets) {
+  const outputPath = join(binDirectory, target.assetName)
+  const output = await stat(outputPath)
+
+  if (output.size === 0) {
+    throw new Error(`Built binary is empty: bin/${target.assetName}`)
+  }
+}
+
+process.stdout.write(`verified ${targets.length} native binary assets\n`)
