@@ -25,13 +25,22 @@ owner: runx
 
 | Status | Count |
 | --- | ---: |
-| todo | 0 |
+| todo | 1 |
 | in progress | 0 |
 | testing | 0 |
 | stopped | 0 |
 | completed | 1 |
 
 ## Tasks
+
+### 0. Protect RunX Branches and Tag Creation
+
+- Status: todo
+- Priority: highest
+- Created: `2026-07-12T02:10:04+02:00`
+- Updated: `2026-07-12T02:10:04+02:00`
+- Outcome: RunX branch protections and tag creation rules prevent unauthorized or unsafe changes to protected branches and release tags.
+- Spec: [docs/todo/protect-branches-and-tag-creation.md](docs/todo/protect-branches-and-tag-creation.md)
 
 ### 1. Implement RunX Alpha Command Catalog
 
