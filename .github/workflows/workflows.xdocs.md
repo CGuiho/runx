@@ -1,10 +1,11 @@
 ---
 subject: runx-github-workflows
-description: CI workflows that validate RunX without publishing packages or releases.
+description: CI and release workflows that validate and publish RunX.
 parent: runx-github
 children: []
 files:
   ci.yml: Installs Bun dependencies, type-checks, tests, builds, and compiles the CLI.
+  publish.yml: Compiles and publishes native binaries to GitHub releases on version tags.
 documents: {}
 tags:
   - ci
