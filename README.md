@@ -39,11 +39,29 @@ curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh 
 
 ## Quick Start
 
-Create `runx.yaml` in a project root:
+Start with the interactive initializer:
+
+```text
+runx init
+```
+
+It writes only `runx.yaml`—not an empty `scripts/` directory. The resulting
+catalog starts with a SemVer `1.x` manifest version, a configurable scripts
+directory, the required `public` group, and no commands. Add commands directly
+or ask an agent to add a script under the configured directory and its command
+entry together.
+
+For example, a catalog with a development command can look like this:
 
 ```yaml
-version: 1
+version: "1.0.0"
+project:
+  name: example
+scripts:
+  directory: scripts
 groups:
+  public:
+    summary: Default public project commands.
   development:
     summary: Local development commands.
 commands:
@@ -52,7 +70,7 @@ commands:
     group: development
     summary: Start the application locally.
     description: Starts the application in local development mode until interrupted.
-    command: bun run dev
+    command: bash scripts/dev.sh
     shell: bash
     tags: [local, watch]
 ```
@@ -63,6 +81,7 @@ Then use RunX:
 runx                         Show the home page and usage.
 runx -h                      Show Citty-generated command help.
 runx -v                      Show the installed version without loading a manifest.
+runx init                    Interactively create an empty runx.yaml catalog.
 runx list                    List commands in the nearest manifest.
 runx describe app-dev        Explain one command without execution.
 runx run app-dev --dry-run   Inspect the execution plan.

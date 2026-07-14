@@ -5,6 +5,7 @@ import { RunXError, invariant } from './errors.js'
 import type { ResolvedCommand, RunXCommand, RunXManifest } from './types.js'
 
 const identifier = '^[a-z][a-z0-9-]*$'
+const semver = '^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$'
 
 export const CommandSchema = Type.Object({
   uid: Type.String({ pattern: identifier }),
@@ -26,10 +27,11 @@ export const CommandSchema = Type.Object({
 }, { additionalProperties: false })
 
 export const ManifestSchema = Type.Object({
-  version: Type.Literal(1),
+  version: Type.String({ pattern: semver }),
   project: Type.Optional(Type.Object({ name: Type.String({ minLength: 1 }) }, { additionalProperties: false })),
+  scripts: Type.Object({ directory: Type.String({ minLength: 1 }) }, { additionalProperties: false }),
   groups: Type.Record(Type.String({ pattern: identifier }), Type.Object({ summary: Type.String({ minLength: 1 }) }, { additionalProperties: false })),
-  commands: Type.Array(CommandSchema, { minItems: 1 }),
+  commands: Type.Array(CommandSchema),
 }, { additionalProperties: false })
 
 const manifestCheck = TypeCompiler.Compile(ManifestSchema)
@@ -111,6 +113,23 @@ export const resolveCommand = (manifest: RunXManifest, manifestPath: string, sel
 }
 
 const validateManifestSemantics = (manifest: RunXManifest, path: string): void => {
+  const versionMajor = manifest.version.split('.', 1)[0]
+  if (versionMajor !== '1') {
+    throw new RunXError(`Unsupported RunX manifest version "${manifest.version}" in ${path}. Supported major version: 1.`)
+  }
+
+  const manifestDirectory = dirname(path)
+  const scriptsDirectory = resolve(manifestDirectory, manifest.scripts.directory)
+  const relativeScriptsDirectory = relative(manifestDirectory, scriptsDirectory)
+  invariant(
+    relativeScriptsDirectory !== '' && relativeScriptsDirectory !== '.' && !isAbsolute(relativeScriptsDirectory) && !relativeScriptsDirectory.startsWith('..'),
+    `Scripts directory "${manifest.scripts.directory}" must be a relative subdirectory inside the manifest directory in ${path}.`,
+  )
+
+  if (!manifest.groups.public) {
+    throw new RunXError(`RunX manifest ${path} must define the default "public" group.`)
+  }
+
   const uids = new Set<string>()
   const selectors = new Set<string>()
 

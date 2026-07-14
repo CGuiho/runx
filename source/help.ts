@@ -7,6 +7,7 @@ export const showHome = (): string => `RunX ${readVersion()}
 A documented, local command catalog for runx.yaml manifests.
 
 Usage:
+  runx init [--cwd <path>]
   runx list [--file <path>] [--format <text|json>]
   runx describe <selector>
   runx run <selector> [--dry-run] [--yes]
@@ -14,6 +15,7 @@ Usage:
   runx <selector>
 
 Start here:
+  runx init                 Interactively create an empty runx.yaml catalog.
   runx list                 List every command in the nearest manifest.
   runx --help-tree          Show the complete command tree.
   runx --help-docs          Show manifest and agent documentation guidance.
@@ -26,6 +28,7 @@ export const showHelpTree = (): string => [
   '|- run <selector>',
   '|  `- alias: r',
   '|- check',
+  '|- init',
   '|- agents',
   '|  |- install <local|global>',
   '|  `- instructions',
@@ -37,6 +40,7 @@ export const showHelpTree = (): string => [
 export const showHelpDocs = (): string => `RunX documentation
 
 Manifest: runx.yaml, discovered from the current directory upward or selected with --file.
+Create an empty catalog with runx init. Its manifest uses SemVer 1.x, configures a scripts directory, and always includes the public group.
 Required command fields: uid, id, group, summary, description, command.
 Optional command fields: cwd, shell, tags, confirm.
 

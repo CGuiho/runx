@@ -28,6 +28,7 @@ lists its commands, and runs exactly one selected command.
 | `runx` | Show the home page and usage without loading a manifest. |
 | `runx -h`, `runx --help` | Show Citty-generated usage without loading a manifest. Append help to a command for command-specific usage. |
 | `runx -v`, `runx --version` | Show the installed version without loading a manifest. |
+| `runx init [--cwd <path>]` | Interactively create an empty `runx.yaml` catalog in the selected directory. |
 | `runx list` | List all manifest commands. Add `--format json` for structured output. |
 | `runx describe <selector>` | Show one command's description and operational metadata. |
 | `runx check` | Validate discovery and the manifest without execution. |
@@ -48,6 +49,13 @@ Global flags: `--cwd <path>`, `--file <path>`, `--format <text|json>`,
 Unknown options and missing required arguments produce command usage instead
 of falling through to manifest discovery.
 
+`runx init` is intentionally an interactive text workflow: it accepts `--cwd`
+to select the target project, but rejects `--file` (the target is always
+`runx.yaml`) and `--format json`. It previews the exact file, requires a final
+confirmation, asks before replacing an existing file, and leaves no partial
+file when cancelled. It creates the manifest only; the configured scripts
+directory is created later when the first script is added.
+
 Citty is the CLI parser, command router, alias registry, and ordinary usage
 renderer. RunX keeps its home page, extended command tree, and manifest guide
 as the explicit `runx`, `--help-tree`, and `--help-docs` surfaces.
@@ -58,10 +66,14 @@ RunX searches upward from the current directory for `runx.yaml`. Use `--file`
 to select an explicit manifest. RunX does not merge files.
 
 ```yaml
-version: 1
+version: "1.0.0"
 project:
   name: example
+scripts:
+  directory: scripts
 groups:
+  public:
+    summary: Default public project commands.
   development:
     summary: Local development work.
   release:
@@ -85,14 +97,22 @@ commands:
     confirm: always
 ```
 
-Required fields are `uid`, `id`, `group`, `summary`, `description`, and
-`command`. `uid` and `id` begin with a lowercase letter and use lowercase
+`version` is a Semantic Versioning string. RunX currently supports major
+version `1`, including valid prerelease and build metadata forms. Every manifest
+also requires `scripts.directory`, which must be a relative subdirectory inside
+the manifest directory, and a `public` group with a non-empty summary. A
+catalog may start with `commands: []`; every command added later must explicitly
+name an existing group (normally `public`).
+
+Required command fields are `uid`, `id`, `group`, `summary`, `description`,
+and `command`. `uid` and `id` begin with a lowercase letter and use lowercase
 letters, digits, and hyphens. `uid` is globally unique; the group and ID pair
 is also unique.
 
-Optional fields are `cwd`, `shell`, `tags`, and `confirm`. `cwd` is relative to
-the manifest and cannot escape its directory. Shell values are `auto`, `bash`,
-`sh`, `powershell`, and `cmd`. Confirmation values are `never` and `always`.
+Optional command fields are `cwd`, `shell`, `tags`, and `confirm`. `cwd` is
+relative to the manifest and cannot escape its directory. Shell values are
+`auto`, `bash`, `sh`, `powershell`, and `cmd`. Confirmation values are `never`
+and `always`.
 
 ## Selectors and Safety
 
