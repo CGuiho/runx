@@ -22,8 +22,12 @@ local shell commands rather than package-manager scripts.
 
 ## Install
 
-RunX is distributed as a native executable from GitHub Releases. It is not
-published to npm during the alpha.
+RunX is distributed as a native executable from GitHub Releases and as the
+public `@guiho/runx` package on npm. The npm launcher requires Bun.
+
+```sh
+bun add --global @guiho/runx
+```
 
 ```powershell
 irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex

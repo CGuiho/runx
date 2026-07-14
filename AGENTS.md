@@ -30,7 +30,9 @@ owner: runx
 - Keep the bundled `skills/guiho-s-runx/SKILL.md` aligned with the CLI contract.
 - Generated `library/`, `bin/`, `bundle/`, and `vendor/` outputs are ignored;
   never edit them manually.
-- Do not publish packages or push tags. This alpha has CI only.
+- Do not publish packages or push tags unless the user explicitly requests a
+  release. CI validates pull requests and `main`; protected version tags run the
+  `production` workflow that publishes native assets and npm through OIDC.
 
 ## GUIHO Project
 
