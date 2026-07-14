@@ -12,12 +12,13 @@ files:
   executor.ts: Maps configured shell choices to local child-process execution.
   guiho-runx-bin.ts: Bun development CLI entrypoint.
   guiho-runx-native-bin.ts: Native executable entrypoint that registers embedded resources.
-  guiho-runx.spec.ts: Tests manifest discovery, selector handling, execution safety, and native upgrade behavior.
+  guiho-runx.spec.ts: Tests manifest discovery, selector handling, execution safety, and native self-management routing.
   guiho-runx.ts: Public package exports.
   help.ts: Provides the home page, command tree, documentation, and version output.
   manifest.ts: Discovers, parses, validates, and resolves runx.yaml manifests.
   render.ts: Renders text and JSON command catalog output.
-  self-management.ts: Checks GitHub Releases, returns equal-version no-op upgrades, and performs native replacement or uninstall operations.
+  self-management.spec.ts: Proves synchronous Windows replacement of a running executable and rollback after verification failure.
+  self-management.ts: Checks GitHub Releases, verifies synchronous Windows replacement with rollback, and performs native uninstall operations.
   types.ts: Defines shared CLI, manifest, command, agent, and self-upgrade result types.
 documents: {}
 tags:

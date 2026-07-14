@@ -1,14 +1,22 @@
+import { Buffer } from 'node:buffer'
 import { chmod, rename, rm } from 'node:fs/promises'
 import { basename } from 'node:path'
 import { RunXError } from './errors.js'
 import { readVersion } from './help.js'
 import type { RunXUpgradeResult, UpdateResult } from './types.js'
 
+export {
+  checkForLatestVersion,
+  listAvailableVersions,
+  uninstallSelf,
+  upgradeSelf,
+}
+
 const repositoryApi = 'https://api.github.com/repos/CGuiho/runx/releases'
 
 type Release = { tag_name: string, assets: Array<{ name: string, browser_download_url: string }> }
 
-export const checkForLatestVersion = async (): Promise<UpdateResult> => {
+const checkForLatestVersion = async (): Promise<UpdateResult> => {
   const currentVersion = readVersion()
   try {
     const response = await fetch(`${repositoryApi}/latest`, { headers: { accept: 'application/vnd.github+json' } })
@@ -22,14 +30,14 @@ export const checkForLatestVersion = async (): Promise<UpdateResult> => {
   }
 }
 
-export const listAvailableVersions = async (): Promise<string[]> => {
+const listAvailableVersions = async (): Promise<string[]> => {
   const response = await fetch(`${repositoryApi}?per_page=20`, { headers: { accept: 'application/vnd.github+json' } })
   if (!response.ok) throw new RunXError(`Could not retrieve RunX releases: HTTP ${response.status}`)
   const releases = await response.json() as Release[]
   return releases.map((release) => release.tag_name.replace(/^@guiho\/runx@/, '').replace(/^v/, ''))
 }
 
-export const upgradeSelf = async (dryRun: boolean): Promise<RunXUpgradeResult> => {
+const upgradeSelf = async (dryRun: boolean): Promise<RunXUpgradeResult> => {
   const executablePath = requireNativeExecutable()
   const update = await checkForLatestVersion()
   const upToDate = !update.updateAvailable && update.latestVersion === update.currentVersion && Boolean(update.url)
@@ -46,11 +54,11 @@ export const upgradeSelf = async (dryRun: boolean): Promise<RunXUpgradeResult> =
     return { ...update, executablePath, scheduled: false, upToDate: false }
   }
 
-  scheduleWindowsReplacement(temporaryPath, executablePath)
-  return { ...update, executablePath, scheduled: true, upToDate: false }
+  await replaceWindowsExecutable(temporaryPath, executablePath, update.latestVersion)
+  return { ...update, executablePath, scheduled: false, upToDate: false }
 }
 
-export const uninstallSelf = async (dryRun: boolean): Promise<{ executablePath: string, scheduled: boolean, dryRun: boolean }> => {
+const uninstallSelf = async (dryRun: boolean): Promise<{ executablePath: string, scheduled: boolean, dryRun: boolean }> => {
   const executablePath = requireNativeExecutable()
   if (dryRun) return { executablePath, scheduled: false, dryRun: true }
   if (process.platform === 'win32') {
@@ -73,10 +81,68 @@ const requireNativeExecutable = (): string => {
   return executablePath
 }
 
-const scheduleWindowsReplacement = (temporaryPath: string, executablePath: string): void => {
-  const command = `ping 127.0.0.1 -n 2 > nul & move /y "${temporaryPath}" "${executablePath}" > nul`
-  Bun.spawn(['cmd.exe', '/d', '/s', '/c', command], { detached: true, stdout: 'ignore', stderr: 'ignore', stdin: 'ignore' })
+const replaceWindowsExecutable = async (temporaryPath: string, executablePath: string, expectedVersion: string): Promise<void> => {
+  const backupPath = `${executablePath}.old`
+  let originalMoved = false
+
+  try {
+    await rm(backupPath, { force: true })
+    await rename(executablePath, backupPath)
+    originalMoved = true
+    await rename(temporaryPath, executablePath)
+    await verifyExecutableVersion(executablePath, expectedVersion)
+    await cleanupWindowsBackup(backupPath)
+  } catch (error) {
+    const replacementFailure = errorMessage(error)
+    await rm(temporaryPath, { force: true }).catch(() => undefined)
+
+    if (!originalMoved) {
+      throw new RunXError(`Could not replace the Windows RunX executable at ${executablePath}: ${replacementFailure}`)
+    }
+
+    try {
+      await rm(executablePath, { force: true })
+      await rename(backupPath, executablePath)
+    } catch (rollbackError) {
+      throw new RunXError(`Windows RunX upgrade failed at ${executablePath}: ${replacementFailure}. Automatic rollback also failed: ${errorMessage(rollbackError)}`)
+    }
+
+    throw new RunXError(`Windows RunX upgrade failed; the previous executable was restored at ${executablePath}: ${replacementFailure}`)
+  }
 }
+
+const verifyExecutableVersion = async (executablePath: string, expectedVersion: string): Promise<void> => {
+  const verification = Bun.spawn([executablePath, '--version'], { stdin: 'ignore', stdout: 'pipe', stderr: 'pipe' })
+  const [stdout, stderr, exitCode] = await Promise.all([
+    new Response(verification.stdout).text(),
+    new Response(verification.stderr).text(),
+    verification.exited,
+  ])
+  const actualVersion = stdout.trim()
+  if (exitCode !== 0) throw new Error(`replacement exited with code ${exitCode}${stderr.trim() ? `: ${stderr.trim()}` : ''}`)
+  if (actualVersion !== expectedVersion) throw new Error(`replacement reported version ${actualVersion || '<empty>'}; expected ${expectedVersion}`)
+}
+
+const cleanupWindowsBackup = async (backupPath: string): Promise<void> => {
+  try {
+    await rm(backupPath, { force: true })
+  } catch {}
+  scheduleWindowsBackupCleanup(backupPath)
+}
+
+const scheduleWindowsBackupCleanup = (backupPath: string): void => {
+  const command = 'for ($attempt = 0; $attempt -lt 300; $attempt += 1) { if (-not (Test-Path -LiteralPath $env:RUNX_BACKUP_PATH)) { exit 0 }; try { Remove-Item -LiteralPath $env:RUNX_BACKUP_PATH -Force -ErrorAction Stop; exit 0 } catch { Start-Sleep -Milliseconds 100 } }; exit 1'
+  const encodedCommand = Buffer.from(command, 'utf16le').toString('base64')
+  Bun.spawn(['cmd.exe', '/d', '/s', '/c', `powershell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encodedCommand}`], {
+    detached: true,
+    env: { ...process.env, RUNX_BACKUP_PATH: backupPath },
+    stdout: 'ignore',
+    stderr: 'ignore',
+    stdin: 'ignore',
+  })
+}
+
+const errorMessage = (error: unknown): string => error instanceof Error ? error.message : String(error)
 
 const compareVersions = (left: string, right: string): number => {
   const parse = (value: string): number[] => value.split(/[.+-]/).map((part) => Number.parseInt(part, 10) || 0)
