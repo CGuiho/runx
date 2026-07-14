@@ -30,6 +30,7 @@ describe('RunX initialization', () => {
     expect(await Bun.file(join(root, 'scripts')).exists()).toBe(false)
     await expect(readManifest(root)).resolves.toMatchObject({ manifest: { commands: [], groups: { public: { summary: 'Default public project commands.' } } } })
     expect(prompter.previews).toEqual([renderInitialManifest(createInitialManifest('sample-project', 'scripts'))])
+    expect(prompter.closed).toBe(1)
   })
 
   test('leaves no manifest when the user cancels', async () => {
@@ -39,6 +40,7 @@ describe('RunX initialization', () => {
     await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter })).resolves.toEqual({ status: 'cancelled' })
     expect(await Bun.file(join(root, 'runx.yaml')).exists()).toBe(false)
     expect(prompter.cancelled).toEqual(['Initialization cancelled. No files were changed.'])
+    expect(prompter.closed).toBe(1)
   })
 
   test('preserves an existing manifest until overwrite is explicitly confirmed', async () => {
@@ -49,21 +51,39 @@ describe('RunX initialization', () => {
     const rejected = fakePrompter([], [false])
     await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter: rejected })).resolves.toEqual({ status: 'cancelled' })
     expect(await Bun.file(path).text()).toBe('version: "1.0.0"\n')
+    expect(rejected.closed).toBe(1)
 
     const accepted = fakePrompter(['replaced-project', 'automation'], [true, true])
     await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter: accepted })).resolves.toMatchObject({ status: 'created', path })
     await expect(readManifest(root)).resolves.toMatchObject({ manifest: { project: { name: 'replaced-project' }, scripts: { directory: 'automation' } } })
+    expect(accepted.closed).toBe(1)
+  })
+
+  test('closes the prompter when an interactive prompt throws', async () => {
+    const root = await projectDirectory()
+    const prompter = fakePrompter([], [])
+    prompter.text = async () => {
+      throw new Error('Prompt failed.')
+    }
+
+    await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter })).rejects.toThrow('Prompt failed.')
+    expect(prompter.closed).toBe(1)
+    expect(await Bun.file(join(root, 'runx.yaml')).exists()).toBe(false)
   })
 })
 
-type FakePrompter = RunXInitPrompter & { previews: string[], cancelled: string[] }
+type FakePrompter = RunXInitPrompter & { previews: string[], cancelled: string[], readonly closed: number }
 
 const fakePrompter = (textValues: Array<string | undefined>, confirmationValues: Array<boolean | undefined>): FakePrompter => {
   const previews: string[] = []
   const cancelled: string[] = []
+  let closed = 0
   return {
     previews,
     cancelled,
+    get closed() {
+      return closed
+    },
     intro: () => undefined,
     text: async (options) => {
       const value = textValues.shift()
@@ -74,6 +94,9 @@ const fakePrompter = (textValues: Array<string | undefined>, confirmationValues:
     preview: (manifest) => previews.push(manifest),
     cancel: (message) => cancelled.push(message),
     outro: () => undefined,
+    close: () => {
+      closed += 1
+    },
   }
 }
 

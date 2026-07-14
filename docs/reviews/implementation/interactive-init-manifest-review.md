@@ -46,7 +46,7 @@ Accepted. No blocking, high, medium, or low findings remain.
 ## Verification Evidence
 
 - `bun run typecheck` passed.
-- `bun test` passed: 21 tests and 173 assertions, including initialization,
+- `bun test` passed: 22 tests and 180 assertions, including initialization,
   cancellation, overwrite, empty-catalog list/check, and non-interactive CLI
   coverage.
 - `bun run build` and `bun run binary` passed.

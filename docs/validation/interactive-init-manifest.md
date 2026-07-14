@@ -40,7 +40,7 @@ or secret operation was performed.
 | Command | Result | Evidence |
 | --- | --- | --- |
 | `bun run typecheck` | Passed | Strict TypeScript compilation completed without diagnostics. |
-| `bun test` | Passed | 21 tests and 173 assertions passed across CLI, manifest, initializer, and self-management suites. |
+| `bun test` | Passed | 22 tests and 180 assertions passed across CLI, manifest, initializer, and self-management suites. |
 | `bun run build` | Passed | Library output compiled successfully. |
 | `bun run binary` | Passed | Native Windows executable compiled to `bin/runx.exe`. |
 | `bin/runx.exe --help-tree` | Passed | The compiled command tree includes `init`. |

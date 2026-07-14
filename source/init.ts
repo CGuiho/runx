@@ -2,6 +2,7 @@
  * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
+import { randomUUID } from 'node:crypto'
 import { rename, rm, writeFile } from 'node:fs/promises'
 import { basename, isAbsolute, relative, resolve } from 'node:path'
 import { createInterface } from 'node:readline/promises'
@@ -38,54 +39,51 @@ export const initializeRunXManifest = async ({ cwd, isInteractive = process.stdi
   }
 
   const activePrompter = prompter ?? createTerminalPrompter()
-
-  const root = resolve(cwd)
-  const path = resolve(root, 'runx.yaml')
-  const defaultProjectName = basename(root) || 'my-project'
-
-  activePrompter.intro('RunX project setup')
-
-  if (await Bun.file(path).exists()) {
-    const overwrite = await activePrompter.confirm({
-      message: 'runx.yaml already exists. Replace it?',
-      initialValue: false,
-    })
-    if (overwrite !== true) return cancelInitialization(activePrompter)
-  }
-
-  const projectName = await activePrompter.text({
-    message: 'Project name',
-    initialValue: defaultProjectName,
-    validate: (value) => value?.trim() ? undefined : 'Enter a project name.',
-  })
-  if (projectName === undefined) return cancelInitialization(activePrompter)
-
-  const scriptsDirectory = await activePrompter.text({
-    message: 'Scripts directory',
-    initialValue: 'scripts',
-    validate: (value) => validateScriptsDirectory(value, root),
-  })
-  if (scriptsDirectory === undefined) return cancelInitialization(activePrompter)
-
-  const manifest = createInitialManifest(projectName.trim(), scriptsDirectory.trim())
-  const yaml = renderInitialManifest(manifest)
-  activePrompter.preview(yaml)
-
-  const confirmed = await activePrompter.confirm({
-    message: 'Create this runx.yaml?',
-    initialValue: true,
-  })
-  if (confirmed !== true) return cancelInitialization(activePrompter)
-
   try {
+    const root = resolve(cwd)
+    const path = resolve(root, 'runx.yaml')
+    const defaultProjectName = basename(root) || 'my-project'
+
+    activePrompter.intro('RunX project setup')
+
+    if (await Bun.file(path).exists()) {
+      const overwrite = await activePrompter.confirm({
+        message: 'runx.yaml already exists. Replace it?',
+        initialValue: false,
+      })
+      if (overwrite !== true) return cancelInitialization(activePrompter)
+    }
+
+    const projectName = await activePrompter.text({
+      message: 'Project name',
+      initialValue: defaultProjectName,
+      validate: (value) => value?.trim() ? undefined : 'Enter a project name.',
+    })
+    if (projectName === undefined) return cancelInitialization(activePrompter)
+
+    const scriptsDirectory = await activePrompter.text({
+      message: 'Scripts directory',
+      initialValue: 'scripts',
+      validate: (value) => validateScriptsDirectory(value, root),
+    })
+    if (scriptsDirectory === undefined) return cancelInitialization(activePrompter)
+
+    const manifest = createInitialManifest(projectName.trim(), scriptsDirectory.trim())
+    const yaml = renderInitialManifest(manifest)
+    activePrompter.preview(yaml)
+
+    const confirmed = await activePrompter.confirm({
+      message: 'Create this runx.yaml?',
+      initialValue: true,
+    })
+    if (confirmed !== true) return cancelInitialization(activePrompter)
+
     await writeValidatedManifest(root, path, yaml)
-  } catch (error) {
+    activePrompter.outro(`Created ${path}`)
+    return { status: 'created', path, manifest }
+  } finally {
     activePrompter.close?.()
-    throw error
   }
-  activePrompter.outro(`Created ${path}`)
-  activePrompter.close?.()
-  return { status: 'created', path, manifest }
 }
 
 export const createInitialManifest = (projectName: string, scriptsDirectory: string): RunXManifest => ({
@@ -167,7 +165,6 @@ const createTerminalPrompter = (): RunXInitPrompter => {
 }
 
 const cancelInitialization = (prompter: RunXInitPrompter): RunXInitResult => {
-  prompter.close?.()
   prompter.cancel('Initialization cancelled. No files were changed.')
   return { status: 'cancelled' }
 }
@@ -184,7 +181,7 @@ const validateScriptsDirectory = (value: string | undefined, root: string): stri
 }
 
 const writeValidatedManifest = async (root: string, path: string, yaml: string): Promise<void> => {
-  const temporaryPath = resolve(root, `.runx-${crypto.randomUUID()}.yaml.tmp`)
+  const temporaryPath = resolve(root, `.runx-${randomUUID()}.yaml.tmp`)
   try {
     await writeFile(temporaryPath, yaml, { encoding: 'utf8', flag: 'wx' })
     await readManifest(root, temporaryPath)
