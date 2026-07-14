@@ -5,7 +5,7 @@ description: Sequences executable replacement, regression coverage, documentatio
 created: 2026-07-14
 flags:
   - approved
-  - in-progress
+  - executed
 tags:
   - plans
   - cli

@@ -5,8 +5,10 @@ parent: runx-reviews
 children: []
 files:
   citty-cli-migration-review.md: Reviews the implemented Citty command tree, compatibility adapter, tests, documentation, packaging, and release readiness.
+  windows-self-upgrade-review.md: Reviews synchronous Windows replacement, rollback, cleanup, tests, CI coverage, and release readiness.
 documents:
   citty-cli-migration-review.md: Accepted implementation review for the full Citty CLI migration.
+  windows-self-upgrade-review.md: Accepted implementation review for the Windows native self-upgrade fix.
 tags:
   - reviews
   - implementation
@@ -14,6 +16,7 @@ keywords:
   - runx
   - citty
   - implementation review
+  - windows self-upgrade
 flags: []
 status: stable
 ---

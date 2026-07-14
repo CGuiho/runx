@@ -5,6 +5,7 @@ description: Records the accepted Windows executable-swap, verification, rollbac
 created: 2026-07-14
 flags:
   - accepted
+  - implemented
 tags:
   - decisions
   - cli
