@@ -14,7 +14,7 @@ owner: runx
 
 #### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Crist&oacute;v&atilde;o GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
-# RunX TODO List
+# GUIHO RunX TODO List
 
 ## Parent TODO
 
@@ -25,20 +25,20 @@ owner: runx
 
 | Status | Count |
 | --- | ---: |
-| todo | 1 |
+| todo | 0 |
 | in progress | 0 |
 | testing | 0 |
 | stopped | 0 |
-| completed | 1 |
+| completed | 2 |
 
 ## Tasks
 
 ### 0. Protect RunX Branches and Tag Creation
 
-- Status: todo
+- Status: completed
 - Priority: highest
 - Created: `2026-07-12T02:10:04+02:00`
-- Updated: `2026-07-12T02:10:04+02:00`
+- Updated: `2026-07-14T15:47:04+02:00`
 - Outcome: RunX branch protections and tag creation rules prevent unauthorized or unsafe changes to protected branches and release tags.
 - Spec: [docs/todo/protect-branches-and-tag-creation.md](docs/todo/protect-branches-and-tag-creation.md)
 
