@@ -17,7 +17,7 @@ files:
   xdocs.config.toml: XDocs metadata and agent automation configuration.
 documents:
   AGENTS.md: Repository instructions for coding agents, including protected trusted-publishing release boundaries.
-  CHANGELOG.md: Mirror-managed release history, including trusted npm publishing and native distribution changes.
+  CHANGELOG.md: Mirror-managed release history, including the 0.2.2 trusted-publishing retry and native distribution changes.
   CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
   DOCS.md: Canonical user-facing CLI, manifest, distribution, and release reference.
   LICENSE.md: MIT license.

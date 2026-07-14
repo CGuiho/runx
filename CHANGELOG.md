@@ -15,6 +15,12 @@ owner: runx
 
 # Changelog
 
+## 0.2.2 - 2026-07-14
+
+### Changed
+
+- Retried the npm trusted-publishing release after the initial `0.2.1` tag could not be created under the repository tag ruleset.
+
 ## 0.2.1 - 2026-07-14
 
 ### Added
