@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.2.1 - 2026-07-14
+
+### Added
+
+- Added npm OIDC trusted publishing to the protected `production` workflow for `@guiho/runx@*` tags.
+- Expanded CI to validate the complete 12-target native binary matrix.
+- Added active GitHub rulesets protecting `main` and `@guiho/runx@*` release tags.
+
+### Fixed
+
+- Fixed the published `runx` launcher to use the compiled library entrypoint included in the npm package instead of relying on excluded source files.
+
 ## 0.2.0 - 2026-07-12
 
 ### Added
