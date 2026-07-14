@@ -1,10 +1,10 @@
 ---
 subject: runx-architecture
-description: Technical architecture for the RunX manifest, CLI, agent skill, and native distribution.
+description: Technical architecture for the RunX manifest, Citty command tree, agent skill, and native distribution.
 parent: runx-docs
 children: []
 files:
-  cli-architecture.md: Documents RunX component boundaries and execution flow.
+  cli-architecture.md: Documents Citty routing, RunX domain boundaries, safety invariants, and native distribution.
 documents:
   cli-architecture.md: Technical architecture for the first RunX CLI release.
 tags:
@@ -13,6 +13,7 @@ keywords:
   - runx
   - bun
   - cli
+  - citty
 flags: []
 status: stable
 ---

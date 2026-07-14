@@ -1,6 +1,18 @@
 ---
 name: guiho-s-runx
+purpose: Guide agents through safe inspection and execution of RunX command catalogs.
 description: Use when inspecting, creating, validating, organizing, documenting, or running a RunX `runx.yaml` command catalog. This includes listing available project commands, choosing a command by UID or selector, reviewing command descriptions, dry runs, confirmation-gated execution, and agent-safe project automation.
+created: 2026-07-12
+owner: guiho-s-runx
+flags: []
+tags:
+  - agents
+  - runx
+keywords:
+  - runx
+  - citty
+  - command catalog
+  - dry run
 ---
 
 # GUIHO RunX
@@ -30,6 +42,8 @@ commands but does not make them inherently safe: a manifest is trusted code.
   guarantee. Read the command description and command text.
 - Do not add secrets to `runx.yaml`. Use the project's existing environment or
   secret-management workflow.
+- Use `runx <command> --help` for command-specific Citty usage. `runx -h` and
+  `runx -v` are global operations and do not require a manifest.
 
 ## Maintain Manifests
 
@@ -47,6 +61,8 @@ commands but does not make them inherently safe: a manifest is trusted code.
 
 ```text
 runx                         Show the RunX home page and usage.
+runx -h                      Show generated command help.
+runx -v                      Show the installed version.
 runx list                    List the nearest manifest.
 runx describe <uid>          Explain one command without execution.
 runx run <uid> --dry-run     Inspect the execution plan.
