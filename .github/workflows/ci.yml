@@ -32,3 +32,14 @@ jobs:
       - run: bun run build
       - run: bun run binary
       - run: bun run binaries
+
+  test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: oven-sh/setup-bun@v2
+      - run: bun install --frozen-lockfile
+      - run: bun run typecheck
+      - run: bun test
+      - run: bun run build
+      - run: bun run binary
