@@ -23,7 +23,7 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `0. Protect RunX Branches and Tag Creation`
-- Status: todo
+- Status: completed
 - Priority: highest
 - Index: [TODO.md](../../TODO.md)
 
@@ -49,6 +49,18 @@ RunX has repository rules that protect important branches and restrict tag creat
 - The RunX repository has branch protection or repository rulesets active for the default branch and any selected release branches.
 - Tag creation is restricted for the relevant release tag patterns.
 - Required maintainers or administrators can verify that the rules are active before the next release/tagging step.
+
+## Active GitHub Rulesets
+
+- [`Protect main`](https://github.com/CGuiho/runx/rules/18933230) - active branch ruleset `18933230` for `refs/heads/main` and `~DEFAULT_BRANCH`; blocks deletion and non-fast-forward updates, requires pull requests, and enables Copilot review on pushes and draft pull requests.
+- [`Protect release tags`](https://github.com/CGuiho/runx/rules/18933243) - active tag ruleset `18933243` for `refs/tags/@guiho*/*@*`; restricts creation, updates, deletion, and non-fast-forward changes and requires linear history.
+
+## Verification Evidence
+
+- GitHub CLI authenticated as repository owner `CGuiho` with the required repository scope.
+- Both rulesets were created with `gh api` using the same active conditions and rule parameters used by the Mirror and XDocs repositories.
+- Both RunX rulesets were read back from the GitHub API after creation and confirmed active.
+- No release tag was created or pushed, and no package was published while configuring the protections.
 
 ## Watch-outs
 

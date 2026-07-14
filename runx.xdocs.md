@@ -16,12 +16,12 @@ files:
   tsconfig.json: Strict TypeScript compiler configuration for library output and type checking.
   xdocs.config.toml: XDocs metadata and agent automation configuration.
 documents:
-  AGENTS.md: Repository instructions for coding agents.
+  AGENTS.md: Repository instructions for coding agents, including protected trusted-publishing release boundaries.
   CHANGELOG.md: Release-level change history.
-  CONTRIBUTING.md: Contribution and validation guide.
-  DOCS.md: Canonical user-facing CLI and manifest reference.
+  CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
+  DOCS.md: Canonical user-facing CLI, manifest, distribution, and release reference.
   LICENSE.md: MIT license.
-  README.md: Public project overview and quick start.
+  README.md: Public project overview, npm/native installation paths, and quick start.
   SECURITY.md: Vulnerability reporting and manifest trust-boundary policy.
   TODO.md: Package-local task index.
 tags:

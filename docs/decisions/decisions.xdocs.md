@@ -5,8 +5,10 @@ parent: runx-docs
 children: []
 files:
   alpha-boundaries.md: Captures accepted alpha scope, safety, distribution, and compatibility decisions.
+  npm-trusted-publishing.md: Defines the accepted npm OIDC publishing workflow and protected-branch patch-release trial.
 documents:
   alpha-boundaries.md: Decision record for RunX alpha boundaries.
+  npm-trusted-publishing.md: Decision record for GitHub Actions npm trusted publishing and the first automated patch release.
 tags:
   - decisions
 keywords:
