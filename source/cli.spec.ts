@@ -63,6 +63,7 @@ describe('RunX Citty CLI', () => {
       ['run'],
       ['r'],
       ['check'],
+      ['init'],
       ['agents'],
       ['agents', 'install'],
       ['agents', 'instructions'],
@@ -93,6 +94,19 @@ describe('RunX Citty CLI', () => {
     expect(check.exitCode).toBe(0)
     expect(check.stdout).toContain('valid: true')
     expect(JSON.parse(describe.stdout).uid).toBe('dev-start')
+  })
+
+  test('lists and checks an empty initialized manifest without execution', async () => {
+    const cwd = await emptyDirectory()
+    await Bun.write(join(cwd, 'runx.yaml'), emptyManifest())
+
+    const list = await cli(['list', '--cwd', cwd], cwd)
+    const check = await cli(['check', '--cwd', cwd], cwd)
+
+    expect(list.exitCode).toBe(0)
+    expect(list.stdout).toContain('RunX commands from')
+    expect(check.exitCode).toBe(0)
+    expect(check.stdout).toContain('commands: 0')
   })
 
   test('runs the explicit command, alias, and root selector shorthand', async () => {
@@ -149,6 +163,23 @@ describe('RunX Citty CLI', () => {
     expect(nested.stderr).toContain('Unknown command')
   })
 
+  test('keeps init interactive and rejects file or JSON targets without creating a manifest', async () => {
+    const cwd = await emptyDirectory()
+    const manifestPath = join(cwd, 'runx.yaml')
+
+    const nonInteractive = await cli(['init', '--cwd', cwd], cwd)
+    const explicitFile = await cli(['init', '--cwd', cwd, '--file', join(cwd, 'other.yaml')], cwd)
+    const json = await cli(['init', '--cwd', cwd, '--format', 'json'], cwd)
+
+    expect(nonInteractive.exitCode).toBe(1)
+    expect(nonInteractive.stderr).toContain('requires an interactive terminal')
+    expect(explicitFile.exitCode).toBe(1)
+    expect(explicitFile.stderr).toContain('does not support --file')
+    expect(json.exitCode).toBe(1)
+    expect(json.stderr).toContain('does not support --format json')
+    expect(await Bun.file(manifestPath).exists()).toBe(false)
+  })
+
   test('routes local agent installation and managed instructions', async () => {
     const cwd = await emptyDirectory()
     const install = await cli(['agents', 'install', 'local', '--cwd', cwd, '--tool', 'all', '--format', 'json'], cwd)
@@ -192,8 +223,12 @@ async function projectDirectory(): Promise<string> {
 }
 
 function manifest(): string {
-  return `version: 1
+  return `version: "1.0.0"
+scripts:
+  directory: scripts
 groups:
+  public:
+    summary: Default public project commands.
   development:
     summary: Development commands.
 commands:
@@ -216,5 +251,18 @@ commands:
     summary: Exercise selector compatibility.
     description: Verifies that object prototype names remain valid selectors.
     command: echo constructor
+`
+}
+
+function emptyManifest(): string {
+  return `version: "1.0.0"
+project:
+  name: initialized-project
+scripts:
+  directory: scripts
+groups:
+  public:
+    summary: Default public project commands.
+commands: []
 `
 }

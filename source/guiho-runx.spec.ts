@@ -15,6 +15,26 @@ afterEach(async () => {
 })
 
 describe('RunX manifests', () => {
+  test('enforces SemVer 1.x, a scripts directory, and the public group', async () => {
+    const accepted = await fixture(emptyManifest('1.2.3-beta.1+build.7'))
+    await expect(readManifest(accepted)).resolves.toMatchObject({ manifest: { version: '1.2.3-beta.1+build.7', commands: [] } })
+
+    const invalidManifests = [
+      emptyManifest('2.0.0'),
+      emptyManifest('1.0'),
+      emptyManifest('1').replace('"1"', '1'),
+      emptyManifest().replace('scripts:\n  directory: scripts\n', ''),
+      emptyManifest().replace('  directory: scripts', '  directory: ../scripts'),
+      emptyManifest().replace('  public:\n    summary: Default public project commands.\n', ''),
+      `${emptyManifest()}\n  - uid: private-check\n    id: check\n    group: private\n    summary: Check private work.\n    description: Checks private work.\n    command: echo check\n`,
+    ]
+
+    for (const content of invalidManifests) {
+      const root = await fixture(content)
+      await expect(readManifest(root)).rejects.toThrow(RunXError)
+    }
+  })
+
   test('discovers a parent manifest and resolves stable selectors', async () => {
     const root = await fixture(manifest())
     const nested = join(root, 'nested')
@@ -139,8 +159,12 @@ const fixture = async (content: string): Promise<string> => {
 
 const updateAssetName = (): string => `runx-${process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux'}-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`
 
-const manifest = (): string => `version: 1
+const manifest = (): string => `version: "1.0.0"
+scripts:
+  directory: scripts
 groups:
+  public:
+    summary: Default public project commands.
   development:
     summary: Development commands.
 commands:
@@ -156,4 +180,13 @@ commands:
     summary: Check source.
     description: Checks source files.
     command: echo check
+`
+
+const emptyManifest = (version = '1.0.0'): string => `version: "${version}"
+scripts:
+  directory: scripts
+groups:
+  public:
+    summary: Default public project commands.
+commands: []
 `

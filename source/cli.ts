@@ -8,6 +8,7 @@ import { installAgentInstructions, installAgentSkill } from './agents.js'
 import { RunXError } from './errors.js'
 import { runCommand } from './executor.js'
 import { readVersion, showHelpDocs, showHelpTree, showHome } from './help.js'
+import { initializeRunXManifest } from './init.js'
 import { readManifest, resolveCommand } from './manifest.js'
 import { renderDescription, renderExecutionPlan, renderJson, renderList } from './render.js'
 import { checkForLatestVersion, listAvailableVersions, uninstallSelf, upgradeSelf } from './self-management.js'
@@ -140,6 +141,13 @@ const createCommandTree = (): { command: CommandDef<any>, state: CliState } => {
     run: async () => checkManifest(resolveOptions(state.globalArgs)),
   })
 
+  const initCommand = defineCommand({
+    meta: { name: 'runx init', description: 'Interactively create an empty RunX manifest.' },
+    args: commonArgs,
+    setup: withCommandHelp(state),
+    run: async () => initializeProject(state.globalArgs),
+  })
+
   const agentsInstallCommand = defineCommand({
     meta: { name: 'runx agents install', description: 'Install the bundled RunX skill.' },
     args: {
@@ -220,6 +228,7 @@ const createCommandTree = (): { command: CommandDef<any>, state: CliState } => {
     describe: describeCommandDefinition,
     run: runCommandDefinition,
     check: checkCommand,
+    init: initCommand,
     agents: agentsCommand,
     upgrade: upgradeCommand,
     uninstall: uninstallCommand,
@@ -230,6 +239,7 @@ const createCommandTree = (): { command: CommandDef<any>, state: CliState } => {
     ['run', runCommandDefinition],
     ['r', runCommandDefinition],
     ['check', checkCommand],
+    ['init', initCommand],
     ['agents', agentsCommand],
     ['agents install', agentsInstallCommand],
     ['agents instructions', agentsInstructionsCommand],
@@ -387,6 +397,16 @@ async function checkManifest(options: CliOptions): Promise<void> {
   const { manifest, path } = await readManifest(options.cwd, options.file)
   const result = { valid: true, manifestPath: path, commandCount: manifest.commands.length, groups: Object.keys(manifest.groups) }
   write(options.format === 'json' ? renderJson(result) : `valid: true\nmanifest: ${path}\ncommands: ${result.commandCount}\n`)
+}
+
+async function initializeProject(args: GlobalArgs): Promise<void> {
+  if (args.file) {
+    throw new RunXError('runx init does not support --file. It always creates runx.yaml in --cwd or the current directory.')
+  }
+  if (args.format === 'json') {
+    throw new RunXError('runx init does not support --format json because initialization is an interactive terminal workflow.')
+  }
+  await initializeRunXManifest({ cwd: resolve(args.cwd ?? process.cwd()) })
 }
 
 async function runSelectedCommand(selector: string, options: CliOptions, args: GlobalArgs): Promise<void> {
