@@ -122,9 +122,11 @@ runx agents install local
 
 `devops/install.ps1` installs Windows assets and `devops/install.sh` installs
 macOS/Linux assets from GitHub Releases into the user's local bin directory.
-`runx upgrade` uses the matching release asset and replaces a native executable;
-on Windows replacement is scheduled after RunX exits. `runx uninstall` removes
-the same native executable and supports `--dry-run`.
+`runx upgrade` uses the matching release asset and replaces a native executable.
+On Windows it renames the running executable, installs and verifies the target
+version at the original path, and restores the previous executable if replacement
+fails. Only cleanup of the renamed old image is deferred until RunX exits.
+`runx uninstall` removes the same native executable and supports `--dry-run`.
 
 When the latest GitHub Release matches the installed version, `runx upgrade` prints `Already up to date.` and exits successfully without downloading or scheduling executable replacement. JSON output reports `upToDate: true`.
 
