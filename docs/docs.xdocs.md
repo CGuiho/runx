@@ -7,6 +7,7 @@ children:
   - runx-architecture
   - runx-decisions
   - runx-plans
+  - runx-reviews
   - runx-todo
   - runx-validation
 files: {}
