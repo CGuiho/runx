@@ -7,6 +7,7 @@ files:
   alpha-implementation-summary.md: Records the completed alpha implementation, checks, and release boundaries.
 documents:
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
+  npm-trusted-publishing-0.2.2.md: Validation evidence for the blocked 0.2.2 npm trusted-publishing retry.
 tags:
   - validation
 keywords:
