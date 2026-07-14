@@ -2,7 +2,7 @@ import { chmod, rename, rm } from 'node:fs/promises'
 import { basename } from 'node:path'
 import { RunXError } from './errors.js'
 import { readVersion } from './help.js'
-import type { UpdateResult } from './types.js'
+import type { RunXUpgradeResult, UpdateResult } from './types.js'
 
 const repositoryApi = 'https://api.github.com/repos/CGuiho/runx/releases'
 
@@ -29,11 +29,12 @@ export const listAvailableVersions = async (): Promise<string[]> => {
   return releases.map((release) => release.tag_name.replace(/^@guiho\/runx@/, '').replace(/^v/, ''))
 }
 
-export const upgradeSelf = async (dryRun: boolean): Promise<UpdateResult & { executablePath: string, scheduled: boolean }> => {
+export const upgradeSelf = async (dryRun: boolean): Promise<RunXUpgradeResult> => {
   const executablePath = requireNativeExecutable()
   const update = await checkForLatestVersion()
-  if (!update.updateAvailable || !update.url) return { ...update, executablePath, scheduled: false }
-  if (dryRun) return { ...update, executablePath, scheduled: false }
+  const upToDate = !update.updateAvailable && update.latestVersion === update.currentVersion && Boolean(update.url)
+  if (!update.updateAvailable || !update.url) return { ...update, executablePath, scheduled: false, upToDate }
+  if (dryRun) return { ...update, executablePath, scheduled: false, upToDate: false }
 
   const response = await fetch(update.url)
   if (!response.ok) throw new RunXError(`Could not download RunX update: HTTP ${response.status}`)
@@ -42,11 +43,11 @@ export const upgradeSelf = async (dryRun: boolean): Promise<UpdateResult & { exe
   if (process.platform !== 'win32') {
     await chmod(temporaryPath, 0o755)
     await rename(temporaryPath, executablePath)
-    return { ...update, executablePath, scheduled: false }
+    return { ...update, executablePath, scheduled: false, upToDate: false }
   }
 
   scheduleWindowsReplacement(temporaryPath, executablePath)
-  return { ...update, executablePath, scheduled: true }
+  return { ...update, executablePath, scheduled: true, upToDate: false }
 }
 
 export const uninstallSelf = async (dryRun: boolean): Promise<{ executablePath: string, scheduled: boolean, dryRun: boolean }> => {
@@ -67,7 +68,7 @@ const findAsset = (release: Release): Release['assets'][number] | undefined => r
 const assetName = (): string => `runx-${process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux'}-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`
 
 const requireNativeExecutable = (): string => {
-  const executablePath = process.execPath
+  const executablePath = process.env['RUNX_SELF_PATH'] ?? process.execPath
   if (basename(executablePath).toLowerCase().startsWith('bun')) throw new RunXError('Self-management requires a native RunX executable installed from a GitHub release.')
   return executablePath
 }

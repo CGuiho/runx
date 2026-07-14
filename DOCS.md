@@ -114,6 +114,8 @@ macOS/Linux assets from GitHub Releases into the user's local bin directory.
 on Windows replacement is scheduled after RunX exits. `runx uninstall` removes
 the same native executable and supports `--dry-run`.
 
+When the latest GitHub Release matches the installed version, `runx upgrade` prints `Already up to date.` and exits successfully without downloading or scheduling executable replacement. JSON output reports `upToDate: true`.
+
 CI validates code and compiles the local executable plus the native release
 matrix. Protected `@guiho/runx@*` tags run the `production` publish workflow,
 which uploads twelve native assets to GitHub Releases and publishes the public

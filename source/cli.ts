@@ -120,7 +120,9 @@ const runUpgrade = async (positionals: string[], options: CliOptions, flags: Rec
     return
   }
   const result = await upgradeSelf(booleanFlag(flags, 'dryRun'))
-  write(options.format === 'json' ? renderJson(result) : `current: ${result.currentVersion}\ntarget: ${result.latestVersion}\npath: ${result.executablePath}\n${result.scheduled ? 'scheduled: true\n' : ''}`)
+  if (options.format === 'json') return write(renderJson(result))
+  const summary = `current: ${result.currentVersion}\ntarget: ${result.latestVersion}\n`
+  write(result.upToDate ? `${summary}Already up to date.\n` : `${summary}path: ${result.executablePath}\n${result.scheduled ? 'scheduled: true\n' : ''}`)
 }
 
 const runUninstall = async (options: CliOptions, flags: Record<string, boolean | string | string[]>): Promise<void> => {

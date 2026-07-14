@@ -3,8 +3,11 @@ import { mkdir, mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { RunXError } from './errors.js'
+import { runCli } from './cli.js'
 import { booleanFlag, parseArgs, stringFlag } from './flags.js'
+import { readVersion } from './help.js'
 import { readManifest, resolveCommand } from './manifest.js'
+import { upgradeSelf } from './self-management.js'
 
 const directories: string[] = []
 
@@ -50,6 +53,48 @@ describe('RunX manifests', () => {
     expect(await run.exited).toBe(0)
     expect(await new Response(run.stdout).text()).toContain('start')
   })
+
+  test('treats the installed release as already up to date without downloading it', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'runx-upgrade-'))
+    directories.push(directory)
+    const executable = join(directory, process.platform === 'win32' ? 'runx.exe' : 'runx')
+    const previousSelfPath = process.env['RUNX_SELF_PATH']
+    const originalFetch = globalThis.fetch
+    const originalStdoutWrite = process.stdout.write
+    let fetchCount = 0
+
+    try {
+      process.env['RUNX_SELF_PATH'] = executable
+      await Bun.write(executable, process.platform === 'win32' ? 'MZ' : '\x7fELF')
+      globalThis.fetch = async () => {
+        fetchCount += 1
+        return Response.json({
+          tag_name: `@guiho/runx@${readVersion()}`,
+          assets: [{ name: updateAssetName(), browser_download_url: 'https://example.test/runx' }],
+        })
+      }
+
+      const result = await upgradeSelf(false)
+      expect(result.upToDate).toBe(true)
+      expect(result.scheduled).toBe(false)
+      expect(await Bun.file(`${executable}.new`).exists()).toBe(false)
+
+      const stdout: string[] = []
+      process.stdout.write = ((chunk: string | Uint8Array) => {
+        stdout.push(String(chunk))
+        return true
+      }) as typeof process.stdout.write
+      await runCli(['upgrade'])
+      expect(stdout.join('')).toContain('Already up to date.')
+      expect(fetchCount).toBe(2)
+      expect(await Bun.file(`${executable}.new`).exists()).toBe(false)
+    } finally {
+      globalThis.fetch = originalFetch
+      process.stdout.write = originalStdoutWrite
+      if (previousSelfPath === undefined) delete process.env['RUNX_SELF_PATH']
+      else process.env['RUNX_SELF_PATH'] = previousSelfPath
+    }
+  })
 })
 
 const fixture = async (content: string): Promise<string> => {
@@ -58,6 +103,8 @@ const fixture = async (content: string): Promise<string> => {
   await Bun.write(join(directory, 'runx.yaml'), content)
   return directory
 }
+
+const updateAssetName = (): string => `runx-${process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux'}-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`
 
 const manifest = (): string => `version: 1
 groups:
