@@ -15,6 +15,23 @@ owner: runx
 
 # Changelog
 
+## 0.2.7 - 2026-07-15
+
+### Added
+
+- Added an interactive `runx init` command that collects the project name and
+  scripts directory, previews the generated catalog, and confirms before writing.
+- Added safe cancellation and explicit overwrite confirmation so initialization
+  never leaves a partial manifest or replaces an existing catalog silently.
+
+### Changed
+
+- Initialized catalogs now use the SemVer-compatible manifest version `1.0.0`,
+  configure `scripts.directory`, include the required `public` group, and begin
+  with an empty command list.
+- `runx init` creates only `runx.yaml`; the configured `scripts` directory is
+  created later with the first real script.
+
 ## 0.2.6 - 2026-07-14
 
 ### Added
