@@ -13,12 +13,6 @@ export type ResolvedCommand = RunXCommand & {
 
 export type OutputFormat = 'text' | 'json'
 
-export type ParsedArgs = {
-  command?: string
-  positionals: string[]
-  flags: Record<string, boolean | string | string[]>
-}
-
 export type CliOptions = {
   cwd: string
   file?: string

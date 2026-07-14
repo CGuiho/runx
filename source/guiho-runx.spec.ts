@@ -4,7 +4,6 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { RunXError } from './errors.js'
 import { runCli } from './cli.js'
-import { booleanFlag, parseArgs, stringFlag } from './flags.js'
 import { readVersion } from './help.js'
 import { readManifest, resolveCommand } from './manifest.js'
 import { upgradeSelf } from './self-management.js'
@@ -31,14 +30,6 @@ describe('RunX manifests', () => {
     const root = await fixture(`${manifest()}\n  - uid: maintenance-start\n    id: start\n    group: maintenance\n    summary: Start maintenance.\n    description: Starts local maintenance.\n    command: echo maintenance\n`.replace('  development:\n    summary: Development commands.', '  development:\n    summary: Development commands.\n  maintenance:\n    summary: Maintenance commands.'))
     const { manifest: loaded, path } = await readManifest(root)
     expect(() => resolveCommand(loaded, path, 'start')).toThrow(RunXError)
-  })
-
-  test('parses global flags and the run alias', () => {
-    const parsed = parseArgs(['r', 'dev-start', '--dry-run', '--format=json'])
-    expect(parsed.command).toBe('r')
-    expect(parsed.positionals).toEqual(['dev-start'])
-    expect(booleanFlag(parsed.flags, 'dryRun')).toBe(true)
-    expect(stringFlag(parsed.flags, 'format')).toBe('json')
   })
 
   test('runs the r alias and keeps dry runs read-only', async () => {
@@ -88,6 +79,48 @@ describe('RunX manifests', () => {
       expect(stdout.join('')).toContain('Already up to date.')
       expect(fetchCount).toBe(2)
       expect(await Bun.file(`${executable}.new`).exists()).toBe(false)
+    } finally {
+      globalThis.fetch = originalFetch
+      process.stdout.write = originalStdoutWrite
+      if (previousSelfPath === undefined) delete process.env['RUNX_SELF_PATH']
+      else process.env['RUNX_SELF_PATH'] = previousSelfPath
+    }
+  })
+
+  test('routes upgrade inspection and uninstall dry runs through Citty', async () => {
+    const directory = await mkdtemp(join(tmpdir(), 'runx-self-management-'))
+    directories.push(directory)
+    const executable = join(directory, process.platform === 'win32' ? 'runx.exe' : 'runx')
+    const previousSelfPath = process.env['RUNX_SELF_PATH']
+    const originalFetch = globalThis.fetch
+    const originalStdoutWrite = process.stdout.write
+
+    try {
+      process.env['RUNX_SELF_PATH'] = executable
+      await Bun.write(executable, process.platform === 'win32' ? 'MZ' : '\x7fELF')
+      globalThis.fetch = async (input) => {
+        const release = {
+          tag_name: `@guiho/runx@${readVersion()}`,
+          assets: [{ name: updateAssetName(), browser_download_url: 'https://example.test/runx' }],
+        }
+        return Response.json(String(input).includes('?per_page=20') ? [release] : release)
+      }
+
+      const stdout: string[] = []
+      process.stdout.write = ((chunk: string | Uint8Array) => {
+        stdout.push(String(chunk))
+        return true
+      }) as typeof process.stdout.write
+
+      await runCli(['upgrade', 'check', '--format=json'])
+      expect(JSON.parse(stdout.splice(0).join('')).updateAvailable).toBe(false)
+
+      await runCli(['upgrade', 'list', '--format=json'])
+      expect(JSON.parse(stdout.splice(0).join('')).versions).toEqual([readVersion()])
+
+      await runCli(['uninstall', '--dry-run', '--format=json'])
+      expect(JSON.parse(stdout.join('')).dryRun).toBe(true)
+      expect(await Bun.file(executable).exists()).toBe(true)
     } finally {
       globalThis.fetch = originalFetch
       process.stdout.write = originalStdoutWrite

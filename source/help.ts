@@ -45,8 +45,3 @@ Use UID values for automation. Use runx describe <selector> and runx run <select
 
 Agent skill: runx agents install local installs guiho-s-runx under .agents/skills.
 `
-
-export const showCommandHelp = (command: string): string => `RunX ${command}
-
-Run \`runx --help-tree\` for command structure and \`runx --help-docs\` for manifest guidance.
-`
