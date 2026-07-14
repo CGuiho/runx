@@ -1,17 +1,18 @@
 ---
 subject: guiho-s-runx
-description: Agent workflow for inspecting, validating, and safely executing RunX manifest commands.
+description: Agent workflow for inspecting, validating, getting Citty usage for, and safely executing RunX manifest commands.
 parent: runx-skills
 children: []
 files:
-  SKILL.md: RunX-specific agent instructions and safe execution workflow.
+  SKILL.md: RunX-specific agent instructions, help aliases, and safe execution workflow.
 documents:
-  SKILL.md: RunX-specific agent instructions and safe execution workflow.
+  SKILL.md: RunX-specific agent instructions, Citty help/version guidance, and safe execution workflow.
 tags:
   - agents
   - runx
 keywords:
   - runx
+  - citty
   - command catalog
   - dry run
 flags: []

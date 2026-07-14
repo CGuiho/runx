@@ -5,7 +5,7 @@ description: Records the full Citty command-tree migration, compatibility requir
 created: 2026-07-14
 flags:
   - accepted
-  - needs-implementation
+  - implemented
 tags:
   - decisions
   - cli

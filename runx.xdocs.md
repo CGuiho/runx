@@ -12,16 +12,16 @@ files:
   .gitignore: Ignores local dependencies and generated build outputs.
   bun.lock: Locks Bun dependencies for reproducible installs.
   mirror.config.toml: Mirror semantic versioning configuration.
-  package.json: Package metadata, scripts, native CLI entrypoint, and dependencies.
+  package.json: Package metadata, scripts, native CLI entrypoint, and Citty runtime dependency.
   tsconfig.json: Strict TypeScript compiler configuration for library output and type checking.
   xdocs.config.toml: XDocs metadata and agent automation configuration.
 documents:
-  AGENTS.md: Repository instructions for coding agents, including protected trusted-publishing release boundaries.
+  AGENTS.md: Repository instructions for coding agents, including Citty CLI ownership and protected release boundaries.
   CHANGELOG.md: Mirror-managed release history, including the 0.2.2 trusted-publishing retry and native distribution changes.
   CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
-  DOCS.md: Canonical user-facing CLI, manifest, distribution, and release reference.
+  DOCS.md: Canonical Citty-backed CLI, manifest, distribution, and release reference.
   LICENSE.md: MIT license.
-  README.md: Public project overview, npm/native installation paths, and quick start.
+  README.md: Public project overview, npm/native installation paths, Citty help aliases, and quick start.
   SECURITY.md: Vulnerability reporting and manifest trust-boundary policy.
   TODO.md: Package-local task index.
 tags:
@@ -30,6 +30,7 @@ tags:
   - open source
 keywords:
   - runx
+  - citty
   - command catalog
   - yaml
   - native binary

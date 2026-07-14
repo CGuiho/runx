@@ -26,6 +26,8 @@ lists its commands, and runs exactly one selected command.
 | Command | Purpose |
 | --- | --- |
 | `runx` | Show the home page and usage without loading a manifest. |
+| `runx -h`, `runx --help` | Show Citty-generated usage without loading a manifest. Append help to a command for command-specific usage. |
+| `runx -v`, `runx --version` | Show the installed version without loading a manifest. |
 | `runx list` | List all manifest commands. Add `--format json` for structured output. |
 | `runx describe <selector>` | Show one command's description and operational metadata. |
 | `runx check` | Validate discovery and the manifest without execution. |
@@ -34,11 +36,21 @@ lists its commands, and runs exactly one selected command.
 | `runx <selector>` | Human shorthand for `runx run <selector>` when no built-in name conflicts. |
 | `runx agents install <local|global>` | Install `guiho-s-runx`; add `--tool agents|claude|all` when needed. |
 | `runx agents instructions` | Add or refresh the managed RunX section in `AGENTS.md`. |
-| `runx upgrade [check|list]` | Check releases, list releases, or replace a native installed executable. |
+| `runx upgrade` | Replace a native installed executable when a newer release is available. |
+| `runx upgrade check` | Check whether a newer release is available. |
+| `runx upgrade list` | List recent release versions. |
 | `runx uninstall [--dry-run]` | Remove a native installed executable. |
 
 Global flags: `--cwd <path>`, `--file <path>`, `--format <text|json>`,
-`--verbose`, `--version`, `--help`, `--help-tree`, and `--help-docs`.
+`--verbose`, `-v`/`--version`, `-h`/`--help`, `--help-tree`, and
+`--help-docs`. Applicable command flags include `--dry-run`, `--yes`, and
+`--tool <agents|claude|all>`. Options may appear before or after their command.
+Unknown options and missing required arguments produce command usage instead
+of falling through to manifest discovery.
+
+Citty is the CLI parser, command router, alias registry, and ordinary usage
+renderer. RunX keeps its home page, extended command tree, and manifest guide
+as the explicit `runx`, `--help-tree`, and `--help-docs` surfaces.
 
 ## Manifest
 

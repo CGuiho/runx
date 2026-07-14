@@ -25,6 +25,9 @@ owner: runx
 - Use Bun for installs, tests, typechecking, builds, and executable compilation.
 - `runx` without arguments shows the home page and usage. `runx list` lists a
   manifest; `runx run` and `runx r` execute a selected command.
+- Citty owns argument parsing, aliases, command routing, and ordinary usage.
+  Keep `-h`/`--help` and `-v`/`--version` manifest-free, and do not add a
+  second handwritten token parser or manual execution router.
 - Treat manifests as trusted executable code. Listing, describing, checking,
   and dry runs must never spawn a configured command.
 - Keep the bundled `skills/guiho-s-runx/SKILL.md` aligned with the CLI contract.

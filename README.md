@@ -61,15 +61,21 @@ Then use RunX:
 
 ```text
 runx                         Show the home page and usage.
+runx -h                      Show Citty-generated command help.
+runx -v                      Show the installed version without loading a manifest.
 runx list                    List commands in the nearest manifest.
 runx describe app-dev        Explain one command without execution.
 runx run app-dev --dry-run   Inspect the execution plan.
 runx run app-dev             Execute the command.
 runx r app-dev               Use the short run alias.
+runx app-dev                 Use the human selector shorthand.
 ```
 
 Use `confirm: always` for commands that should require an explicit `--yes`.
 Use `runx list --format json` and stable UIDs for agent automation.
+RunX uses Citty for argument parsing, aliases, command routing, and ordinary
+usage text, so conventional `-h`/`--help` and `-v`/`--version` work outside a
+configured project.
 
 ## Documentation
 
