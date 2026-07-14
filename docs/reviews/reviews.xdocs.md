@@ -3,6 +3,7 @@ subject: runx-reviews
 description: Structured reviews of RunX architecture, plans, implementation, and release readiness.
 parent: runx-docs
 children:
+  - runx-implementation-reviews
   - runx-plan-reviews
 files: {}
 documents: {}
