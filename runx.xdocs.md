@@ -17,7 +17,7 @@ files:
   xdocs.config.toml: XDocs metadata and agent automation configuration.
 documents:
   AGENTS.md: Repository instructions for coding agents, including Citty CLI ownership and protected release boundaries.
-  CHANGELOG.md: Mirror-managed release history, including the 0.2.4 Citty migration and trusted native/npm distribution changes.
+  CHANGELOG.md: Mirror-managed release history, including the 0.2.6 verified Windows self-upgrade fix.
   CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
   DOCS.md: Canonical Citty-backed CLI, manifest, verified Windows upgrade, distribution, and release reference.
   LICENSE.md: MIT license.

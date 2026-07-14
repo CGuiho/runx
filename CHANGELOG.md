@@ -15,6 +15,20 @@ owner: runx
 
 # Changelog
 
+## 0.2.6 - 2026-07-14
+
+### Added
+
+- Added Windows CI coverage for replacing a running executable, verifying the
+  installed target version, cleaning the old image, and rolling back failures.
+
+### Fixed
+
+- Fixed `runx upgrade` on Windows so it replaces and verifies `runx.exe` before
+  reporting success instead of returning a detached `scheduled: true` state.
+- Failed Windows replacements now restore the previous executable, report a
+  non-zero error, and clean `.new` and `.old` update files safely.
+
 ## 0.2.4 - 2026-07-14
 
 ### Added
