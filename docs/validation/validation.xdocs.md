@@ -6,10 +6,12 @@ children: []
 files:
   alpha-implementation-summary.md: Records the completed alpha implementation, checks, and release boundaries.
   citty-cli-migration.md: Records the complete local validation gate for the Citty command-tree migration.
+  interactive-init-manifest.md: Records validation evidence for the interactive initializer and strict manifest contract.
   windows-self-upgrade.md: Records Windows replacement, rollback, cleanup, native build, CI, and XDocs validation evidence.
 documents:
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
   citty-cli-migration.md: Validation evidence for TypeScript, tests, native assets, npm packaging, CLI behavior, and XDocs.
+  interactive-init-manifest.md: Validation evidence for the RunX interactive init manifest feature.
   npm-trusted-publishing-0.2.2.md: Validation evidence for the blocked 0.2.2 npm trusted-publishing retry.
   windows-self-upgrade.md: Validation evidence for GitHub issues #9 and #1 and the Windows self-upgrade patch.
 tags:
@@ -17,6 +19,8 @@ tags:
 keywords:
   - runx
   - citty
+  - runx init
+  - scripts directory
   - tests
   - summary
   - windows self-upgrade

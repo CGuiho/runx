@@ -5,9 +5,11 @@ parent: runx-reviews
 children: []
 files:
   citty-cli-migration-review.md: Reviews the implemented Citty command tree, compatibility adapter, tests, documentation, packaging, and release readiness.
+  interactive-init-manifest-review.md: Reviews the implemented RunX initializer, strict manifest contract, tests, documentation, and delivery readiness.
   windows-self-upgrade-review.md: Reviews synchronous Windows replacement, rollback, cleanup, tests, CI coverage, and release readiness.
 documents:
   citty-cli-migration-review.md: Accepted implementation review for the full Citty CLI migration.
+  interactive-init-manifest-review.md: Accepted implementation review for the RunX interactive init manifest feature.
   windows-self-upgrade-review.md: Accepted implementation review for the Windows native self-upgrade fix.
 tags:
   - reviews
@@ -15,6 +17,8 @@ tags:
 keywords:
   - runx
   - citty
+  - runx init
+  - scripts directory
   - implementation review
   - windows self-upgrade
 flags: []
