@@ -16,6 +16,12 @@ owner: runx
 
 # RunX Agent
 
+## Agent
+
+Always read this: /c/GUIHO/superiority/agents/guiho-a-0001-swe.AGENTS.md (C:\GUIHO\superiority\agents\guiho-a-0001-swe.AGENTS.md)
+Stop if you can not find it.
+
+
 ## Repository Notes
 
 - RunX is the open-source `@guiho/runx` Bun/TypeScript CLI for a documented,
