@@ -7,6 +7,7 @@ flags:
   - approved
   - breaking-change
   - implementation-ready
+  - implemented
 tags:
   - planning
   - cli
