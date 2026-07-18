@@ -8,11 +8,7 @@ import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { readVersion } from './help.js'
 
-type CliResult = {
-  exitCode: number
-  stdout: string
-  stderr: string
-}
+type CliResult = { exitCode: number, stdout: string, stderr: string }
 
 const directories: string[] = []
 const cliPath = Bun.fileURLToPath(new URL('./guiho-runx-bin.ts', import.meta.url))
@@ -21,248 +17,128 @@ afterEach(async () => {
   await Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })))
 })
 
-describe('RunX Citty CLI', () => {
-  test('shows version and root help without discovering a manifest', async () => {
-    const cwd = await emptyDirectory()
-
-    for (const flag of ['-v', '--version']) {
-      const result = await cli([flag], cwd)
-      expect(result.exitCode).toBe(0)
-      expect(result.stdout.trim()).toBe(readVersion())
-      expect(result.stderr).toBe('')
-    }
-
-    for (const flag of ['-h', '--help']) {
-      const result = await cli([flag], cwd)
-      expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('USAGE')
-      expect(result.stdout).toContain('runx [OPTIONS]')
-      expect(result.stderr).toBe('')
-    }
+describe('RunX RFC 0034 CLI', () => {
+  test('prints exact banner and manifest-free help/version', async () => {
+    const cwd = await temporaryDirectory()
+    expect((await cli([], cwd)).stdout).toBe(`Hello Windows - runx v${readVersion()}\n`)
+    for (const flag of ['-v', '--version']) expect((await cli([flag], cwd)).stdout.trim()).toBe(readVersion())
+    for (const flag of ['-h', '--help']) expect((await cli([flag], cwd)).stdout).toContain('USAGE')
   })
 
-  test('shows the home page, help tree, and documentation without a manifest', async () => {
-    const cwd = await emptyDirectory()
-    const home = await cli([], cwd)
-    const tree = await cli(['--help-tree'], cwd)
-    const docs = await cli(['--help-docs'], cwd)
-
-    expect(home.exitCode).toBe(0)
-    expect(home.stdout).toContain(`RunX ${readVersion()}`)
-    expect(tree.exitCode).toBe(0)
-    expect(tree.stdout).toContain('|- agents')
-    expect(docs.exitCode).toBe(0)
-    expect(docs.stdout).toContain('Manifest: runx.yaml')
-  })
-
-  test('renders Citty help for every public command and nested route', async () => {
-    const cwd = await emptyDirectory()
+  test('renders every public scope with all Developer Context help modes', async () => {
+    const cwd = await temporaryDirectory()
     const paths = [
-      ['list'],
-      ['describe'],
-      ['run'],
-      ['r'],
-      ['check'],
-      ['init'],
-      ['agents'],
-      ['agents', 'install'],
-      ['agents', 'instructions'],
-      ['upgrade'],
-      ['upgrade', 'check'],
-      ['upgrade', 'list'],
-      ['uninstall'],
+      [], ['list'], ['describe'], ['run'], ['check'], ['init'], ['agent'],
+      ['agent', 'skill'], ['agent', 'skill', 'install'], ['agent', 'skill', 'uninstall'],
+      ['agent', 'skill', 'update'], ['agent', 'skill', 'list'], ['agent', 'skill', 'show'],
+      ['agent', 'instruction'], ['agent', 'instruction', 'apply'], ['agent', 'instruction', 'remove'],
+      ['agent', 'instruction', 'update'], ['agent', 'instruction', 'show'],
+      ['agent', 'prompt'], ['agent', 'prompt', 'list'], ['agent', 'prompt', 'show'],
+      ['upgrade'], ['upgrade', 'check'], ['upgrade', 'list'], ['uninstall'],
     ]
-
     for (const path of paths) {
-      const result = await cli([...path, '--help'], cwd)
-      expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('USAGE')
-      expect(result.stdout).toContain(`runx ${path.join(' ')}`)
-      expect(result.stderr).toBe('')
+      expect((await cli([...path, '--help'], cwd)).stdout).toContain('USAGE')
+      expect((await cli([...path, '--help-tree'], cwd)).stdout).toStartWith('COMMAND TREE\n\n')
+      expect((await cli([...path, '--help-docs'], cwd)).stdout).toStartWith(`# runx${path.length ? ` ${path.join(' ')}` : ''}\n`)
     }
+    const depth = await cli(['agent', '--help-tree-depth', '1'], cwd)
+    expect(depth.stdout).toContain('├── skill')
+    expect(depth.stdout).not.toContain('install')
+    expect((await cli(['--help-tree-depth', '0'], cwd)).exitCode).toBe(2)
+  }, 30_000)
+
+  test('uses exact YAML precedence and reports the loaded absolute path', async () => {
+    const cwd = await temporaryDirectory()
+    const home = await temporaryDirectory()
+    const explicit = join(cwd, 'selected.yaml')
+    await Bun.write(join(cwd, 'runx.yaml'), manifest('cwd-command'))
+    await Bun.write(explicit, manifest('explicit-command'))
+    await Bun.write(join(home, '.guiho', 'runx', 'runx.yaml'), manifest('global-command'))
+
+    const selected = await cli(['list', '--config', explicit, '--format', 'json'], cwd, home)
+    expect(selected.exitCode).toBe(0)
+    expect(selected.stderr).toBe(`configuration file loaded: ${explicit}\n`)
+    expect(JSON.parse(selected.stdout).manifest.commands[0].uid).toBe('explicit-command')
+
+    const local = await cli(['list', '--format', 'json'], cwd, home)
+    expect(JSON.parse(local.stdout).manifest.commands[0].uid).toBe('cwd-command')
   })
 
-  test('lists, checks, and describes a manifest with text and JSON output', async () => {
-    const cwd = await projectDirectory()
-    const manifestPath = join(cwd, 'runx.yaml')
-    const list = await cli(['--file', manifestPath, 'list', '--format', 'json'], cwd)
-    const check = await cli(['check', '--file', manifestPath], cwd)
-    const describe = await cli(['describe', 'dev-start', '--file', manifestPath, '--format=json'], cwd)
-
-    expect(list.exitCode).toBe(0)
-    expect(JSON.parse(list.stdout).manifest.commands).toHaveLength(3)
-    expect(check.exitCode).toBe(0)
-    expect(check.stdout).toContain('valid: true')
-    expect(JSON.parse(describe.stdout).uid).toBe('dev-start')
+  test('does not search parents and maps configuration errors to exit 3', async () => {
+    const parent = await temporaryDirectory()
+    const child = join(parent, 'child')
+    await Bun.write(join(parent, 'runx.yaml'), manifest('parent-command'))
+    await Bun.write(join(child, '.keep'), '')
+    expect((await cli(['list'], child, await temporaryDirectory())).exitCode).toBe(3)
+    await Bun.write(join(child, 'runx.yaml'), 'version: [')
+    expect((await cli(['check'], child)).exitCode).toBe(3)
   })
 
-  test('lists and checks an empty initialized manifest without execution', async () => {
-    const cwd = await emptyDirectory()
-    await Bun.write(join(cwd, 'runx.yaml'), emptyManifest())
-
-    const list = await cli(['list', '--cwd', cwd], cwd)
-    const check = await cli(['check', '--cwd', cwd], cwd)
-
-    expect(list.exitCode).toBe(0)
-    expect(list.stdout).toContain('RunX commands from')
-    expect(check.exitCode).toBe(0)
-    expect(check.stdout).toContain('commands: 0')
+  test('keeps inspection and dry-run read-only while preserving delegated exit codes', async () => {
+    const cwd = await temporaryDirectory()
+    await Bun.write(join(cwd, 'runx.yaml'), manifest('selected', 'exit 7'))
+    expect((await cli(['list'], cwd)).stdout).not.toContain('Running selected')
+    expect((await cli(['run', 'selected', '--dry-run'], cwd)).exitCode).toBe(0)
+    expect((await cli(['run', 'selected'], cwd)).exitCode).toBe(7)
   })
 
-  test('runs the explicit command, alias, and root selector shorthand', async () => {
-    const cwd = await projectDirectory()
-    const manifestPath = join(cwd, 'runx.yaml')
-
-    for (const args of [
-      ['run', 'dev-start', '--file', manifestPath],
-      ['r', 'dev-start', '--file', manifestPath],
-      ['dev-start', '--file', manifestPath],
-    ]) {
-      const result = await cli(args, cwd)
-      expect(result.exitCode).toBe(0)
-      expect(result.stdout).toContain('Running dev-start')
-      expect(result.stdout).toContain('start')
+  test('rejects removed aliases, arbitrary short flags, unknown commands, and invalid enums', async () => {
+    const cwd = await temporaryDirectory()
+    await Bun.write(join(cwd, 'runx.yaml'), manifest('selected'))
+    for (const args of [['r', 'selected'], ['selected'], ['agents'], ['list', '--file', 'runx.yaml'], ['-x']]) {
+      expect((await cli(args, cwd)).exitCode).toBe(2)
     }
-
-    const prototypeNamedSelector = await cli(['constructor', '--file', manifestPath], cwd)
-    expect(prototypeNamedSelector.exitCode).toBe(0)
-    expect(prototypeNamedSelector.stdout).toContain('Running constructor')
+    expect((await cli(['list', '--format', 'xml'], cwd)).exitCode).toBe(2)
   })
 
-  test('keeps dry runs read-only and confirmation gates explicit', async () => {
-    const cwd = await projectDirectory()
-    const manifestPath = join(cwd, 'runx.yaml')
-    const dryRun = await cli(['run', 'confirmed', '--file', manifestPath, '--dry-run'], cwd)
-    const blocked = await cli(['run', 'confirmed', '--file', manifestPath], cwd)
-    const approved = await cli(['run', 'confirmed', '--file', manifestPath, '--yes'], cwd)
-
-    expect(dryRun.exitCode).toBe(0)
-    expect(dryRun.stdout).toContain('echo confirmed')
-    expect(dryRun.stdout).not.toContain('Running confirmed')
-    expect(blocked.exitCode).toBe(1)
-    expect(blocked.stderr).toContain('requires confirmation')
-    expect(approved.exitCode).toBe(0)
-    expect(approved.stdout).toContain('confirmed')
-  })
-
-  test('reports Citty usage for unknown options and missing arguments', async () => {
-    const cwd = await emptyDirectory()
-    const unknown = await cli(['--unknown-option'], cwd)
-    const missing = await cli(['describe'], cwd)
-    const nested = await cli(['agents', 'unknown'], cwd)
-
-    expect(unknown.exitCode).toBe(1)
-    expect(unknown.stderr).toContain('USAGE')
-    expect(unknown.stderr).toContain('Unknown option --unknown-option')
-    expect(unknown.stderr).not.toContain('No runx.yaml found')
-    expect(missing.exitCode).toBe(1)
-    expect(missing.stderr).toContain('runx describe')
-    expect(missing.stderr).toContain('Missing required positional argument: SELECTOR')
-    expect(nested.exitCode).toBe(1)
-    expect(nested.stderr).toContain('runx agents')
-    expect(nested.stderr).toContain('Unknown command')
-  })
-
-  test('keeps init interactive and rejects file or JSON targets without creating a manifest', async () => {
-    const cwd = await emptyDirectory()
-    const manifestPath = join(cwd, 'runx.yaml')
-
-    const nonInteractive = await cli(['init', '--cwd', cwd], cwd)
-    const explicitFile = await cli(['init', '--cwd', cwd, '--file', join(cwd, 'other.yaml')], cwd)
-    const json = await cli(['init', '--cwd', cwd, '--format', 'json'], cwd)
-
-    expect(nonInteractive.exitCode).toBe(1)
-    expect(nonInteractive.stderr).toContain('requires an interactive terminal')
-    expect(explicitFile.exitCode).toBe(1)
-    expect(explicitFile.stderr).toContain('does not support --file')
-    expect(json.exitCode).toBe(1)
-    expect(json.stderr).toContain('does not support --format json')
-    expect(await Bun.file(manifestPath).exists()).toBe(false)
-  })
-
-  test('routes local agent installation and managed instructions', async () => {
-    const cwd = await emptyDirectory()
-    const install = await cli(['agents', 'install', 'local', '--cwd', cwd, '--tool', 'all', '--format', 'json'], cwd)
-    const instructions = await cli(['agents', 'instructions', '--cwd', cwd, '--format=json'], cwd)
-    const installed = JSON.parse(install.stdout).installed as string[]
-
-    expect(install.exitCode).toBe(0)
-    expect(installed).toHaveLength(2)
+  test('implements local dual-tool skills, instructions, and raw prompts idempotently', async () => {
+    const cwd = await temporaryDirectory()
+    expect((await cli(['agent', 'skill', 'install', '--local', '--cwd', cwd], cwd)).exitCode).toBe(0)
     expect(await Bun.file(join(cwd, '.agents', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(true)
     expect(await Bun.file(join(cwd, '.claude', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(true)
-    expect(instructions.exitCode).toBe(0)
-    expect(await Bun.file(join(cwd, 'AGENTS.md')).text()).toContain('BEGIN RUNX AGENT INSTRUCTIONS')
+    await Bun.write(join(cwd, 'AGENTS.md'), '# Agent\n')
+    await Bun.write(join(cwd, 'CLAUDE.md'), '# Claude\n')
+    await cli(['agent', 'instruction', 'apply', '--cwd', cwd], cwd)
+    await cli(['agent', 'instruction', 'update', '--cwd', cwd], cwd)
+    for (const name of ['AGENTS.md', 'CLAUDE.md']) {
+      const text = await Bun.file(join(cwd, name)).text()
+      expect(text.match(/BEGIN RUNX — DO NOT EDIT THIS SECTION/g)).toHaveLength(1)
+    }
+    expect((await cli(['agent', 'prompt', 'list', '--names'], cwd)).stdout.trim()).toBe('[\n  "guiho-i-runx"\n]')
+    expect((await cli(['agent', 'prompt', 'show', 'guiho-i-runx'], cwd)).stdout).toContain('# RunX Agent Instruction')
   })
 })
 
-async function cli(args: string[], cwd: string): Promise<CliResult> {
-  const subprocess = Bun.spawn([process.execPath, cliPath, ...args], {
+async function cli(args: string[], cwd: string, home = cwd): Promise<CliResult> {
+  const child = Bun.spawn([process.execPath, cliPath, ...args], {
     cwd,
-    env: { ...process.env, NO_COLOR: '1', FORCE_COLOR: '0' },
+    env: { ...process.env, HOME: home, USERPROFILE: home, NO_COLOR: '1', FORCE_COLOR: '0', RUNX_DISABLE_UPDATE_WORKER: '1' },
     stdout: 'pipe',
     stderr: 'pipe',
   })
-  const [exitCode, stdout, stderr] = await Promise.all([
-    subprocess.exited,
-    new Response(subprocess.stdout).text(),
-    new Response(subprocess.stderr).text(),
-  ])
+  const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
   return { exitCode, stdout, stderr }
 }
 
-async function emptyDirectory(): Promise<string> {
-  const directory = await mkdtemp(join(tmpdir(), 'runx-cli-'))
+async function temporaryDirectory(): Promise<string> {
+  const directory = await mkdtemp(join(tmpdir(), 'runx-rfc-'))
   directories.push(directory)
   return directory
 }
 
-async function projectDirectory(): Promise<string> {
-  const directory = await emptyDirectory()
-  await Bun.write(join(directory, 'runx.yaml'), manifest())
-  return directory
-}
-
-function manifest(): string {
+function manifest(uid: string, command = 'echo safe'): string {
   return `version: "1.0.0"
 scripts:
   directory: scripts
 groups:
   public:
-    summary: Default public project commands.
-  development:
-    summary: Development commands.
+    summary: Public commands.
 commands:
-  - uid: dev-start
-    id: start
-    group: development
-    summary: Start development.
-    description: Starts local development.
-    command: echo start
-  - uid: confirmed
-    id: confirmed
-    group: development
-    summary: Run a confirmed command.
-    description: Exercises the confirmation gate.
-    command: echo confirmed
-    confirm: always
-  - uid: constructor
-    id: constructor
-    group: development
-    summary: Exercise selector compatibility.
-    description: Verifies that object prototype names remain valid selectors.
-    command: echo constructor
-`
-}
-
-function emptyManifest(): string {
-  return `version: "1.0.0"
-project:
-  name: initialized-project
-scripts:
-  directory: scripts
-groups:
-  public:
-    summary: Default public project commands.
-commands: []
+  - uid: ${uid}
+    id: selected
+    group: public
+    summary: Selected command.
+    description: Selected command for tests.
+    command: ${command}
 `
 }
