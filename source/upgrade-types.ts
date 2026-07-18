@@ -2,7 +2,7 @@
  * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
-export type UpgradeOs = 'windows' | 'macos' | 'linux'
+export type UpgradeOs = 'windows' | 'darwin' | 'linux'
 export type UpgradeArch = 'x64' | 'arm64'
 export type UpgradeVariant = 'baseline' | 'default' | 'modern'
 
