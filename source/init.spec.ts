@@ -2,106 +2,32 @@
  * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, expect, test } from 'bun:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { createInitialManifest, initializeRunXManifest, renderInitialManifest } from './init.js'
-import { readManifest } from './manifest.js'
+import { initializeRunXManifest } from './init.js'
 
-import type { RunXInitPrompter } from './init.js'
-
-const directories: string[] = []
+let directory = ''
 
 afterEach(async () => {
-  await Promise.all(directories.splice(0).map((directory) => rm(directory, { recursive: true, force: true })))
+  if (directory) await rm(directory, { recursive: true, force: true })
+  directory = ''
 })
 
-describe('RunX initialization', () => {
-  test('creates the exact empty manifest without creating the scripts directory', async () => {
-    const root = await projectDirectory()
-    const prompter = fakePrompter(['sample-project', 'scripts'], [true])
-
-    const result = await initializeRunXManifest({ cwd: root, isInteractive: true, prompter })
-    const path = join(root, 'runx.yaml')
-
-    expect(result).toEqual({ status: 'created', path, manifest: createInitialManifest('sample-project', 'scripts') })
-    expect(await Bun.file(path).text()).toBe(renderInitialManifest(createInitialManifest('sample-project', 'scripts')))
-    expect(await Bun.file(join(root, 'scripts')).exists()).toBe(false)
-    await expect(readManifest(root)).resolves.toMatchObject({ manifest: { commands: [], groups: { public: { summary: 'Default public project commands.' } } } })
-    expect(prompter.previews).toEqual([renderInitialManifest(createInitialManifest('sample-project', 'scripts'))])
-    expect(prompter.closed).toBe(1)
-  })
-
-  test('leaves no manifest when the user cancels', async () => {
-    const root = await projectDirectory()
-    const prompter = fakePrompter([undefined], [])
-
-    await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter })).resolves.toEqual({ status: 'cancelled' })
-    expect(await Bun.file(join(root, 'runx.yaml')).exists()).toBe(false)
-    expect(prompter.cancelled).toEqual(['Initialization cancelled. No files were changed.'])
-    expect(prompter.closed).toBe(1)
-  })
-
-  test('preserves an existing manifest until overwrite is explicitly confirmed', async () => {
-    const root = await projectDirectory()
-    const path = join(root, 'runx.yaml')
-    await Bun.write(path, 'version: "1.0.0"\n')
-
-    const rejected = fakePrompter([], [false])
-    await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter: rejected })).resolves.toEqual({ status: 'cancelled' })
-    expect(await Bun.file(path).text()).toBe('version: "1.0.0"\n')
-    expect(rejected.closed).toBe(1)
-
-    const accepted = fakePrompter(['replaced-project', 'automation'], [true, true])
-    await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter: accepted })).resolves.toMatchObject({ status: 'created', path })
-    await expect(readManifest(root)).resolves.toMatchObject({ manifest: { project: { name: 'replaced-project' }, scripts: { directory: 'automation' } } })
-    expect(accepted.closed).toBe(1)
-  })
-
-  test('closes the prompter when an interactive prompt throws', async () => {
-    const root = await projectDirectory()
-    const prompter = fakePrompter([], [])
-    prompter.text = async () => {
-      throw new Error('Prompt failed.')
-    }
-
-    await expect(initializeRunXManifest({ cwd: root, isInteractive: true, prompter })).rejects.toThrow('Prompt failed.')
-    expect(prompter.closed).toBe(1)
-    expect(await Bun.file(join(root, 'runx.yaml')).exists()).toBe(false)
-  })
+test('init creates only the selected YAML configuration', async () => {
+  directory = await mkdtemp(join(tmpdir(), 'runx-init-'))
+  const result = await initializeRunXManifest({ cwd: directory, config: 'catalog/runx.yaml' })
+  expect(result.status).toBe('created')
+  expect(result.path).toBe(join(directory, 'catalog', 'runx.yaml'))
+  expect(Bun.YAML.parse(await Bun.file(result.path).text()).commands).toEqual([])
+  expect(await Bun.file(join(directory, 'runx.toml')).exists()).toBe(false)
+  expect(await Bun.file(join(directory, 'runx.json')).exists()).toBe(false)
 })
 
-type FakePrompter = RunXInitPrompter & { previews: string[], cancelled: string[], readonly closed: number }
-
-const fakePrompter = (textValues: Array<string | undefined>, confirmationValues: Array<boolean | undefined>): FakePrompter => {
-  const previews: string[] = []
-  const cancelled: string[] = []
-  let closed = 0
-  return {
-    previews,
-    cancelled,
-    get closed() {
-      return closed
-    },
-    intro: () => undefined,
-    text: async (options) => {
-      const value = textValues.shift()
-      if (value !== undefined) expect(options.validate(value)).toBeUndefined()
-      return value
-    },
-    confirm: async () => confirmationValues.shift(),
-    preview: (manifest) => previews.push(manifest),
-    cancel: (message) => cancelled.push(message),
-    outro: () => undefined,
-    close: () => {
-      closed += 1
-    },
-  }
-}
-
-const projectDirectory = async (): Promise<string> => {
-  const directory = await mkdtemp(join(tmpdir(), 'runx-init-'))
-  directories.push(directory)
-  return directory
-}
+test('init refuses to overwrite an existing configuration', async () => {
+  directory = await mkdtemp(join(tmpdir(), 'runx-init-'))
+  await Bun.write(join(directory, 'runx.yaml'), 'existing')
+  await expect(initializeRunXManifest({ cwd: directory })).rejects.toThrow('already exists')
+  expect(await Bun.file(join(directory, 'runx.yaml')).text()).toBe('existing')
+})
