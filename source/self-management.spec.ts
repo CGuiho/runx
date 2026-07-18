@@ -3,6 +3,7 @@ import { chmod, mkdtemp, readdir, rename, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { upgradeSelf, validateNativeBinary } from './self-management.js'
+import { readVersion } from './help.js'
 
 const directories: string[] = []
 const originalFetch = globalThis.fetch
@@ -27,7 +28,7 @@ describe('RunX self-management', () => {
       outcome: 'failed',
       plan: null,
       result: null,
-      recovery: { targetVersion: '0.2.7', targetSource: 'fallback-current' },
+      recovery: { targetVersion: readVersion(), targetSource: 'fallback-current' },
       error: { code: 'release_lookup_failed', phase: 'plan' },
     })
     expect(result.recovery.stopProcessCommand).toMatch(/runx/)
@@ -113,7 +114,7 @@ describe('RunX self-management', () => {
     expect(result.outcome).toBe('rolled-back')
     expect(result.error?.phase).toBe('verify')
     expect(result.error?.code).toBe('verification_failed')
-    expect(result.result?.installedVersion).toBe('0.2.7')
+    expect(result.result?.installedVersion).toBe(readVersion())
     expect(await Bun.file(executablePath).bytes()).toEqual(originalBytes)
     expect((await readdir(directory)).some((name) => name.includes('.new-') || name.includes('.old-'))).toBe(false)
   })
@@ -209,7 +210,7 @@ describe('RunX self-management', () => {
   test('validates the native magic for the selected operating system', () => {
     expect(() => validateNativeBinary(new Uint8Array([0x4d, 0x5a]), 'windows')).not.toThrow()
     expect(() => validateNativeBinary(new Uint8Array([0x7f, 0x45, 0x4c, 0x46]), 'linux')).not.toThrow()
-    expect(() => validateNativeBinary(new Uint8Array([0xcf, 0xfa, 0xed, 0xfe]), 'macos')).not.toThrow()
+    expect(() => validateNativeBinary(new Uint8Array([0xcf, 0xfa, 0xed, 0xfe]), 'darwin')).not.toThrow()
     expect(() => validateNativeBinary(new Uint8Array([0x3c, 0x68, 0x74, 0x6d]), 'windows')).toThrow('not a native')
   })
 
@@ -235,7 +236,6 @@ describe('RunX self-management', () => {
       } finally {
         runningExecutable.kill()
         await runningExecutable.exited
-        await waitForOldRemoval(directory)
       }
     }, 15_000)
   }
@@ -284,7 +284,7 @@ const releaseFixture = (version: string, prerelease: boolean) => ({
 })
 
 const currentAssetName = (): string => {
-  const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux'
+  const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux'
   const suffix = process.platform === 'win32' ? '.exe' : ''
   return process.arch === 'arm64' ? `runx-${os}-arm64${suffix}` : `runx-${os}-x64-baseline${suffix}`
 }
@@ -300,12 +300,4 @@ const executableVersion = async (executablePath: string): Promise<string> => {
   const [stdout, exitCode] = await Promise.all([new Response(child.stdout).text(), child.exited])
   if (exitCode !== 0) throw new Error(`Replacement verification exited with code ${exitCode}`)
   return stdout.trim()
-}
-
-const waitForOldRemoval = async (directory: string): Promise<void> => {
-  for (let attempt = 0; attempt < 100; attempt += 1) {
-    if (!(await readdir(directory)).some((name) => name.includes('.old-'))) return
-    await Bun.sleep(100)
-  }
-  throw new Error(`Timed out waiting for cleanup in ${directory}`)
 }
