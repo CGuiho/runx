@@ -12,7 +12,7 @@
     }
   },
   "bin": {
-    "runx": "scripts/runx-bin.ts"
+    "runx": "scripts/runx-bin.mjs"
   },
   "files": [
     "library/",
@@ -57,6 +57,7 @@
     "build": "rm -rf library && tsc -p .",
     "binary": "bun build source/guiho-runx-native-bin.ts --compile --outfile bin/runx",
     "binaries": "bun run devops/build-binaries.ts",
+    "verify-assets": "bun run devops/verify-release-assets.ts",
     "test": "bun test",
     "typecheck": "tsc -p . --noEmit",
     "check": "bun run typecheck && bun test",
