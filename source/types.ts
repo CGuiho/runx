@@ -30,9 +30,3 @@ export type UpdateResult = {
   updateAvailable: boolean
   url?: string
 }
-
-export type RunXUpgradeResult = UpdateResult & {
-  executablePath: string
-  scheduled: boolean
-  upToDate: boolean
-}
