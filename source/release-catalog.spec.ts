@@ -29,7 +29,7 @@ describe('release catalog', () => {
     const unavailable = (async () => new Response('no', { status: 503 })) as typeof fetch
     const malformed = (async () => Response.json({ releases: [] })) as typeof fetch
     await expect(fetchReleaseCatalog({ currentVersion: '1.0.0', os: 'linux', arch: 'x64', variant: 'baseline', fetchImpl: unavailable })).rejects.toThrow('HTTP 503')
-    await expect(fetchReleaseCatalog({ currentVersion: '1.0.0', os: 'linux', arch: 'x64', variant: 'baseline', fetchImpl: malformed })).rejects.toThrow('malformed response')
+    await expect(fetchReleaseCatalog({ currentVersion: '1.0.0', os: 'linux', arch: 'x64', variant: 'baseline', fetchImpl: malformed })).rejects.toThrow('malformed release')
   })
 
   test('uses the shared candidate policy', () => {
@@ -38,7 +38,7 @@ describe('release catalog', () => {
       'runx-linux-x64',
       'runx-linux-x64-baseline',
     ])
-    expect(assetCandidates({ os: 'macos', arch: 'arm64', variant: 'baseline' })).toEqual(['runx-macos-arm64'])
+    expect(assetCandidates({ os: 'darwin', arch: 'arm64', variant: 'baseline' })).toEqual(['runx-darwin-arm64'])
     expect(normalizeReleaseVersion('v2.0.0-rc.1')).toBe('2.0.0-rc.1')
   })
 })
