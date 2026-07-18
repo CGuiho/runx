@@ -45,7 +45,7 @@ parse_args() {
   done
 }
 
-detect_os() { case "$(uname -s)" in Linux) printf 'linux\n' ;; Darwin) printf 'macos\n' ;; *) fail "unsupported OS: $(uname -s)" ;; esac; }
+detect_os() { case "$(uname -s)" in Linux) printf 'linux\n' ;; Darwin) printf 'darwin\n' ;; *) fail "unsupported OS: $(uname -s)" ;; esac; }
 detect_arch() {
   detected=${ARCH_OVERRIDE:-$(uname -m)}
   case "$detected" in x64|x86_64|amd64) printf 'x64\n' ;; arm64|aarch64) printf 'arm64\n' ;; *) fail "unsupported architecture: $detected" ;; esac
@@ -101,7 +101,7 @@ build_candidates() {
 verify_native_binary() {
   magic=$(od -An -tx1 -N4 "$1" 2>/dev/null | tr -d ' \n')
   case "$OS:$magic" in
-    linux:7f454c46|macos:cffaedfe|macos:cefaedfe|macos:cafebabe|macos:feedfacf|macos:feedface) return 0 ;;
+    linux:7f454c46|darwin:cffaedfe|darwin:cefaedfe|darwin:cafebabe|darwin:feedfacf|darwin:feedface) return 0 ;;
     *) return 1 ;;
   esac
 }
@@ -148,9 +148,9 @@ download_asset() {
   output=$2
   set +e
   if [ -n "$DOWNLOAD_BASE_URL" ]; then
-    http_code=$(curl --location --silent --show-error --output "$output" --write-out '%{http_code}' "$url")
+    http_code=$(curl --location --progress-bar --show-error --output "$output" --write-out '%{http_code}' "$url")
   else
-    http_code=$(curl --location --silent --show-error --proto '=https' --tlsv1.2 --output "$output" --write-out '%{http_code}' "$url")
+    http_code=$(curl --location --progress-bar --show-error --proto '=https' --tlsv1.2 --output "$output" --write-out '%{http_code}' "$url")
   fi
   curl_exit=$?
   set -e
@@ -181,16 +181,58 @@ install_transactional() {
   [ "$original_moved" = false ] || rm -f -- "$backup"
 }
 
+install_agent_assets() {
+  tag_base=${DOWNLOAD_BASE_URL:-"https://github.com/${REPO}/releases/download"}
+  skill_url="${tag_base%/}/${encoded_tag}/guiho-s-runx"
+  prompt_url="${tag_base%/}/${encoded_tag}/guiho-i-runx"
+  printf 'Downloading skill asset: %s\n' "$skill_url"
+  download_asset "$skill_url" "$TMP/guiho-s-runx" || fail 'could not download guiho-s-runx'
+  printf 'Downloading instruction asset: %s\n' "$prompt_url"
+  download_asset "$prompt_url" "$TMP/guiho-i-runx" || fail 'could not download guiho-i-runx'
+  for skill_root in "$HOME/.agents/skills/guiho-s-runx" "$HOME/.claude/skills/guiho-s-runx"; do
+    mkdir -p -- "$skill_root"
+    install -m 0644 "$TMP/guiho-s-runx" "$skill_root/SKILL.md"
+    printf 'Installed skill: %s\n' "$skill_root/SKILL.md"
+  done
+  targets=""
+  [ ! -f AGENTS.md ] || targets="AGENTS.md"
+  [ ! -f CLAUDE.md ] || targets="${targets}${targets:+ }CLAUDE.md"
+  [ -n "$targets" ] || targets="AGENTS.md"
+  for instruction_file in $targets; do
+    printf 'Reconciling instruction file: %s\n' "$instruction_file"
+    clean_file="$TMP/instruction-clean"
+    if [ -f "$instruction_file" ]; then
+      awk '
+        $0 == "<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->" { managed=1; next }
+        $0 == "<!-- END RUNX -->" { managed=0; next }
+        !managed { print }
+      ' "$instruction_file" >"$clean_file"
+    else
+      : >"$clean_file"
+    fi
+    {
+      cat "$clean_file"
+      [ ! -s "$clean_file" ] || printf '\n'
+      printf '<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->\n'
+      cat "$TMP/guiho-i-runx"
+      printf '\n<!-- END RUNX -->\n'
+    } >"$instruction_file"
+  done
+}
+
 main() {
   parse_args "$@"
-  for command in curl date dirname grep install mktemp mv od rm sed tr uname; do require_command "$command"; done
+  for command in awk cat curl date dirname grep head install mktemp mv od rm sed tr uname; do require_command "$command"; done
   OS=$(detect_os); ARCH=$(detect_arch); TARGET_VERSION=$(resolve_target_version)
   TMP=$(mktemp -d "${TMPDIR:-/tmp}/runx-install.XXXXXX")
   mkdir -p -- "$INSTALL_DIR"
   destination="$INSTALL_DIR/runx"
   encoded_tag="%40guiho%2Frunx%40${TARGET_VERSION}"
   downloaded=""
-  printf 'Installing RunX %s  os=%s  arch=%s  path=%s\n' "$TARGET_VERSION" "$OS" "$ARCH" "$destination"
+  first_asset=$(build_candidates | head -n 1)
+  source_url="${DOWNLOAD_BASE_URL:-https://github.com/${REPO}/releases/download}/${encoded_tag}/${first_asset}"
+  printf 'Initiating GUIHO CLI Upgrade / Installation Sequence...\n'
+  printf 'Target Version: v%s\nArchitecture:   %s\nVariant:        %s\nSource URL:     %s\n' "$TARGET_VERSION" "$ARCH" "${VARIANT_OVERRIDE:-baseline}" "$source_url"
   build_candidates | while IFS= read -r asset; do printf '%s\n' "$asset"; done >"$TMP/candidates"
   while IFS= read -r asset; do
     if [ -n "$DOWNLOAD_BASE_URL" ]; then url="${DOWNLOAD_BASE_URL%/}/${encoded_tag}/${asset}"; else url="https://github.com/${REPO}/releases/download/${encoded_tag}/${asset}"; fi
@@ -208,7 +250,9 @@ main() {
   [ -n "$downloaded" ] || fail "no compatible RunX $TARGET_VERSION binary found at https://github.com/${REPO}/releases"
   printf 'Replacing...\n'
   install_transactional "$downloaded" "$destination"
+  install_agent_assets
   [ "${RUNX_SKIP_PATH_UPDATE:-0}" = 1 ] || ensure_path
+  printf 'Final verification: %s --version\n' "$destination"
   printf 'Installed and verified RunX %s at %s\n' "$TARGET_VERSION" "$destination"
 }
 
