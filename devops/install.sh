@@ -1,324 +1,215 @@
-#!/usr/bin/env bash
-#
-# Install GUIHO RunX as a native CLI binary from GitHub Releases.
-#
-set -Eeuo pipefail
+#!/usr/bin/env sh
+set -eu
 
 REPO="${RUNX_REPO:-CGuiho/runx}"
 VERSION="${RUNX_VERSION:-latest}"
 INSTALL_DIR="${RUNX_INSTALL_DIR:-$HOME/.local/bin}"
+DOWNLOAD_BASE_URL="${RUNX_DOWNLOAD_BASE_URL:-}"
 ARCH_OVERRIDE=""
 VARIANT_OVERRIDE=""
 OS=""
 ARCH=""
-CANDIDATES=()
+TARGET_VERSION=""
 TMP=""
 
-cleanup() {
-  if [[ -n "$TMP" ]]; then
-    rm -rf -- "$TMP"
-  fi
-}
-
-trap cleanup EXIT
+cleanup() { [ -z "$TMP" ] || rm -rf -- "$TMP"; }
+trap cleanup EXIT HUP INT TERM
+fail() { printf 'error: %s\n' "$*" >&2; exit 1; }
+require_command() { command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"; }
+require_value() { [ -n "${2:-}" ] || fail "$1 requires a value"; }
 
 usage() {
   cat <<EOF
-Install GUIHO RunX as a native CLI binary from GitHub Releases.
+Install GUIHO RunX as a verified native CLI binary from GitHub Releases.
 
-Usage: install.sh [flags]
+Usage: install.sh [--version VERSION] [--arch x64|arm64] [--variant baseline|default|modern] [--install-dir DIR]
 
-Flags:
-  -v, --version VERSION   Version to install (default: latest).
-                          Examples: latest, 0.1.1, @guiho/runx@0.1.1
-  --arch ARCH             Force architecture: x64 | arm64 (default: auto-detect)
-  --variant VARIANT       Force x64 variant: baseline | default | modern (default: baseline)
-  --install-dir DIR       Install directory (default: \$HOME/.local/bin)
-  -h, --help              Show this help
-
-Environment variables:
-  RUNX_VERSION            Same as --version
-  RUNX_REPO               GitHub repo (default: CGuiho/runx)
-  RUNX_INSTALL_DIR        Same as --install-dir
+VERSION may be an exact stable or prerelease version. The default is latest stable.
 EOF
 }
 
-fail() {
-  printf 'error: %s\n' "$*" >&2
-  exit 1
-}
-
-require_command() {
-  command -v "$1" >/dev/null 2>&1 || fail "required command not found: $1"
-}
-
-require_value() {
-  local option="$1"
-  local value="${2:-}"
-
-  [[ -n "$value" ]] || fail "$option requires a value"
-}
-
 parse_args() {
-  while [[ $# -gt 0 ]]; do
+  while [ "$#" -gt 0 ]; do
     case "$1" in
-      -v | --version)
-        require_value "$1" "${2:-}"
-        VERSION="$2"
-        shift 2
-        ;;
-      --version=*)
-        VERSION="${1#*=}"
-        shift
-        ;;
-      --arch)
-        require_value "$1" "${2:-}"
-        ARCH_OVERRIDE="$2"
-        shift 2
-        ;;
-      --arch=*)
-        ARCH_OVERRIDE="${1#*=}"
-        shift
-        ;;
-      --variant)
-        require_value "$1" "${2:-}"
-        VARIANT_OVERRIDE="$2"
-        shift 2
-        ;;
-      --variant=*)
-        VARIANT_OVERRIDE="${1#*=}"
-        shift
-        ;;
-      --install-dir)
-        require_value "$1" "${2:-}"
-        INSTALL_DIR="$2"
-        shift 2
-        ;;
-      --install-dir=*)
-        INSTALL_DIR="${1#*=}"
-        shift
-        ;;
-      -h | --help)
-        usage
-        exit 0
-        ;;
-      *)
-        fail "unknown flag: $1. Run with --help for usage."
-        ;;
+      -v|--version) require_value "$1" "${2:-}"; VERSION="$2"; shift 2 ;;
+      --version=*) VERSION=${1#*=}; shift ;;
+      --arch) require_value "$1" "${2:-}"; ARCH_OVERRIDE="$2"; shift 2 ;;
+      --arch=*) ARCH_OVERRIDE=${1#*=}; shift ;;
+      --variant) require_value "$1" "${2:-}"; VARIANT_OVERRIDE="$2"; shift 2 ;;
+      --variant=*) VARIANT_OVERRIDE=${1#*=}; shift ;;
+      --install-dir) require_value "$1" "${2:-}"; INSTALL_DIR="$2"; shift 2 ;;
+      --install-dir=*) INSTALL_DIR=${1#*=}; shift ;;
+      -h|--help) usage; exit 0 ;;
+      *) fail "unknown flag: $1" ;;
     esac
   done
 }
 
-detect_os() {
-  case "$(uname -s)" in
-    Linux) printf 'linux\n' ;;
-    Darwin) printf 'macos\n' ;;
-    *) fail "unsupported OS: $(uname -s)" ;;
-  esac
+detect_os() { case "$(uname -s)" in Linux) printf 'linux\n' ;; Darwin) printf 'macos\n' ;; *) fail "unsupported OS: $(uname -s)" ;; esac; }
+detect_arch() {
+  detected=${ARCH_OVERRIDE:-$(uname -m)}
+  case "$detected" in x64|x86_64|amd64) printf 'x64\n' ;; arm64|aarch64) printf 'arm64\n' ;; *) fail "unsupported architecture: $detected" ;; esac
 }
 
-detect_arch() {
-  if [[ -n "$ARCH_OVERRIDE" ]]; then
-    case "$ARCH_OVERRIDE" in
-      x64 | arm64) printf '%s\n' "$ARCH_OVERRIDE" ;;
-      *) fail "invalid --arch '$ARCH_OVERRIDE'. Must be x64 or arm64." ;;
-    esac
-    return
-  fi
-
-  case "$(uname -m)" in
-    x86_64 | amd64) printf 'x64\n' ;;
-    arm64 | aarch64) printf 'arm64\n' ;;
-    *) fail "unsupported architecture: $(uname -m)" ;;
+normalize_version() {
+  value=$1
+  value=${value#@guiho/runx@}
+  value=${value#v}
+  printf '%s\n' "$value" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$' || fail "invalid RunX version: $1"
+  case "$value" in
+    *-*)
+      prerelease=${value#*-}
+      prerelease=${prerelease%%+*}
+      old_ifs=$IFS
+      IFS=.
+      set -- $prerelease
+      IFS=$old_ifs
+      for identifier do
+        if printf '%s\n' "$identifier" | grep -Eq '^[0-9]+$'; then
+          case "$identifier" in 0|[1-9]*) ;; 0*) fail "invalid RunX version: $value" ;; esac
+        fi
+      done
+      ;;
   esac
+  printf '%s\n' "$value"
+}
+
+resolve_target_version() {
+  if [ "$VERSION" != latest ]; then normalize_version "$VERSION"; return; fi
+  printf 'Resolving latest stable RunX release...\n' >&2
+  effective=$(curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 --output /dev/null --write-out '%{url_effective}' "https://github.com/${REPO}/releases/latest")
+  tag=${effective##*/}
+  tag=$(printf '%s' "$tag" | sed 's/%40/@/g; s/%2[Ff]/\//g')
+  normalize_version "$tag"
 }
 
 build_candidates() {
-  local variant="${VARIANT_OVERRIDE:-baseline}"
-
-  if [[ "$ARCH" == "arm64" ]]; then
-    [[ -z "$VARIANT_OVERRIDE" ]] || fail "--variant is only valid for x64 installs"
-    CANDIDATES=("runx-${OS}-arm64")
+  variant=${VARIANT_OVERRIDE:-baseline}
+  if [ "$ARCH" = arm64 ]; then
+    [ -z "$VARIANT_OVERRIDE" ] || fail '--variant is only valid for x64 installs'
+    printf 'runx-%s-arm64\n' "$OS"
     return
   fi
-
   case "$variant" in
-    baseline)
-      CANDIDATES=("runx-${OS}-x64-baseline" "runx-${OS}-x64" "runx-${OS}-x64-modern")
-      ;;
-    default)
-      CANDIDATES=("runx-${OS}-x64" "runx-${OS}-x64-baseline" "runx-${OS}-x64-modern")
-      ;;
-    modern)
-      CANDIDATES=("runx-${OS}-x64-modern" "runx-${OS}-x64" "runx-${OS}-x64-baseline")
-      ;;
-    *)
-      fail "invalid --variant '$variant'. Must be baseline, default, or modern."
-      ;;
+    baseline) printf 'runx-%s-x64-baseline\nrunx-%s-x64\nrunx-%s-x64-modern\n' "$OS" "$OS" "$OS" ;;
+    default) printf 'runx-%s-x64\nrunx-%s-x64-baseline\nrunx-%s-x64-modern\n' "$OS" "$OS" "$OS" ;;
+    modern) printf 'runx-%s-x64-modern\nrunx-%s-x64\nrunx-%s-x64-baseline\n' "$OS" "$OS" "$OS" ;;
+    *) fail "invalid variant: $variant" ;;
   esac
-}
-
-build_url() {
-  local asset="$1"
-
-  if [[ "$VERSION" == "latest" ]]; then
-    printf 'https://github.com/%s/releases/latest/download/%s\n' "$REPO" "$asset"
-    return
-  fi
-
-  local tag
-  case "$VERSION" in
-    @guiho/runx@*) tag="$VERSION" ;;
-    @*) tag="$VERSION" ;;
-    *) tag="@guiho/runx@${VERSION}" ;;
-  esac
-
-  local encoded_tag="${tag//@/%40}"
-  encoded_tag="${encoded_tag//\//%2F}"
-  printf 'https://github.com/%s/releases/download/%s/%s\n' "$REPO" "$encoded_tag" "$asset"
 }
 
 verify_native_binary() {
-  local path="$1"
-  local magic2
-  local magic4
-
-  magic2="$(LC_ALL=C head -c 2 "$path" 2>/dev/null || true)"
-  magic4="$(LC_ALL=C head -c 4 "$path" 2>/dev/null || true)"
-
-  case "$magic4" in
-    $'\177ELF' | $'\xcf\xfa\xed\xfe' | $'\xce\xfa\xed\xfe' | $'\xca\xfe\xba\xbe') return 0 ;;
-    '<!DO' | '<htm') return 1 ;;
-  esac
-
-  case "$magic2" in
-    MZ) return 0 ;;
-    '#!') return 1 ;;
-  esac
-
-  return 2
-}
-
-shell_profile_path() {
-  local shell_name="${SHELL##*/}"
-
-  case "$shell_name" in
-    fish) printf '%s/.config/fish/config.fish\n' "$HOME" ;;
-    zsh) printf '%s/.zshrc\n' "$HOME" ;;
-    bash)
-      if [[ "$OS" == "macos" && -f "$HOME/.bash_profile" ]]; then
-        printf '%s/.bash_profile\n' "$HOME"
-      else
-        printf '%s/.bashrc\n' "$HOME"
-      fi
-      ;;
-    *) printf '%s/.profile\n' "$HOME" ;;
-  esac
-}
-
-path_contains_install_dir() {
-  case ":$PATH:" in
-    *:"$INSTALL_DIR":*) return 0 ;;
+  magic=$(od -An -tx1 -N4 "$1" 2>/dev/null | tr -d ' \n')
+  case "$OS:$magic" in
+    linux:7f454c46|macos:cffaedfe|macos:cefaedfe|macos:cafebabe|macos:feedfacf|macos:feedface) return 0 ;;
     *) return 1 ;;
   esac
 }
 
-append_path_to_profile() {
-  local profile="$1"
-  local shell_name="${SHELL##*/}"
-
-  if [[ "$shell_name" == "fish" ]]; then
-    mkdir -p "$HOME/.config/fish"
-    if [[ -f "$profile" ]] && grep -Fq "$INSTALL_DIR" "$profile"; then
-      return 0
+verify_installed_version() {
+  verify_output=$(mktemp "${TMPDIR:-/tmp}/runx-version.XXXXXX") || return 1
+  "$1" --version >"$verify_output" 2>&1 &
+  verify_pid=$!
+  verify_waited=0
+  while kill -0 "$verify_pid" 2>/dev/null; do
+    if [ "$verify_waited" -ge 10 ]; then
+      kill "$verify_pid" 2>/dev/null || true
+      wait "$verify_pid" 2>/dev/null || true
+      rm -f -- "$verify_output"
+      printf 'error: installed RunX version check timed out after 10 seconds\n' >&2
+      return 1
     fi
-    printf '\n# Added by runx installer\nfish_add_path %q\n' "$INSTALL_DIR" >>"$profile"
-    return 0
+    sleep 1
+    verify_waited=$((verify_waited + 1))
+  done
+  if ! wait "$verify_pid"; then
+    cat "$verify_output" >&2
+    rm -f -- "$verify_output"
+    return 1
   fi
-
-  if [[ -f "$profile" ]] && grep -Fq "$INSTALL_DIR" "$profile"; then
-    return 0
-  fi
-
-  printf '\n# Added by runx installer\nexport PATH=%q:\$PATH\n' "$INSTALL_DIR" >>"$profile"
+  actual=$(cat "$verify_output")
+  rm -f -- "$verify_output"
+  [ "$actual" = "$TARGET_VERSION" ] || { printf 'error: installed RunX reported %s; expected %s\n' "${actual:-<empty>}" "$TARGET_VERSION" >&2; return 1; }
 }
 
 ensure_path() {
-  export PATH="$INSTALL_DIR:$PATH"
-
-  if path_contains_install_dir; then
-    printf 'runx: %s is available in PATH for this installer process.\n' "$INSTALL_DIR"
+  PATH="$INSTALL_DIR:$PATH"; export PATH
+  profile="$HOME/.profile"
+  case "${SHELL##*/}" in zsh) profile="$HOME/.zshrc" ;; bash) profile="$HOME/.bashrc" ;; fish) profile="$HOME/.config/fish/config.fish" ;; esac
+  mkdir -p -- "$(dirname "$profile")"
+  if ! grep -Fq "$INSTALL_DIR" "$profile" 2>/dev/null; then
+    if [ "${SHELL##*/}" = fish ]; then printf '\n# Added by runx installer\nfish_add_path %s\n' "$INSTALL_DIR" >>"$profile"
+    else printf '\n# Added by runx installer\nexport PATH=%s:$PATH\n' "$INSTALL_DIR" >>"$profile"; fi
   fi
-
-  local profile
-  profile="$(shell_profile_path)"
-  append_path_to_profile "$profile"
-
-  printf 'runx: ensured %s is added to PATH in %s\n' "$INSTALL_DIR" "$profile"
-  printf 'runx: restart your terminal, or run this for the current shell:\n'
-  printf '  export PATH=%q:\$PATH\n' "$INSTALL_DIR"
 }
 
-check_shadowing() {
-  local installed="$INSTALL_DIR/runx"
-  local resolved
-
-  resolved="$(command -v runx 2>/dev/null || true)"
-  [[ -n "$resolved" ]] || return 0
-  [[ "$resolved" == "$installed" ]] && return 0
-
-  printf '\nwarning: another runx appears earlier in PATH:\n' >&2
-  printf '  %s\n' "$resolved" >&2
-  printf 'The newly installed binary is at:\n' >&2
-  printf '  %s\n' "$installed" >&2
+download_asset() {
+  url=$1
+  output=$2
+  set +e
+  if [ -n "$DOWNLOAD_BASE_URL" ]; then
+    http_code=$(curl --location --silent --show-error --output "$output" --write-out '%{http_code}' "$url")
+  else
+    http_code=$(curl --location --silent --show-error --proto '=https' --tlsv1.2 --output "$output" --write-out '%{http_code}' "$url")
+  fi
+  curl_exit=$?
+  set -e
+  [ "$curl_exit" -eq 0 ] || fail "download failed for $url (curl exit $curl_exit)"
+  case "$http_code" in
+    404) return 44 ;;
+    2??) return 0 ;;
+    *) fail "download failed for $url (HTTP $http_code)" ;;
+  esac
 }
 
-install_binary() {
-  TMP="$(mktemp -d)"
-
-  for asset in "${CANDIDATES[@]}"; do
-    local url
-    url="$(build_url "$asset")"
-    printf '  Trying %s\n' "$url"
-
-    if curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 "$url" --output "$TMP/runx"; then
-      if ! verify_native_binary "$TMP/runx"; then
-        printf '  %s was not a native binary, trying next candidate...\n' "$asset" >&2
-        continue
-      fi
-
-      mkdir -p "$INSTALL_DIR"
-      install -m 0755 "$TMP/runx" "$INSTALL_DIR/runx"
-      printf 'Installed runx to %s/runx\n' "$INSTALL_DIR"
-      ensure_path
-      check_shadowing
-      printf 'Run: runx --help\n'
-      return 0
-    fi
-
-    printf '  not available, trying next...\n'
-  done
-
-  fail "no compatible runx binary found. Check available assets at: https://github.com/${REPO}/releases"
+install_transactional() {
+  source_path=$1
+  destination=$2
+  backup="${destination}.old.$$.$(date +%s)"
+  original_moved=false
+  if [ -e "$destination" ]; then mv -- "$destination" "$backup" || fail "could not back up existing RunX at $destination"; original_moved=true; fi
+  if ! install -m 0755 "$source_path" "$destination"; then
+    [ "$original_moved" = false ] || mv -- "$backup" "$destination" || fail "installation and automatic rollback both failed; backup remains at $backup"
+    fail 'installation failed; the previous executable was restored'
+  fi
+  printf 'Verifying...\n'
+  if ! verify_installed_version "$destination"; then
+    rm -f -- "$destination"
+    [ "$original_moved" = false ] || mv -- "$backup" "$destination" || fail "verification and automatic rollback both failed; backup remains at $backup"
+    fail 'installation verification failed; the previous executable was restored'
+  fi
+  [ "$original_moved" = false ] || rm -f -- "$backup"
 }
 
 main() {
   parse_args "$@"
-  require_command curl
-  require_command grep
-  require_command head
-  require_command install
-  require_command mktemp
-  require_command uname
-
-  OS="$(detect_os)"
-  ARCH="$(detect_arch)"
-  build_candidates
-
-  local variant_label=""
-  [[ -z "$VARIANT_OVERRIDE" ]] || variant_label=" variant=${VARIANT_OVERRIDE}"
-  printf 'runx: %s  os=%s  arch=%s%s\n' "$VERSION" "$OS" "$ARCH" "$variant_label"
-  install_binary
+  for command in curl date dirname grep install mktemp mv od rm sed tr uname; do require_command "$command"; done
+  OS=$(detect_os); ARCH=$(detect_arch); TARGET_VERSION=$(resolve_target_version)
+  TMP=$(mktemp -d "${TMPDIR:-/tmp}/runx-install.XXXXXX")
+  mkdir -p -- "$INSTALL_DIR"
+  destination="$INSTALL_DIR/runx"
+  encoded_tag="%40guiho%2Frunx%40${TARGET_VERSION}"
+  downloaded=""
+  printf 'Installing RunX %s  os=%s  arch=%s  path=%s\n' "$TARGET_VERSION" "$OS" "$ARCH" "$destination"
+  build_candidates | while IFS= read -r asset; do printf '%s\n' "$asset"; done >"$TMP/candidates"
+  while IFS= read -r asset; do
+    if [ -n "$DOWNLOAD_BASE_URL" ]; then url="${DOWNLOAD_BASE_URL%/}/${encoded_tag}/${asset}"; else url="https://github.com/${REPO}/releases/download/${encoded_tag}/${asset}"; fi
+    candidate="$TMP/$asset"
+    printf 'Downloading %s\n' "$url"
+    if download_asset "$url" "$candidate"; then :; else
+      status=$?
+      if [ "$status" -eq 44 ]; then printf '  %s is not available; trying the next compatible candidate.\n' "$asset"; continue; fi
+      exit "$status"
+    fi
+    verify_native_binary "$candidate" || fail "downloaded asset $asset is not a native $OS executable"
+    downloaded=$candidate
+    break
+  done <"$TMP/candidates"
+  [ -n "$downloaded" ] || fail "no compatible RunX $TARGET_VERSION binary found at https://github.com/${REPO}/releases"
+  printf 'Replacing...\n'
+  install_transactional "$downloaded" "$destination"
+  [ "${RUNX_SKIP_PATH_UPDATE:-0}" = 1 ] || ensure_path
+  printf 'Installed and verified RunX %s at %s\n' "$TARGET_VERSION" "$destination"
 }
 
 main "$@"
