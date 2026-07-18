@@ -1,57 +1,53 @@
 /**
- * @copyright Copyright (c) 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
- *
- * Build release binaries for the supported RunX platform matrix.
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
-import { mkdir, rm, stat } from 'node:fs/promises'
-import { join } from 'node:path'
-import { fileURLToPath } from 'node:url'
+import { $ } from 'bun'
+import { joinPath } from '../source/path-utils.js'
+
+export {
+  agentAssetNames,
+  binaryTargets,
+  expectedReleaseAssetNames,
+}
 
 type BinaryTarget = {
   readonly bunTarget: string
   readonly assetName: string
 }
 
-const targets: readonly BinaryTarget[] = [
+const binaryTargets: readonly BinaryTarget[] = [
   { bunTarget: 'bun-linux-arm64', assetName: 'runx-linux-arm64' },
   { bunTarget: 'bun-linux-x64', assetName: 'runx-linux-x64' },
   { bunTarget: 'bun-linux-x64-baseline', assetName: 'runx-linux-x64-baseline' },
   { bunTarget: 'bun-linux-x64-modern', assetName: 'runx-linux-x64-modern' },
-  { bunTarget: 'bun-darwin-arm64', assetName: 'runx-macos-arm64' },
-  { bunTarget: 'bun-darwin-x64', assetName: 'runx-macos-x64' },
-  { bunTarget: 'bun-darwin-x64-baseline', assetName: 'runx-macos-x64-baseline' },
-  { bunTarget: 'bun-darwin-x64-modern', assetName: 'runx-macos-x64-modern' },
+  { bunTarget: 'bun-darwin-arm64', assetName: 'runx-darwin-arm64' },
+  { bunTarget: 'bun-darwin-x64', assetName: 'runx-darwin-x64' },
+  { bunTarget: 'bun-darwin-x64-baseline', assetName: 'runx-darwin-x64-baseline' },
+  { bunTarget: 'bun-darwin-x64-modern', assetName: 'runx-darwin-x64-modern' },
   { bunTarget: 'bun-windows-arm64', assetName: 'runx-windows-arm64.exe' },
   { bunTarget: 'bun-windows-x64', assetName: 'runx-windows-x64.exe' },
   { bunTarget: 'bun-windows-x64-baseline', assetName: 'runx-windows-x64-baseline.exe' },
   { bunTarget: 'bun-windows-x64-modern', assetName: 'runx-windows-x64-modern.exe' },
 ]
 
-const expectedAssetCount = 12
-const assetNames = targets.map((target) => target.assetName)
-const uniqueAssetNames = new Set(assetNames)
+const agentAssetNames = ['guiho-s-runx', 'guiho-i-runx'] as const
+const expectedReleaseAssetNames = [...binaryTargets.map((target) => target.assetName), ...agentAssetNames]
 
-if (targets.length !== expectedAssetCount) {
-  throw new Error(`Expected ${expectedAssetCount} binary targets, found ${targets.length}`)
+if (expectedReleaseAssetNames.length !== 14 || new Set(expectedReleaseAssetNames).size !== 14) {
+  throw new Error('RunX release matrix must contain exactly fourteen unique assets.')
 }
 
-if (uniqueAssetNames.size !== assetNames.length) {
-  throw new Error('Binary target matrix contains duplicate asset names')
-}
+if (import.meta.main) {
+  const root = Bun.fileURLToPath(new URL('..', import.meta.url))
+  const bin = joinPath(root, 'bin')
+  await $`rm -rf ${bin}`.quiet()
+  await $`mkdir -p ${bin}`.quiet()
 
-const root = fileURLToPath(new URL('..', import.meta.url))
-const binDirectory = join(root, 'bin')
-const bunExecutable = process.execPath
-
-await rm(binDirectory, { recursive: true, force: true })
-await mkdir(binDirectory, { recursive: true })
-
-const builds = targets.map(async (target) => {
-  const outputPath = join(binDirectory, target.assetName)
-  const proc = Bun.spawn({
-    cmd: [
-      bunExecutable,
+  for (const target of binaryTargets) {
+    const output = joinPath(bin, target.assetName)
+    const child = Bun.spawn([
+      process.execPath,
       'build',
       'source/guiho-runx-native-bin.ts',
       '--compile',
@@ -61,39 +57,25 @@ const builds = targets.map(async (target) => {
       '--target',
       target.bunTarget,
       '--outfile',
-      outputPath,
-    ],
-    cwd: root,
-    stdout: 'pipe',
-    stderr: 'pipe',
-  })
-
-  const [stdout, stderr, exitCode] = await Promise.all([
-    new Response(proc.stdout).text(),
-    new Response(proc.stderr).text(),
-    proc.exited,
-  ])
-
-  if (exitCode !== 0) {
-    throw new Error([
-      `Failed to build ${target.bunTarget} -> ${target.assetName}`,
-      stdout.trim(),
-      stderr.trim(),
-    ].filter(Boolean).join('\n'))
+      output,
+    ], { cwd: root, stdout: 'pipe', stderr: 'pipe' })
+    const [stdout, stderr, exitCode] = await Promise.all([
+      new Response(child.stdout).text(),
+      new Response(child.stderr).text(),
+      child.exited,
+    ])
+    if (exitCode !== 0) throw new Error([`Failed to build ${target.assetName}`, stdout, stderr].filter(Boolean).join('\n'))
+    if ((await Bun.file(output).size) === 0) throw new Error(`Built binary is empty: ${target.assetName}`)
+    process.stdout.write(`built: ${target.assetName}\n`)
   }
 
-  process.stdout.write(`built: ${target.bunTarget} -> bin/${target.assetName}\n`)
-})
+  await Bun.write(joinPath(bin, 'guiho-s-runx'), Bun.file(joinPath(root, 'skills', 'guiho-s-runx', 'SKILL.md')))
+  await Bun.write(joinPath(bin, 'guiho-i-runx'), Bun.file(joinPath(root, 'prompts', 'guiho-i-runx.md')))
 
-await Promise.all(builds)
-
-for (const target of targets) {
-  const outputPath = join(binDirectory, target.assetName)
-  const output = await stat(outputPath)
-
-  if (output.size === 0) {
-    throw new Error(`Built binary is empty: bin/${target.assetName}`)
+  const observed = [...new Bun.Glob('*').scanSync({ cwd: bin, onlyFiles: true })].sort()
+  const expected = [...expectedReleaseAssetNames].sort()
+  if (JSON.stringify(observed) !== JSON.stringify(expected)) {
+    throw new Error(`Release asset mismatch.\nExpected: ${expected.join(', ')}\nObserved: ${observed.join(', ')}`)
   }
+  process.stdout.write('verified exactly 14 release assets\n')
 }
-
-process.stdout.write(`verified ${targets.length} native binary assets\n`)
