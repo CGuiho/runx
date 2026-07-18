@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.4.1 - 2026-07-18
+
+### Fixed
+
+- Fixed `runx upgrade` so its required `--version`, `--arch`, `--variant`,
+  `--dry-run`, and `--format` flags route to the upgrade action instead of
+  being hidden by the command group or intercepted as the root version flag.
+- Fixed no-argument startup so a decoded cached update notice is printed before
+  the exact RunX banner without waiting for network work.
+- Fixed `runx agent prompt list --names` text output so it prints raw prompt
+  names, one per line, while JSON mode remains structured.
+
 ## 0.4.0 - 2026-07-18
 
 ### Added
