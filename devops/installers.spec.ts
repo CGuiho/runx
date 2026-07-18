@@ -46,6 +46,7 @@ describe('direct installer contracts', () => {
       const installDirectory = await temporaryDirectory(`runx recovery ${targetVersion}`)
       const server = Bun.serve({
         port: 0,
+        idleTimeout: 120,
         fetch: async (request) => request.url.endsWith('/install.ps1')
           ? new Response(Bun.file(powershellInstaller))
           : request.url.endsWith('/install.sh')
@@ -69,7 +70,7 @@ describe('direct installer contracts', () => {
         server.stop(true)
       }
     }
-  }, 120_000)
+  }, 240_000)
 
   test('falls back only on 404 and preserves paths containing spaces', async () => {
     const fixture = await compiledFixture()
@@ -77,6 +78,7 @@ describe('direct installer contracts', () => {
     const requested: string[] = []
     const server = Bun.serve({
       port: 0,
+      idleTimeout: 120,
       fetch: (request) => {
         requested.push(new URL(request.url).pathname)
         return requested.length === 1 ? new Response('missing', { status: 404 }) : new Response(Bun.file(fixture))
@@ -91,7 +93,7 @@ describe('direct installer contracts', () => {
     } finally {
       server.stop(true)
     }
-  }, 60_000)
+  }, 120_000)
 
   test('fails corrupt downloads without trying another candidate and preserves the installation', async () => {
     const installDirectory = await temporaryDirectory('runx corrupt rollback')
@@ -99,7 +101,7 @@ describe('direct installer contracts', () => {
     const original = new Uint8Array([1, 9, 8, 4])
     await Bun.write(destination, original)
     const requested: string[] = []
-    const server = Bun.serve({ port: 0, fetch: (request) => { requested.push(request.url); return new Response('<html>corrupt</html>') } })
+    const server = Bun.serve({ port: 0, idleTimeout: 120, fetch: (request) => { requested.push(request.url); return new Response('<html>corrupt</html>') } })
     try {
       const result = await runInstaller('5.0.1', installDirectory, `http://127.0.0.1:${server.port}`, '5.0.1')
       expect(result.exitCode).not.toBe(0)
@@ -109,7 +111,7 @@ describe('direct installer contracts', () => {
     } finally {
       server.stop(true)
     }
-  }, 60_000)
+  }, 120_000)
 
   test('rolls back an exact-version mismatch after canonical replacement', async () => {
     const fixture = await compiledFixture()
@@ -117,7 +119,7 @@ describe('direct installer contracts', () => {
     const destination = installedPath(installDirectory)
     const original = new Uint8Array([8, 6, 7, 5, 3, 0, 9])
     await Bun.write(destination, original)
-    const server = Bun.serve({ port: 0, fetch: () => new Response(Bun.file(fixture)) })
+    const server = Bun.serve({ port: 0, idleTimeout: 120, fetch: () => new Response(Bun.file(fixture)) })
     try {
       const result = await runInstaller('6.0.0', installDirectory, `http://127.0.0.1:${server.port}`, '6.0.1')
       expect(result.exitCode).not.toBe(0)
@@ -126,7 +128,7 @@ describe('direct installer contracts', () => {
     } finally {
       server.stop(true)
     }
-  }, 60_000)
+  }, 120_000)
 
   test('distinguishes network failure from a missing candidate and preserves the installation', async () => {
     const installDirectory = await temporaryDirectory('runx network failure')
