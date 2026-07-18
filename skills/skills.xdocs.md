@@ -16,4 +16,4 @@ flags: []
 status: stable
 ---
 
-Bundled skills ship with RunX and can be installed through `runx agents install`.
+Bundled skills ship with RunX and can be managed through `runx agent skill`.
