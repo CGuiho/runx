@@ -4,10 +4,11 @@ description: Native release-asset compilation and direct RunX installer scripts.
 parent: runx
 children: []
 files:
-  build-binaries.ts: Cross-compiles supported Bun native executable assets.
-  installers.spec.ts: Compiles a controlled native fixture and executes stable/prerelease recovery, 404 fallback, network/corrupt failures, space paths, exact verification, and rollback on the current platform while keeping PowerShell checks portable on Ubuntu.
+  build-binaries.ts: Cross-compiles twelve RFC-named native binaries and adds the two exact agent assets.
+  verify-release-assets.ts: Fails on any missing, duplicate, extra, or legacy release asset name.
+  installers.spec.ts: Verifies both installers expose progress, validation, dual-tool skills, instruction reconciliation, and no POSIX Bun dependency.
   install.ps1: Resolves an exact Windows release, downloads and validates a compatible asset, transactionally replaces the canonical executable, verifies its version, and rolls back on failure.
-  install.sh: POSIX-sh installer that resolves an exact macOS or Linux release, distinguishes 404 fallback from download/corrupt failures, transactionally installs, verifies, and rolls back.
+  install.sh: POSIX installer for Linux or Darwin with progress, validation, PATH, dual skills, instructions, verification, and rollback.
 documents: {}
 tags:
   - devops
@@ -16,11 +17,12 @@ tags:
 keywords:
   - runx
   - windows
-  - macos
+  - darwin
   - linux
   - native binary
 flags: []
 status: stable
 ---
 
-These scripts support direct native installation without an npm publication.
+These scripts build and verify the exact fourteen-asset release and support
+direct installation without npm or Bun.
