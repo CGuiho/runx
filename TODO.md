@@ -25,11 +25,11 @@ owner: runx
 
 | Status | Count |
 | --- | ---: |
-| todo | 1 |
+| todo | 0 |
 | in progress | 1 |
 | testing | 0 |
 | stopped | 0 |
-| completed | 0 |
+| completed | 1 |
 
 ## Tasks
 
@@ -44,11 +44,12 @@ owner: runx
 
 ### 1. Migrate RunX To Full RFC 0034 Compliance
 
-- Status: todo
+- Status: completed
 - Created: `2026-07-18T18:48:11+02:00`
-- Updated: `2026-07-18T18:48:11+02:00`
+- Updated: `2026-07-18`
 - Outcome: RunX fully implements the breaking GUIHO RFC 0034 CLI contract across runtime, configuration, help, agent integration, upgrades, installers, npm distribution, release assets, tests, and documentation.
 - Spec: [docs/todo/rfc-0034-cli-compliance-migration.md](docs/todo/rfc-0034-cli-compliance-migration.md)
 - Related files:
   - [docs/plans/rfc-0034-cli-compliance-migration.md](docs/plans/rfc-0034-cli-compliance-migration.md) - Approved step-by-step migration plan.
   - [docs/reviews/plans/rfc-0034-cli-compliance-migration-review.md](docs/reviews/plans/rfc-0034-cli-compliance-migration-review.md) - Ready-for-execution plan review.
+- Implementation: [docs/todo/rfc-0034-cli-compliance-migration-implementation.md](docs/todo/rfc-0034-cli-compliance-migration-implementation.md)
