@@ -13,10 +13,14 @@ Usage:
   runx run <selector> [--dry-run] [--yes]
   runx r <selector> [--dry-run] [--yes]
   runx <selector>
+  runx upgrade [--dry-run] [--format <text|json>]
+  runx upgrade list [--format <text|json>]
 
 Start here:
   runx init                 Interactively create an empty runx.yaml catalog.
   runx list                 List every command in the nearest manifest.
+  runx upgrade              Install and verify the latest stable native release.
+  runx upgrade list         List all stable and prerelease releases.
   runx --help-tree          Show the complete command tree.
   runx --help-docs          Show manifest and agent documentation guidance.
 `
@@ -48,4 +52,6 @@ Selectors resolve in this order: UID, group/id, one-based index, then an unambig
 Use UID values for automation. Use runx describe <selector> and runx run <selector> --dry-run before unfamiliar execution.
 
 Agent skill: runx agents install local installs guiho-s-runx under .agents/skills.
+
+Native upgrades: runx upgrade prints its plan before download, verifies the canonical executable, rolls back failure, and always prints a pinned recovery install command.
 `
