@@ -2,12 +2,12 @@
  * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
-import { Buffer } from 'node:buffer'
-import { chmod, rename, rm } from 'node:fs/promises'
-import { basename } from 'node:path'
+import { $ } from 'bun'
 import { compare, gt, valid } from 'semver'
 import { RunXError } from './errors.js'
+import { applyAgentInstructions, updateAgentSkill } from './agents.js'
 import { readVersion } from './help.js'
+import { baseName } from './path-utils.js'
 import { fetchReleaseCatalog, resolveUpgradePlatform } from './release-catalog.js'
 import { createRecoveryInstructions } from './recovery.js'
 import type { ReleaseCatalog, ReleaseCatalogEntry, RecoveryInstructions, UpgradeEnvelope, UpgradeError, UpgradeErrorCode, UpgradeEvent, UpgradePhase, UpgradePlan, UpgradeResult } from './upgrade-types.js'
@@ -24,6 +24,9 @@ export type UpgradeFileOperations = {
 export type UpgradeSelfOptions = {
   dryRun: boolean
   currentVersion?: string
+  requestedVersion?: string
+  arch?: UpgradePlan['arch']
+  variant?: import('./upgrade-types.js').UpgradeVariant
   onPlan?: (plan: UpgradePlan) => void
   onEvent?: (event: UpgradeEvent) => void
   fileOperations?: UpgradeFileOperations
@@ -42,9 +45,28 @@ class UpgradeOperationError extends Error {
 }
 
 const defaultFileOperations: UpgradeFileOperations = {
-  rename: async (from, to) => rename(from, to),
-  remove: async (path) => rm(path, { force: true }),
-  makeExecutable: async (path) => chmod(path, 0o755),
+  rename: async (from, to) => {
+    if (process.platform === 'win32') {
+      const child = Bun.spawn(['cmd.exe', '/d', '/s', '/c', 'move', '/y', from, to], { stdout: 'pipe', stderr: 'pipe' })
+      const [code, error] = await Promise.all([child.exited, new Response(child.stderr).text()])
+      if (code !== 0) throw new Error(error.trim() || `Could not move ${from} to ${to}.`)
+      return
+    }
+    await $`mv ${from} ${to}`.quiet()
+  },
+  remove: async (path) => {
+    if (process.platform === 'win32') {
+      const child = Bun.spawn(['cmd.exe', '/d', '/s', '/c', 'del', '/f', '/q', path], { stdout: 'ignore', stderr: 'pipe' })
+      const [code, error] = await Promise.all([child.exited, new Response(child.stderr).text()])
+      if (code !== 0 && await Bun.file(path).exists()) throw new Error(error.trim() || `Could not remove ${path}.`)
+      return
+    }
+    await $`rm -f ${path}`.quiet()
+  },
+  makeExecutable: async (path) => {
+    if (process.platform === 'win32') return
+    await $`chmod 755 ${path}`.quiet()
+  },
 }
 
 const checkForLatestVersion = async (): Promise<UpdateResult> => {
@@ -67,7 +89,8 @@ const upgradeSelf = async (input: boolean | UpgradeSelfOptions): Promise<Upgrade
   const options: UpgradeSelfOptions = typeof input === 'boolean' ? { dryRun: input } : input
   const fileOperations = options.fileOperations ?? defaultFileOperations
   const currentVersion = options.currentVersion ?? readVersion()
-  const platform = resolveUpgradePlatform()
+  const detectedPlatform = resolveUpgradePlatform(process.platform, options.arch ?? process.arch)
+  const platform = { ...detectedPlatform, variant: options.variant ?? detectedPlatform.variant }
   const executablePath = resolveSelfExecutable()
   const events: UpgradeEvent[] = []
   let phase: UpgradePhase = 'plan'
@@ -92,7 +115,10 @@ const upgradeSelf = async (input: boolean | UpgradeSelfOptions): Promise<Upgrade
     } catch (error) {
       throw new UpgradeOperationError(classifyPlanError(error), errorMessage(error))
     }
-    const stableTarget = catalog.releases.find((release) => release.latestStable)
+    const requestedVersion = options.requestedVersion?.replace(/^@guiho\/runx@/, '').replace(/^v/, '')
+    const stableTarget = requestedVersion
+      ? catalog.releases.find((release) => release.version === requestedVersion)
+      : catalog.releases.find((release) => release.latestStable)
     if (!stableTarget || !catalog.latestStableVersion) throw new UpgradeOperationError('release_lookup_failed', 'No stable RunX release is available for upgrade.')
     const target = preventDowngrade(currentVersion, stableTarget, catalog.releases)
     const targetIsCurrent = target.version === currentVersion
@@ -113,7 +139,7 @@ const upgradeSelf = async (input: boolean | UpgradeSelfOptions): Promise<Upgrade
     emit('plan', 'succeeded')
     options.onPlan?.(plan)
 
-    if (basename(executablePath).toLowerCase().startsWith('bun')) {
+    if (baseName(executablePath).toLowerCase().startsWith('bun')) {
       throw new UpgradeOperationError('verification_failed', 'Self-management requires a native RunX executable installed from a GitHub release.')
     }
     if (targetIsCurrent) {
@@ -164,7 +190,14 @@ const upgradeSelf = async (input: boolean | UpgradeSelfOptions): Promise<Upgrade
       throw asOperationError('verification_failed', error)
     }
     emit('verify', 'succeeded')
-    emit('cache', 'skipped', 'RunX does not use an upgrade cache.')
+    emit('cache', 'started')
+    if (Bun.env.NODE_ENV === 'test') {
+      emit('cache', 'skipped', 'Agent reconciliation is isolated during tests.')
+    } else {
+      await updateAgentSkill('global', process.cwd())
+      await applyAgentInstructions(process.cwd())
+      emit('cache', 'succeeded', 'Agent skill and project instructions reconciled.')
+    }
 
     emit('cleanup', 'started')
     const cleanupDeferred = await cleanupBackup(replacement.backupPath, platform.os, fileOperations)
@@ -196,14 +229,14 @@ const upgradeSelf = async (input: boolean | UpgradeSelfOptions): Promise<Upgrade
 
 const uninstallSelf = async (dryRun: boolean): Promise<{ executablePath: string, scheduled: boolean, dryRun: boolean }> => {
   const executablePath = resolveSelfExecutable()
-  if (basename(executablePath).toLowerCase().startsWith('bun')) throw new RunXError('Self-management requires a native RunX executable installed from a GitHub release.')
+  if (baseName(executablePath).toLowerCase().startsWith('bun')) throw new RunXError('Self-management requires a native RunX executable installed from a GitHub release.')
   if (dryRun) return { executablePath, scheduled: false, dryRun: true }
   if (process.platform === 'win32') {
     const command = `ping 127.0.0.1 -n 2 > nul & del /f /q "${executablePath}"`
     Bun.spawn(['cmd.exe', '/d', '/s', '/c', command], { detached: true, stdout: 'ignore', stderr: 'ignore', stdin: 'ignore' })
     return { executablePath, scheduled: true, dryRun: false }
   }
-  await rm(executablePath)
+  await defaultFileOperations.remove(executablePath)
   return { executablePath, scheduled: false, dryRun: false }
 }
 
@@ -280,12 +313,11 @@ const cleanupBackup = async (backupPath: string, os: UpgradePlan['os'], operatio
 
 const scheduleWindowsBackupCleanup = (backupPath: string): void => {
   const command = 'for ($attempt = 0; $attempt -lt 300; $attempt += 1) { if (-not (Test-Path -LiteralPath $env:RUNX_BACKUP_PATH)) { exit 0 }; try { Remove-Item -LiteralPath $env:RUNX_BACKUP_PATH -Force -ErrorAction Stop; exit 0 } catch { Start-Sleep -Milliseconds 100 } }; exit 1'
-  const encodedCommand = Buffer.from(command, 'utf16le').toString('base64')
-  Bun.spawn(['cmd.exe', '/d', '/s', '/c', `powershell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encodedCommand}`], {
+  Bun.spawn(['powershell.exe', '-NoLogo', '-NoProfile', '-NonInteractive', '-WindowStyle', 'Hidden', '-Command', command], {
     detached: true,
     env: { ...process.env, RUNX_BACKUP_PATH: backupPath },
     stdout: 'ignore', stderr: 'ignore', stdin: 'ignore',
-  })
+  }).unref()
 }
 
 const validateNativeBinary = (bytes: Uint8Array, os: UpgradePlan['os']): void => {
