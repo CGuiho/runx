@@ -8,12 +8,14 @@ files:
   citty-cli-migration.md: Records the complete local validation gate for the Citty command-tree migration.
   interactive-init-manifest.md: Records validation evidence for the interactive initializer and strict manifest contract.
   windows-self-upgrade.md: Records Windows replacement, rollback, cleanup, native build, CI, and XDocs validation evidence.
+  upgrade-reliability.md: Tracks the superseded first pass and required revalidation after independent upgrade reliability review corrections.
 documents:
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
   citty-cli-migration.md: Validation evidence for TypeScript, tests, native assets, npm packaging, CLI behavior, and XDocs.
   interactive-init-manifest.md: Validation evidence for the RunX interactive init manifest feature.
   npm-trusted-publishing-0.2.2.md: Validation evidence for the blocked 0.2.2 npm trusted-publishing retry.
   windows-self-upgrade.md: Validation evidence for GitHub issues #9 and #1 and the Windows self-upgrade patch.
+  upgrade-reliability.md: Revalidation record for GitHub issues 12 and 13; currently marked needs-revalidation.
 tags:
   - validation
 keywords:
@@ -24,6 +26,7 @@ keywords:
   - tests
   - summary
   - windows self-upgrade
+  - upgrade reliability
 flags: []
 status: stable
 ---
