@@ -80,22 +80,28 @@ function Test-NativeBinary {
 
 function Test-InstalledVersion {
   param([string]$Path, [string]$ExpectedVersion)
-  $stdoutPath = [System.IO.Path]::GetTempFileName()
-  $stderrPath = [System.IO.Path]::GetTempFileName()
+  $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+  $startInfo.FileName = $Path
+  $startInfo.Arguments = '--version'
+  $startInfo.UseShellExecute = $false
+  $startInfo.CreateNoWindow = $true
+  $startInfo.RedirectStandardOutput = $true
+  $startInfo.RedirectStandardError = $true
+  $process = New-Object System.Diagnostics.Process
+  $process.StartInfo = $startInfo
   try {
-    $process = Start-Process -FilePath $Path -ArgumentList '--version' -PassThru -NoNewWindow -RedirectStandardOutput $stdoutPath -RedirectStandardError $stderrPath
+    if (-not $process.Start()) { throw 'Could not start installed RunX for version verification' }
     if (-not $process.WaitForExit(10000)) {
       $process.Kill()
       $process.WaitForExit()
       throw 'Installed RunX version check timed out after 10 seconds'
     }
-    $process.WaitForExit()
-    $stdout = ([string](Get-Content -LiteralPath $stdoutPath -Raw -ErrorAction SilentlyContinue)).Trim()
-    $stderr = ([string](Get-Content -LiteralPath $stderrPath -Raw -ErrorAction SilentlyContinue)).Trim()
+    $stdout = $process.StandardOutput.ReadToEnd().Trim()
+    $stderr = $process.StandardError.ReadToEnd().Trim()
     if ($process.ExitCode -ne 0) { throw "Installed RunX exited with code $($process.ExitCode) during verification: $stderr" }
     if ($stdout -ne $ExpectedVersion) { throw "Installed RunX reported $stdout; expected $ExpectedVersion" }
   } finally {
-    Remove-Item -LiteralPath $stdoutPath, $stderrPath -Force -ErrorAction SilentlyContinue
+    $process.Dispose()
   }
 }
 
