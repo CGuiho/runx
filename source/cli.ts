@@ -162,7 +162,14 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
 
   const promptList = leaf('runx agent prompt list', 'List bundled RunX prompts.', {
     names: { type: 'boolean', description: 'Print prompt names only.' }, format: catalogArgs.format,
-  }, () => writeFormatted(listAgentPrompts(Boolean(state.args.names)), state.args))
+  }, () => {
+    if (state.args.names) {
+      const names = listAgentPrompts(true)
+      write(options(state.args).format === 'json' ? renderJson(names) : `${names.join('\n')}\n`)
+      return
+    }
+    writeFormatted(listAgentPrompts(false), state.args)
+  })
   const promptShow = leaf('runx agent prompt show', 'Print one raw bundled prompt.', {
     id: { type: 'positional', description: 'Bundled prompt ID.' },
   }, async ({ args }) => {
@@ -172,14 +179,13 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
   const prompt = group('runx agent prompt', 'Inspect bundled agent prompts.', { list: promptList, show: promptShow }, state)
   const agent = group('runx agent', 'Manage RunX agent integration.', { skill, instruction, prompt }, state)
 
-  const upgradeApply = leaf('runx upgrade', 'Upgrade the canonical native RunX executable.', {
+  const upgradeArgs = {
     version: { type: 'string', valueHint: 'version', description: 'Select an exact release version.' },
     arch: { type: 'string', valueHint: 'x64|arm64', description: 'Select target architecture.' },
     variant: { type: 'string', valueHint: 'baseline|default|modern', description: 'Select x64 binary variant.' },
     'dry-run': { type: 'boolean', description: 'Plan without mutation.' },
     format: catalogArgs.format,
-  }, async () => runUpgrade(options(state.args), state.args))
-  upgradeApply.meta = { ...upgradeApply.meta, hidden: true }
+  } as const
   const upgradeCheck = leaf('runx upgrade check', 'Check whether a newer stable release exists.', {
     format: catalogArgs.format,
   }, async () => {
@@ -194,7 +200,14 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
     variant: { type: 'string', valueHint: 'baseline|default|modern', description: 'Select x64 variant.' },
     format: catalogArgs.format,
   }, async () => runUpgradeList(state.args))
-  const upgrade = group('runx upgrade', 'Inspect or upgrade a native RunX executable.', { _apply: upgradeApply, check: upgradeCheck, list: upgradeList }, state, '_apply')
+  const upgrade = defineCommand({
+    meta: { name: 'runx upgrade', description: 'Inspect or upgrade a native RunX executable.' },
+    args: { ...upgradeArgs, ...helpArgs },
+    subCommands: { check: upgradeCheck, list: upgradeList },
+    setup: helpSetup(state),
+    run: async () => runUpgrade(options(state.args), state.args),
+  })
+  state.commands.set('upgrade', upgrade)
   const uninstall = leaf('runx uninstall', 'Uninstall the native RunX executable.', {
     'dry-run': { type: 'boolean', description: 'Print the target without deleting it.' }, format: catalogArgs.format,
   }, async () => {
@@ -210,7 +223,9 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
       state.args = context.args as GlobalArgs
       state.command = resolveHelpCommand(state)
       await validateInvocation(state)
-      if (state.args.v || state.args.version === true) return handled(`${readVersion()}\n`)
+      if (context.rawArgs.length === 1 && ['-v', '--version'].includes(context.rawArgs[0] ?? '')) {
+        return handled(`${readVersion()}\n`)
+      }
       await handleHelp(state)
     },
     run: ({ args }) => {
@@ -278,9 +293,12 @@ async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> 
   }
   const { command, state } = createCommandTree()
   const cleanOutput = rawArgs.some((arg) => ['-h', '--help', '-v', '--version', '--help-tree', '--help-docs'].includes(arg) || arg.startsWith('--help-tree-depth'))
-  if (!cleanOutput && rawArgs.length > 0) {
+  if (!cleanOutput) {
     const notice = await readCachedUpdateNotice(rawArgs.includes('--verbose'))
-    if (notice) process.stderr.write(`${notice}\n`)
+    if (notice) {
+      if (rawArgs.length === 0) write(`${notice}\n`)
+      else process.stderr.write(`${notice}\n`)
+    }
   }
   spawnUpdateWorker()
   try {
