@@ -9,12 +9,14 @@ files:
   mirror-automatic-push-review.md: Reviews synchronized-main safeguards, read-only validation, protected delivery, and release side effects.
   npm-trusted-publishing-release-review.md: Reviews sequencing, acceptance criteria, safety gates, and validation for the RunX 0.2.1 trusted-publishing plan.
   windows-self-upgrade-review.md: Reviews synchronous replacement, rollback, regression coverage, issue closure, and patch delivery.
+  upgrade-reliability-implementation-review.md: Reviews execution readiness for complete release discovery, transactional upgrades, recovery, installers, and validation.
 documents:
   citty-cli-migration-review.md: Ready-for-execution review of the full Citty CLI migration plan.
   interactive-init-manifest-review.md: Ready-for-execution review of the RunX interactive init manifest plan.
   mirror-automatic-push-review.md: Ready-for-execution review of the Mirror automatic-push configuration plan.
   npm-trusted-publishing-release-review.md: Ready-for-execution review of the npm trusted-publishing release plan.
   windows-self-upgrade-review.md: Ready-for-execution review of the Windows native self-upgrade fix plan.
+  upgrade-reliability-implementation-review.md: Ready-for-execution review for GitHub issues 12 and 13.
 tags:
   - reviews
   - plans
