@@ -1,21 +1,24 @@
-import { existsSync } from 'node:fs'
+/**
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ */
+
 import type { ResolvedCommand } from './types.js'
-import { RunXError } from './errors.js'
 
-export const runCommand = async (command: ResolvedCommand): Promise<number> => {
-  if (!existsSync(command.cwd)) throw new RunXError(`Command working directory does not exist: ${command.cwd}`)
+export {
+  runCommand,
+}
 
-  const process = Bun.spawn(shellArguments(command), {
+async function runCommand(command: ResolvedCommand): Promise<number> {
+  const child = Bun.spawn(shellArguments(command), {
     cwd: command.cwd,
     stdin: 'inherit',
     stdout: 'inherit',
     stderr: 'inherit',
   })
-
-  return process.exited
+  return child.exited
 }
 
-const shellArguments = (command: ResolvedCommand): string[] => {
+function shellArguments(command: ResolvedCommand): string[] {
   switch (command.shell ?? 'auto') {
     case 'bash': return ['bash', '-lc', command.command]
     case 'sh': return ['sh', '-lc', command.command]
