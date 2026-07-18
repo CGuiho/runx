@@ -1,57 +1,79 @@
+/**
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ */
+
 import packageJson from '../package.json' with { type: 'json' }
 
-export const readVersion = (): string => typeof packageJson.version === 'string' ? packageJson.version : '0.0.0'
+import type { CommandDef } from 'citty'
 
-export const showHome = (): string => `RunX ${readVersion()}
+export {
+  readVersion,
+  renderHelpDocs,
+  renderHelpTree,
+}
 
-A documented, local command catalog for runx.yaml manifests.
+function readVersion(): string {
+  return typeof packageJson.version === 'string' ? packageJson.version : '0.0.0'
+}
 
-Usage:
-  runx init [--cwd <path>]
-  runx list [--file <path>] [--format <text|json>]
-  runx describe <selector>
-  runx run <selector> [--dry-run] [--yes]
-  runx r <selector> [--dry-run] [--yes]
-  runx <selector>
-  runx upgrade [--dry-run] [--format <text|json>]
-  runx upgrade list [--format <text|json>]
+function renderHelpTree(command: CommandDef<any>, depth = Number.POSITIVE_INFINITY): string {
+  const lines = ['COMMAND TREE', '', commandMeta(command).name ?? 'runx']
+  appendChildren(lines, command, '', depth)
+  return `${lines.join('\n')}\n`
+}
 
-Start here:
-  runx init                 Interactively create an empty runx.yaml catalog.
-  runx list                 List every command in the nearest manifest.
-  runx upgrade              Install and verify the latest stable native release.
-  runx upgrade list         List all stable and prerelease releases.
-  runx --help-tree          Show the complete command tree.
-  runx --help-docs          Show manifest and agent documentation guidance.
-`
+function appendChildren(lines: string[], command: CommandDef<any>, prefix: string, depth: number): void {
+  if (depth <= 0) return
+  const subCommands = Object.entries(command.subCommands ?? {}).filter(([name, child]) => !name.startsWith('_') && !commandMeta(child).hidden)
+  const flags = Object.entries(command.args ?? {}) as Array<[string, { type: string, valueHint?: string, description?: string }]>
+  const visibleFlags = flags.filter(([, value]) => value.type !== 'positional')
+  const nodes = [
+    ...subCommands.map(([name, child]) => ({ label: name, description: commandMeta(child).description ?? '', child })),
+    ...visibleFlags.map(([name, value]) => ({
+      label: `--${name}${value.type === 'string' ? ` <${value.valueHint ?? 'value'}>` : ''}`,
+      description: value.description ?? '',
+      child: null,
+    })),
+  ]
+  const width = Math.max(0, ...nodes.map((node) => node.label.length))
+  nodes.forEach((node, index) => {
+    const last = index === nodes.length - 1
+    lines.push(`${prefix}${last ? '└── ' : '├── '}${node.label.padEnd(width)}${node.description ? `  ${node.description}` : ''}`)
+    if (node.child) appendChildren(lines, node.child, `${prefix}${last ? '    ' : '│   '}`, depth - 1)
+  })
+}
 
-export const showHelpTree = (): string => [
-  'runx',
-  '|- list',
-  '|- describe <selector>',
-  '|- run <selector>',
-  '|  `- alias: r',
-  '|- check',
-  '|- init',
-  '|- agents',
-  '|  |- install <local|global>',
-  '|  `- instructions',
-  '|- upgrade [check|list]',
-  '`- uninstall',
-  '',
-].join('\n')
+function renderHelpDocs(command: CommandDef<any>): string {
+  const meta = commandMeta(command)
+  const name = meta.name ?? 'runx'
+  const description = meta.description ?? ''
+  const args = Object.entries(command.args ?? {}) as Array<[string, { type: string, valueHint?: string, description?: string }]>
+  const positionals = args.filter(([, value]) => value.type === 'positional')
+  const flags = args.filter(([, value]) => value.type !== 'positional')
+  const children = Object.entries(command.subCommands ?? {}).filter(([key, value]) => !key.startsWith('_') && !commandMeta(value).hidden)
+  const syntax = [
+    name,
+    ...positionals.map(([key]) => `<${key}>`),
+    children.length ? '<command>' : '',
+    flags.length ? '[options]' : '',
+  ].filter(Boolean).join(' ')
+  const lines = [`# ${name}`, '', description, '', '## Syntax', '', '```text', syntax, '```']
+  if (positionals.length) {
+    lines.push('', '## Positionals', '')
+    for (const [key, value] of positionals) lines.push(`- \`${key}\` — ${value.description ?? ''}`)
+  }
+  if (flags.length) {
+    lines.push('', '## Flags', '')
+    for (const [key, value] of flags) lines.push(`- \`--${key}${value.type === 'string' ? ` <${value.valueHint ?? 'value'}>` : ''}\` — ${value.description ?? ''}`)
+  }
+  if (children.length) {
+    lines.push('', '## Subcommands', '')
+    for (const [key, value] of children) lines.push(`- \`${key}\` — ${commandMeta(value).description ?? ''}`)
+  }
+  lines.push('', '## Examples', '', '```text', `${name} --help`, `${name} --help-tree`, `${name} --help-docs`, '```', '')
+  return lines.join('\n')
+}
 
-export const showHelpDocs = (): string => `RunX documentation
-
-Manifest: runx.yaml, discovered from the current directory upward or selected with --file.
-Create an empty catalog with runx init. Its manifest uses SemVer 1.x, configures a scripts directory, and always includes the public group.
-Required command fields: uid, id, group, summary, description, command.
-Optional command fields: cwd, shell, tags, confirm.
-
-Selectors resolve in this order: UID, group/id, one-based index, then an unambiguous ID.
-Use UID values for automation. Use runx describe <selector> and runx run <selector> --dry-run before unfamiliar execution.
-
-Agent skill: runx agents install local installs guiho-s-runx under .agents/skills.
-
-Native upgrades: runx upgrade prints its plan before download, verifies the canonical executable, rolls back failure, and always prints a pinned recovery install command.
-`
+function commandMeta(command: CommandDef<any>): { name?: string, description?: string, hidden?: boolean } {
+  return (command.meta ?? {}) as { name?: string, description?: string, hidden?: boolean }
+}
