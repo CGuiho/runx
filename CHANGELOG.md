@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.3.0 - 2026-07-18
+
+### Added
+
+- Added transactional executable replacement and automatic rollback for both Windows and POSIX updates with a bounded 10-second verification timeout.
+- Added a complete GitHub release catalog parser that paginates all releases and implements SemVer prerelease precedence.
+- Added structured JSON progress events and equivalent console phase reporting.
+- Added exact-version recovery commands and process-stop commands to every upgrade outcome.
+- Added hardened direct installers (`install.ps1`/`install.sh`) that verify the installed version and support rollback.
+
 ## 0.2.7 - 2026-07-15
 
 ### Added
