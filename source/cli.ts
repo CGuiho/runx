@@ -12,6 +12,7 @@ import { initializeRunXManifest } from './init.js'
 import { readManifest, resolveCommand } from './manifest.js'
 import { renderDescription, renderExecutionPlan, renderJson, renderList } from './render.js'
 import { checkForLatestVersion, listAvailableVersions, uninstallSelf, upgradeSelf } from './self-management.js'
+import { renderReleaseCatalog, renderUpgradeEvent, renderUpgradeHeading, renderUpgradePlan, renderUpgradeResult } from './upgrade-reporting.js'
 
 import type { CommandContext, CommandDef, SubCommandsDef } from 'citty'
 import type { AgentScope, AgentTool, CliOptions, OutputFormat } from './types.js'
@@ -190,7 +191,7 @@ const createCommandTree = (): { command: CommandDef<any>, state: CliState } => {
   })
 
   const upgradeListCommand = defineCommand({
-    meta: { name: 'runx upgrade list', description: 'List recent RunX release versions.' },
+    meta: { name: 'runx upgrade list', description: 'List every published RunX release, newest first.' },
     args: commonArgs,
     setup: withCommandHelp(state),
     run: async () => runUpgradeList(resolveOptions(state.globalArgs)),
@@ -446,15 +447,24 @@ async function runUpgradeCheck(options: CliOptions): Promise<void> {
 }
 
 async function runUpgradeList(options: CliOptions): Promise<void> {
-  const versions = await listAvailableVersions()
-  write(options.format === 'json' ? renderJson({ versions }) : `${versions.join('\n')}\n`)
+  const catalog = await listAvailableVersions()
+  write(options.format === 'json' ? renderJson(catalog) : renderReleaseCatalog(catalog))
 }
 
 async function runUpgrade(options: CliOptions, args: GlobalArgs): Promise<void> {
-  const result = await upgradeSelf(Boolean(args.dryRun))
-  if (options.format === 'json') return write(renderJson(result))
-  const summary = `current: ${result.currentVersion}\ntarget: ${result.latestVersion}\n`
-  write(result.upToDate ? `${summary}Already up to date.\n` : `${summary}path: ${result.executablePath}\n${result.scheduled ? 'scheduled: true\n' : ''}`)
+  const text = options.format === 'text'
+  if (text) write(renderUpgradeHeading())
+  const result = await upgradeSelf({
+    dryRun: Boolean(args.dryRun),
+    onPlan: text ? (plan) => write(renderUpgradePlan(plan)) : undefined,
+    onEvent: text ? (event) => write(renderUpgradeEvent(event)) : undefined,
+  })
+  if (!text) write(renderJson(result))
+  else write(renderUpgradeResult(result))
+  if (result.outcome === 'failed' || result.outcome === 'rolled-back') {
+    process.stderr.write(`error: ${result.error?.message ?? 'RunX upgrade failed.'}\n`)
+    process.exitCode = 1
+  }
 }
 
 async function runUninstall(options: CliOptions, args: GlobalArgs): Promise<void> {

@@ -1,12 +1,12 @@
 ---
 subject: guiho-s-runx
-description: Agent workflow for inspecting, validating, getting Citty usage for, and safely executing RunX manifest commands.
+description: Agent workflow for safe RunX catalog execution and verified native upgrade/list/recovery operations.
 parent: runx-skills
 children: []
 files:
-  SKILL.md: RunX-specific agent instructions, help aliases, and safe execution workflow.
+  SKILL.md: RunX catalog safety plus complete release listing, transactional upgrade, JSON, and pinned recovery guidance.
 documents:
-  SKILL.md: RunX-specific agent instructions, Citty help/version guidance, and safe execution workflow.
+  SKILL.md: RunX-specific command execution and verified native self-upgrade workflow.
 tags:
   - agents
   - runx
@@ -15,9 +15,12 @@ keywords:
   - citty
   - command catalog
   - dry run
+  - runx upgrade
+  - recovery install
 flags: []
 status: stable
 ---
 
 The skill makes manifest inspection, UID selection, dry runs, and explicit
-confirmation the default agent workflow for RunX commands.
+confirmation the default agent workflow for RunX commands and teaches agents
+how to interpret transactional native upgrades and their recovery contract.

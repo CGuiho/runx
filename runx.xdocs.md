@@ -19,9 +19,9 @@ documents:
   AGENTS.md: Repository instructions for coding agents, including Citty CLI ownership and protected release boundaries.
   CHANGELOG.md: Mirror-managed release history, including the 0.2.6 verified Windows self-upgrade fix.
   CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
-  DOCS.md: Canonical Citty-backed CLI, interactive initialization, manifest, verified Windows upgrade, distribution, and release reference.
+  DOCS.md: Canonical Citty-backed CLI, manifest, complete release catalog, transactional upgrade/recovery, direct installer, distribution, and release reference.
   LICENSE.md: MIT license.
-  README.md: Public project overview, npm/native installation paths, interactive quick start, and Citty help aliases.
+  README.md: Public project overview, installation, interactive quick start, Citty aliases, and verified upgrade/list/recovery commands.
   SECURITY.md: Vulnerability reporting and manifest trust-boundary policy.
   TODO.md: Package-local task index.
 tags:

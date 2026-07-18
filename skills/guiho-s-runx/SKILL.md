@@ -71,3 +71,22 @@ runx agents install local    Install this skill into .agents/skills.
 runx --help-tree             Show the command hierarchy.
 runx --help-docs             Show manifest documentation guidance.
 ```
+
+## Native Upgrade Safety
+
+- Use `runx upgrade check` to inspect the latest stable version.
+- Use `runx upgrade list --format json` when automation needs every stable and
+  prerelease release, its channel/date, current/latest markers, and compatible
+  asset metadata.
+- Use `runx upgrade --dry-run` to resolve the exact plan and recovery commands
+  without downloading or replacing the executable.
+- A successful `runx upgrade` has already executed the canonical binary with
+  `--version` and matched the selected target. Replacement is not merely
+  scheduled; only cleanup of a renamed old Windows image may be deferred.
+- Preserve the exact-version direct-install and process-stop commands printed
+  after every attempt. If upgrade fails, report those commands to the user;
+  never paraphrase away the pinned version.
+- JSON mode emits one document with a nullable plan, ordered events, outcome,
+  verified result, stable error code, and recovery instructions. A successful
+  rollback uses the nonzero `rolled-back` outcome and reports the restored
+  version. Do not expect streamed human phase lines in JSON mode.

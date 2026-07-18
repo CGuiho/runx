@@ -96,6 +96,29 @@ RunX uses Citty for argument parsing, aliases, command routing, and ordinary
 usage text, so conventional `-h`/`--help` and `-v`/`--version` work outside a
 configured project.
 
+## Upgrade and Recovery
+
+`runx upgrade` prints the selected current/target versions, operating system,
+architecture, binary, canonical path, and exact download URL before it starts
+the download. It then streams `Downloading`, `Validating`, `Replacing`, and
+`Verifying`. Success means the canonical executable already reports the exact
+target version; a failed verification restores the previous executable.
+
+Every outcome—including already current, dry run, and failure—prints a
+copyable direct-install command pinned to the selected version and a separate
+process-stop command. Use `runx upgrade --format json` for the same plan,
+ordered phase events, nullable plan, verified result, stable error code, and
+recovery data as one JSON document. A successful automatic rollback uses the
+nonzero `rolled-back` outcome and reports the restored installed version.
+
+```text
+runx upgrade check          Check the latest stable release.
+runx upgrade --dry-run      Print the plan and pinned recovery without mutation.
+runx upgrade                Install and verify the latest stable release.
+runx upgrade list           List every stable and prerelease version, newest first.
+runx upgrade list --format json
+```
+
 ## Documentation
 
 - [Full CLI and manifest reference](DOCS.md)

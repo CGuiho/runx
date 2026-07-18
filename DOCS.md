@@ -37,9 +37,9 @@ lists its commands, and runs exactly one selected command.
 | `runx <selector>` | Human shorthand for `runx run <selector>` when no built-in name conflicts. |
 | `runx agents install <local|global>` | Install `guiho-s-runx`; add `--tool agents|claude|all` when needed. |
 | `runx agents instructions` | Add or refresh the managed RunX section in `AGENTS.md`. |
-| `runx upgrade` | Replace a native installed executable when a newer release is available. |
+| `runx upgrade` | Plan, download, validate, transactionally replace, and verify the latest stable native executable. |
 | `runx upgrade check` | Check whether a newer release is available. |
-| `runx upgrade list` | List recent release versions. |
+| `runx upgrade list` | List every published release with SemVer order, channel, date, current/latest markers, and compatible asset data. |
 | `runx uninstall [--dry-run]` | Remove a native installed executable. |
 
 Global flags: `--cwd <path>`, `--file <path>`, `--format <text|json>`,
@@ -142,13 +142,41 @@ runx agents install local
 
 `devops/install.ps1` installs Windows assets and `devops/install.sh` installs
 macOS/Linux assets from GitHub Releases into the user's local bin directory.
-`runx upgrade` uses the matching release asset and replaces a native executable.
-On Windows it renames the running executable, installs and verifies the target
-version at the original path, and restores the previous executable if replacement
-fails. Only cleanup of the renamed old image is deferred until RunX exits.
+Both accept an exact stable or prerelease version, resolve `latest` to one exact
+stable version, use unique temporary state, validate native format, replace the
+canonical executable transactionally, execute it with `--version`, and restore
+the previous binary after installation or verification failure.
+
+`runx upgrade` resolves the full immutable plan before download and prints the
+current/target versions, OS, architecture, selected binary, canonical path, and
+exact URL. Human text is flushed before awaiting each slow phase:
+`Downloading`, `Validating`, `Replacing`, and `Verifying`. On Windows it first
+renames the mapped running executable, places the new binary at the canonical
+path immediately, and verifies that path. Only deletion of the renamed old
+image may be deferred; replacement itself is never reported as scheduled.
 `runx uninstall` removes the same native executable and supports `--dry-run`.
 
-When the latest GitHub Release matches the installed version, `runx upgrade` prints `Already up to date.` and exits successfully without downloading or scheduling executable replacement. JSON output reports `upToDate: true`.
+When the latest stable release matches the installed version, `runx upgrade`
+prints `Already up to date` and exits successfully without downloading or
+replacing. Every upgraded, up-to-date, dry-run, rolled-back, or failed result ends with
+an exact-version direct-install command and a separate safe process-stop
+command. JSON output is one schema-versioned document with `plan` (nullable
+when target discovery fails), ordered `events`, `outcome`, `result`, stable
+`error.code`, and `recovery`. Recovery contains `targetSource` and the separate
+`stopProcessCommand`. A successful rollback uses outcome `rolled-back`, retains
+the primary error, reports the restored version in `result`, and exits nonzero.
+
+If the installed version has greater SemVer precedence than the greatest stable
+release—including an installed prerelease above an older stable line—RunX does
+not downgrade it. A stable release still supersedes prereleases of that same
+version, following SemVer precedence.
+
+`runx upgrade list` follows every GitHub Releases page. Valid SemVer entries are
+ordered by precedence (stable above its prereleases), with `alpha`, `beta`,
+`rc`, other prerelease channels, publication date, current/latest flags, and
+compatible asset metadata. Published non-SemVer tags remain visible after the
+SemVer catalog. The default upgrade target is the greatest stable SemVer, not
+the first release returned by GitHub.
 
 CI validates code and compiles the local executable plus the native release
 matrix. Protected `@guiho/runx@*` tags run the `production` publish workflow,

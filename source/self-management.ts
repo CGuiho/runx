@@ -1,133 +1,281 @@
+/**
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ */
+
 import { Buffer } from 'node:buffer'
 import { chmod, rename, rm } from 'node:fs/promises'
 import { basename } from 'node:path'
+import { compare, gt, valid } from 'semver'
 import { RunXError } from './errors.js'
 import { readVersion } from './help.js'
-import type { RunXUpgradeResult, UpdateResult } from './types.js'
+import { fetchReleaseCatalog, resolveUpgradePlatform } from './release-catalog.js'
+import { createRecoveryInstructions } from './recovery.js'
+import type { ReleaseCatalog, ReleaseCatalogEntry, RecoveryInstructions, UpgradeEnvelope, UpgradeError, UpgradeErrorCode, UpgradeEvent, UpgradePhase, UpgradePlan, UpgradeResult } from './upgrade-types.js'
+import type { UpdateResult } from './types.js'
 
-export {
-  checkForLatestVersion,
-  listAvailableVersions,
-  uninstallSelf,
-  upgradeSelf,
+export { checkForLatestVersion, listAvailableVersions, uninstallSelf, upgradeSelf, validateNativeBinary }
+
+export type UpgradeFileOperations = {
+  rename: (from: string, to: string) => Promise<void>
+  remove: (path: string) => Promise<void>
+  makeExecutable: (path: string) => Promise<void>
 }
 
-const repositoryApi = 'https://api.github.com/repos/CGuiho/runx/releases'
+export type UpgradeSelfOptions = {
+  dryRun: boolean
+  currentVersion?: string
+  onPlan?: (plan: UpgradePlan) => void
+  onEvent?: (event: UpgradeEvent) => void
+  fileOperations?: UpgradeFileOperations
+}
 
-type Release = { tag_name: string, assets: Array<{ name: string, browser_download_url: string }> }
+type ReplacementState = { backupPath: string, originalMoved: boolean }
+
+class UpgradeOperationError extends Error {
+  readonly code: UpgradeErrorCode
+
+  constructor(code: UpgradeErrorCode, message: string) {
+    super(message)
+    this.name = 'UpgradeOperationError'
+    this.code = code
+  }
+}
+
+const defaultFileOperations: UpgradeFileOperations = {
+  rename: async (from, to) => rename(from, to),
+  remove: async (path) => rm(path, { force: true }),
+  makeExecutable: async (path) => chmod(path, 0o755),
+}
 
 const checkForLatestVersion = async (): Promise<UpdateResult> => {
-  const currentVersion = readVersion()
+  const catalog = await listAvailableVersions()
+  const latest = catalog.releases.find((release) => release.latestStable)
+  return {
+    currentVersion: catalog.currentVersion,
+    latestVersion: catalog.latestStableVersion ?? catalog.currentVersion,
+    updateAvailable: Boolean(latest && valid(latest.version) && valid(catalog.currentVersion) && gt(latest.version, catalog.currentVersion)),
+    url: latest?.compatibleAsset?.url,
+  }
+}
+
+const listAvailableVersions = async (): Promise<ReleaseCatalog> => {
+  const platform = resolveUpgradePlatform()
+  return fetchReleaseCatalog({ ...platform, currentVersion: readVersion() })
+}
+
+const upgradeSelf = async (input: boolean | UpgradeSelfOptions): Promise<UpgradeEnvelope> => {
+  const options: UpgradeSelfOptions = typeof input === 'boolean' ? { dryRun: input } : input
+  const fileOperations = options.fileOperations ?? defaultFileOperations
+  const currentVersion = options.currentVersion ?? readVersion()
+  const platform = resolveUpgradePlatform()
+  const executablePath = resolveSelfExecutable()
+  const events: UpgradeEvent[] = []
+  let phase: UpgradePhase = 'plan'
+  let plan: UpgradePlan | null = null
+  let recovery = createRecoveryInstructions(currentVersion, platform.os, 'fallback-current')
+  let temporaryPath: string | null = null
+  let replacement: ReplacementState | null = null
+  let mutationCode: UpgradeErrorCode | null = null
+
+  const emit = (eventPhase: UpgradePhase, status: UpgradeEvent['status'], message?: string): void => {
+    phase = eventPhase
+    const event: UpgradeEvent = { sequence: events.length + 1, phase: eventPhase, status, ...(message ? { message } : {}) }
+    events.push(event)
+    options.onEvent?.(event)
+  }
+
+  emit('plan', 'started')
   try {
-    const response = await fetch(`${repositoryApi}/latest`, { headers: { accept: 'application/vnd.github+json' } })
-    if (!response.ok) return { currentVersion, latestVersion: currentVersion, updateAvailable: false }
-    const release = await response.json() as Release
-    const latestVersion = release.tag_name.replace(/^@guiho\/runx@/, '').replace(/^v/, '')
-    const asset = findAsset(release)
-    return { currentVersion, latestVersion, updateAvailable: compareVersions(latestVersion, currentVersion) > 0, url: asset?.browser_download_url }
-  } catch {
-    return { currentVersion, latestVersion: currentVersion, updateAvailable: false }
+    let catalog: ReleaseCatalog
+    try {
+      catalog = await fetchReleaseCatalog({ ...platform, currentVersion })
+    } catch (error) {
+      throw new UpgradeOperationError(classifyPlanError(error), errorMessage(error))
+    }
+    const stableTarget = catalog.releases.find((release) => release.latestStable)
+    if (!stableTarget || !catalog.latestStableVersion) throw new UpgradeOperationError('release_lookup_failed', 'No stable RunX release is available for upgrade.')
+    const target = preventDowngrade(currentVersion, stableTarget, catalog.releases)
+    const targetIsCurrent = target.version === currentVersion
+    recovery = createRecoveryInstructions(target.version, platform.os, 'resolved')
+    if (!targetIsCurrent && !target.compatibleAsset) {
+      throw new UpgradeOperationError('no_compatible_asset', `RunX ${target.version} has no compatible ${platform.os} ${platform.arch} asset.`)
+    }
+
+    plan = {
+      currentVersion,
+      targetVersion: target.version,
+      os: platform.os,
+      arch: platform.arch,
+      assetName: target.compatibleAsset?.name ?? '',
+      assetUrl: target.compatibleAsset?.url ?? '',
+      executablePath,
+    }
+    emit('plan', 'succeeded')
+    options.onPlan?.(plan)
+
+    if (basename(executablePath).toLowerCase().startsWith('bun')) {
+      throw new UpgradeOperationError('verification_failed', 'Self-management requires a native RunX executable installed from a GitHub release.')
+    }
+    if (targetIsCurrent) {
+      emitSkippedMutation(events, options.onEvent)
+      return envelope('up-to-date', plan, events, { installedVersion: currentVersion, cleanupDeferred: false }, recovery)
+    }
+    if (options.dryRun) {
+      emitSkippedMutation(events, options.onEvent)
+      return envelope('dry-run', plan, events, null, recovery)
+    }
+
+    emit('download', 'started')
+    const response = await fetch(plan.assetUrl)
+    if (!response.ok) throw new UpgradeOperationError('download_failed', `Could not download RunX ${plan.targetVersion}: HTTP ${response.status}`)
+    const bytes = new Uint8Array(await response.arrayBuffer())
+    if (bytes.length === 0) throw new UpgradeOperationError('download_invalid', 'Downloaded RunX executable is empty.')
+    emit('download', 'succeeded')
+
+    emit('validate', 'started')
+    try {
+      validateNativeBinary(bytes, platform.os)
+      temporaryPath = `${executablePath}.new-${process.pid}-${crypto.randomUUID()}`
+      await Bun.write(temporaryPath, bytes)
+      if (platform.os !== 'windows') await fileOperations.makeExecutable(temporaryPath)
+    } catch (error) {
+      throw asOperationError('download_invalid', error)
+    }
+    emit('validate', 'succeeded')
+
+    emit('replace', 'started')
+    replacement = { backupPath: `${executablePath}.old-${process.pid}-${crypto.randomUUID()}`, originalMoved: false }
+    mutationCode = 'backup_failed'
+    try {
+      await fileOperations.rename(executablePath, replacement.backupPath)
+      replacement.originalMoved = true
+      mutationCode = 'replace_failed'
+      await fileOperations.rename(temporaryPath, executablePath)
+      temporaryPath = null
+    } catch (error) {
+      throw asOperationError(mutationCode, error)
+    }
+    emit('replace', 'succeeded')
+
+    emit('verify', 'started')
+    try {
+      await verifyExecutableVersion(executablePath, plan.targetVersion)
+    } catch (error) {
+      throw asOperationError('verification_failed', error)
+    }
+    emit('verify', 'succeeded')
+    emit('cache', 'skipped', 'RunX does not use an upgrade cache.')
+
+    emit('cleanup', 'started')
+    const cleanupDeferred = await cleanupBackup(replacement.backupPath, platform.os, fileOperations)
+    emit('cleanup', cleanupDeferred ? 'skipped' : 'succeeded', cleanupDeferred ? 'Old executable deletion was deferred; replacement already succeeded.' : undefined)
+    return envelope('upgraded', plan, events, { installedVersion: plan.targetVersion, cleanupDeferred }, recovery)
+  } catch (error) {
+    const primary = asOperationError(classifyFailure(phase, mutationCode), error)
+    if (!events.some((event) => event.phase === phase && event.status === 'failed')) emit(phase, 'failed', primary.message)
+    if (temporaryPath) await fileOperations.remove(temporaryPath).catch(() => undefined)
+    if (replacement?.originalMoved) {
+      try {
+        await rollbackReplacement(replacement.backupPath, executablePath, fileOperations)
+        return envelope('rolled-back', plan, events, { installedVersion: currentVersion, cleanupDeferred: false }, recovery, {
+          code: primary.code,
+          phase,
+          message: primary.message,
+        })
+      } catch (rollbackError) {
+        return envelope('failed', plan, events, null, recovery, {
+          code: 'rollback_failed',
+          phase,
+          message: `${primary.message}. Automatic rollback failed: ${errorMessage(rollbackError)}. Canonical path: ${executablePath}. Backup path: ${replacement.backupPath}.`,
+        })
+      }
+    }
+    return envelope('failed', plan, events, null, recovery, { code: primary.code, phase, message: primary.message })
   }
-}
-
-const listAvailableVersions = async (): Promise<string[]> => {
-  const response = await fetch(`${repositoryApi}?per_page=20`, { headers: { accept: 'application/vnd.github+json' } })
-  if (!response.ok) throw new RunXError(`Could not retrieve RunX releases: HTTP ${response.status}`)
-  const releases = await response.json() as Release[]
-  return releases.map((release) => release.tag_name.replace(/^@guiho\/runx@/, '').replace(/^v/, ''))
-}
-
-const upgradeSelf = async (dryRun: boolean): Promise<RunXUpgradeResult> => {
-  const executablePath = requireNativeExecutable()
-  const update = await checkForLatestVersion()
-  const upToDate = !update.updateAvailable && update.latestVersion === update.currentVersion && Boolean(update.url)
-  if (!update.updateAvailable || !update.url) return { ...update, executablePath, scheduled: false, upToDate }
-  if (dryRun) return { ...update, executablePath, scheduled: false, upToDate: false }
-
-  const response = await fetch(update.url)
-  if (!response.ok) throw new RunXError(`Could not download RunX update: HTTP ${response.status}`)
-  const temporaryPath = `${executablePath}.new`
-  await Bun.write(temporaryPath, await response.arrayBuffer())
-  if (process.platform !== 'win32') {
-    await chmod(temporaryPath, 0o755)
-    await rename(temporaryPath, executablePath)
-    return { ...update, executablePath, scheduled: false, upToDate: false }
-  }
-
-  await replaceWindowsExecutable(temporaryPath, executablePath, update.latestVersion)
-  return { ...update, executablePath, scheduled: false, upToDate: false }
 }
 
 const uninstallSelf = async (dryRun: boolean): Promise<{ executablePath: string, scheduled: boolean, dryRun: boolean }> => {
-  const executablePath = requireNativeExecutable()
+  const executablePath = resolveSelfExecutable()
+  if (basename(executablePath).toLowerCase().startsWith('bun')) throw new RunXError('Self-management requires a native RunX executable installed from a GitHub release.')
   if (dryRun) return { executablePath, scheduled: false, dryRun: true }
   if (process.platform === 'win32') {
     const command = `ping 127.0.0.1 -n 2 > nul & del /f /q "${executablePath}"`
     Bun.spawn(['cmd.exe', '/d', '/s', '/c', command], { detached: true, stdout: 'ignore', stderr: 'ignore', stdin: 'ignore' })
     return { executablePath, scheduled: true, dryRun: false }
   }
-
   await rm(executablePath)
   return { executablePath, scheduled: false, dryRun: false }
 }
 
-const findAsset = (release: Release): Release['assets'][number] | undefined => release.assets.find((asset) => asset.name === assetName())
+const envelope = (
+  outcome: UpgradeEnvelope['outcome'],
+  plan: UpgradePlan | null,
+  events: UpgradeEvent[],
+  result: UpgradeResult | null,
+  recovery: RecoveryInstructions,
+  error: UpgradeError | null = null,
+): UpgradeEnvelope => ({ schemaVersion: 1, command: 'runx upgrade', outcome, plan, events, result, recovery, error })
 
-const assetName = (): string => `runx-${process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux'}-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`
-
-const requireNativeExecutable = (): string => {
-  const executablePath = process.env['RUNX_SELF_PATH'] ?? process.execPath
-  if (basename(executablePath).toLowerCase().startsWith('bun')) throw new RunXError('Self-management requires a native RunX executable installed from a GitHub release.')
-  return executablePath
+const preventDowngrade = (currentVersion: string, stableTarget: ReleaseCatalogEntry, releases: ReleaseCatalogEntry[]): ReleaseCatalogEntry => {
+  if (!valid(currentVersion) || !valid(stableTarget.version) || compare(currentVersion, stableTarget.version) < 0) return stableTarget
+  return releases.find((release) => release.version === currentVersion) ?? {
+    tag: currentVersion,
+    version: currentVersion,
+    channel: valid(currentVersion)?.includes('-') ? 'prerelease' : 'stable',
+    prerelease: Boolean(valid(currentVersion)?.includes('-')),
+    publishedAt: null,
+    current: true,
+    latestStable: false,
+    compatibleAsset: null,
+  }
 }
 
-const replaceWindowsExecutable = async (temporaryPath: string, executablePath: string, expectedVersion: string): Promise<void> => {
-  const backupPath = `${executablePath}.old`
-  let originalMoved = false
-
-  try {
-    await rm(backupPath, { force: true })
-    await rename(executablePath, backupPath)
-    originalMoved = true
-    await rename(temporaryPath, executablePath)
-    await verifyExecutableVersion(executablePath, expectedVersion)
-    await cleanupWindowsBackup(backupPath)
-  } catch (error) {
-    const replacementFailure = errorMessage(error)
-    await rm(temporaryPath, { force: true }).catch(() => undefined)
-
-    if (!originalMoved) {
-      throw new RunXError(`Could not replace the Windows RunX executable at ${executablePath}: ${replacementFailure}`)
-    }
-
-    try {
-      await rm(executablePath, { force: true })
-      await rename(backupPath, executablePath)
-    } catch (rollbackError) {
-      throw new RunXError(`Windows RunX upgrade failed at ${executablePath}: ${replacementFailure}. Automatic rollback also failed: ${errorMessage(rollbackError)}`)
-    }
-
-    throw new RunXError(`Windows RunX upgrade failed; the previous executable was restored at ${executablePath}: ${replacementFailure}`)
+const emitSkippedMutation = (events: UpgradeEvent[], onEvent?: (event: UpgradeEvent) => void): void => {
+  for (const phase of ['download', 'validate', 'replace', 'verify', 'cache', 'cleanup'] as const) {
+    const event: UpgradeEvent = { sequence: events.length + 1, phase, status: 'skipped' }
+    events.push(event)
+    onEvent?.(event)
   }
+}
+
+const rollbackReplacement = async (backupPath: string, executablePath: string, operations: UpgradeFileOperations): Promise<void> => {
+  await operations.remove(executablePath)
+  await operations.rename(backupPath, executablePath)
 }
 
 const verifyExecutableVersion = async (executablePath: string, expectedVersion: string): Promise<void> => {
   const verification = Bun.spawn([executablePath, '--version'], { stdin: 'ignore', stdout: 'pipe', stderr: 'pipe' })
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  const exited = Promise.race([
+    verification.exited,
+    new Promise<never>((_, reject) => {
+      timeout = setTimeout(() => {
+        verification.kill()
+        reject(new Error('replacement version check timed out after 10 seconds'))
+      }, 10_000)
+    }),
+  ])
   const [stdout, stderr, exitCode] = await Promise.all([
     new Response(verification.stdout).text(),
     new Response(verification.stderr).text(),
-    verification.exited,
-  ])
+    exited,
+  ]).finally(() => {
+    if (timeout !== undefined) clearTimeout(timeout)
+  })
   const actualVersion = stdout.trim()
   if (exitCode !== 0) throw new Error(`replacement exited with code ${exitCode}${stderr.trim() ? `: ${stderr.trim()}` : ''}`)
   if (actualVersion !== expectedVersion) throw new Error(`replacement reported version ${actualVersion || '<empty>'}; expected ${expectedVersion}`)
 }
 
-const cleanupWindowsBackup = async (backupPath: string): Promise<void> => {
+const cleanupBackup = async (backupPath: string, os: UpgradePlan['os'], operations: UpgradeFileOperations): Promise<boolean> => {
   try {
-    await rm(backupPath, { force: true })
-  } catch {}
-  scheduleWindowsBackupCleanup(backupPath)
+    await operations.remove(backupPath)
+    return false
+  } catch {
+    if (os !== 'windows') throw new UpgradeOperationError('replace_failed', `Could not delete old RunX executable: ${backupPath}`)
+    scheduleWindowsBackupCleanup(backupPath)
+    return true
+  }
 }
 
 const scheduleWindowsBackupCleanup = (backupPath: string): void => {
@@ -136,21 +284,32 @@ const scheduleWindowsBackupCleanup = (backupPath: string): void => {
   Bun.spawn(['cmd.exe', '/d', '/s', '/c', `powershell.exe -NoLogo -NoProfile -NonInteractive -WindowStyle Hidden -EncodedCommand ${encodedCommand}`], {
     detached: true,
     env: { ...process.env, RUNX_BACKUP_PATH: backupPath },
-    stdout: 'ignore',
-    stderr: 'ignore',
-    stdin: 'ignore',
+    stdout: 'ignore', stderr: 'ignore', stdin: 'ignore',
   })
 }
 
-const errorMessage = (error: unknown): string => error instanceof Error ? error.message : String(error)
-
-const compareVersions = (left: string, right: string): number => {
-  const parse = (value: string): number[] => value.split(/[.+-]/).map((part) => Number.parseInt(part, 10) || 0)
-  const a = parse(left)
-  const b = parse(right)
-  for (let index = 0; index < Math.max(a.length, b.length); index += 1) {
-    const difference = (a[index] ?? 0) - (b[index] ?? 0)
-    if (difference !== 0) return difference
-  }
-  return 0
+const validateNativeBinary = (bytes: Uint8Array, os: UpgradePlan['os']): void => {
+  const native = os === 'windows'
+    ? bytes[0] === 0x4d && bytes[1] === 0x5a
+    : os === 'linux'
+      ? bytes[0] === 0x7f && bytes[1] === 0x45 && bytes[2] === 0x4c && bytes[3] === 0x46
+      : isMachO(bytes)
+  if (!native) throw new RunXError(`Downloaded file is not a native ${os} executable.`)
 }
+
+const isMachO = (bytes: Uint8Array): boolean => {
+  const magic = Array.from(bytes.slice(0, 4)).map((value) => value.toString(16).padStart(2, '0')).join('')
+  return ['feedface', 'feedfacf', 'cefaedfe', 'cffaedfe', 'cafebabe', 'bebafeca'].includes(magic)
+}
+
+const classifyPlanError = (error: unknown): UpgradeErrorCode => /malformed/.test(errorMessage(error)) ? 'release_payload_invalid' : 'release_lookup_failed'
+const classifyFailure = (phase: UpgradePhase, mutationCode: UpgradeErrorCode | null): UpgradeErrorCode => {
+  if (phase === 'download') return 'download_failed'
+  if (phase === 'validate') return 'download_invalid'
+  if (phase === 'replace') return mutationCode ?? 'replace_failed'
+  if (phase === 'verify') return 'verification_failed'
+  return 'release_lookup_failed'
+}
+const asOperationError = (code: UpgradeErrorCode, error: unknown): UpgradeOperationError => error instanceof UpgradeOperationError ? error : new UpgradeOperationError(code, errorMessage(error))
+const resolveSelfExecutable = (): string => process.env['RUNX_SELF_PATH'] ?? process.execPath
+const errorMessage = (error: unknown): string => error instanceof Error ? error.message : String(error)

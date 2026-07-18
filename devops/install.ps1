@@ -9,208 +9,204 @@ param(
 $ErrorActionPreference = 'Stop'
 [Net.ServicePointManager]::SecurityProtocol = [Net.SecurityProtocolType]::Tls12
 
-# === Defaults from env vars or sensible defaults ===
-if ([string]::IsNullOrWhiteSpace($Version)) {
-  $Version = if ($env:RUNX_VERSION) { $env:RUNX_VERSION } else { 'latest' }
-}
+if ([string]::IsNullOrWhiteSpace($Version)) { $Version = if ($env:RUNX_VERSION) { $env:RUNX_VERSION } else { 'latest' } }
 $Repo = if ($env:RUNX_REPO) { $env:RUNX_REPO } else { 'CGuiho/runx' }
-if ([string]::IsNullOrWhiteSpace($InstallDir)) {
-  $InstallDir = if ($env:RUNX_INSTALL_DIR) { $env:RUNX_INSTALL_DIR } else { Join-Path $HOME '.local\bin' }
-}
+$DownloadBaseUrl = if ($env:RUNX_DOWNLOAD_BASE_URL) { $env:RUNX_DOWNLOAD_BASE_URL.TrimEnd('/') } else { $null }
+if ([string]::IsNullOrWhiteSpace($InstallDir)) { $InstallDir = if ($env:RUNX_INSTALL_DIR) { $env:RUNX_INSTALL_DIR } else { Join-Path $HOME '.local\bin' } }
 
-# === Show help ===
 if ($Help -or $Version -eq '--help' -or $Version -eq '-h') {
   @"
-Install GUIHO RunX as a native CLI binary from GitHub Releases.
+Install GUIHO RunX as a verified native CLI binary from GitHub Releases.
 
 Usage: install.ps1 [-Version VERSION] [-Arch ARCH] [-Variant VARIANT] [-InstallDir DIR]
 
 Parameters:
-  -Version      Version to install (default: latest).
-                Examples: latest, 0.1.1, @guiho/runx@0.1.1
-  -Arch         Force architecture: x64 | arm64 (default: auto-detect)
-  -Variant      Force x64 variant: baseline | default | modern (default: baseline)
-  -InstallDir   Install directory (default: `$HOME\.local\bin)
-  -Help         Show this help
-
-Environment variables:
-  RUNX_VERSION, RUNX_REPO, RUNX_INSTALL_DIR
+  -Version      Exact stable or prerelease version (default: latest stable).
+  -Arch         Force architecture: x64 | arm64 (default: auto-detect).
+  -Variant      Force x64 variant: baseline | default | modern (default: baseline).
+  -InstallDir   Install directory (default: `$HOME\.local\bin).
+  -Help         Show this help.
 "@
   return
 }
 
-# === Detect architecture (compatible with PowerShell 5.1+) ===
-$detectedArch = if ($Arch) {
-  $Arch
-} else {
-  switch ($env:PROCESSOR_ARCHITECTURE) {
-    'AMD64' { 'x64' }
-    'ARM64' { 'arm64' }
-    default { throw "Unsupported architecture: $env:PROCESSOR_ARCHITECTURE. Must be AMD64 or ARM64." }
+function Resolve-TargetVersion {
+  param([string]$RequestedVersion)
+  $tag = $RequestedVersion
+  if ($RequestedVersion -eq 'latest') {
+    Write-Host 'Resolving latest stable RunX release...'
+    $release = Invoke-RestMethod -Uri "https://api.github.com/repos/$Repo/releases/latest" -Headers @{ Accept = 'application/vnd.github+json' }
+    $tag = [string]$release.tag_name
   }
-}
-
-if ($detectedArch -notin @('x64', 'arm64')) {
-  throw "Invalid architecture: $detectedArch. Must be x64 or arm64."
-}
-
-if (-not [Environment]::Is64BitOperatingSystem) {
-  throw 'Unsupported platform: Windows 32-bit is not supported.'
-}
-
-# === Build asset candidates (baseline-first for x64) ===
-$variant = if ($Variant) { $Variant } else { 'baseline' }
-
-$assetCandidates = if ($detectedArch -eq 'x64') {
-  switch ($variant) {
-    'baseline' { @(
-      "runx-windows-x64-baseline.exe",
-      "runx-windows-x64.exe",
-      "runx-windows-x64-modern.exe"
-    )}
-    'default' { @(
-      "runx-windows-x64.exe",
-      "runx-windows-x64-baseline.exe",
-      "runx-windows-x64-modern.exe"
-    )}
-    'modern' { @(
-      "runx-windows-x64-modern.exe",
-      "runx-windows-x64.exe",
-      "runx-windows-x64-baseline.exe"
-    )}
-    default { throw "Invalid variant: $variant. Must be baseline, default, or modern." }
+  $normalized = $tag -replace '^@guiho/runx@', '' -replace '^v', ''
+  if ($normalized -notmatch '^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(?:-[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?$') {
+    throw "Invalid RunX version: $RequestedVersion"
   }
-} else {
-  if ($Variant) {
-    throw '-Variant is only valid for x64 installs.'
-  }
-  @("runx-windows-arm64.exe")
-}
-
-# === Build download URL ===
-function Get-DownloadUrl {
-  param([string]$Asset)
-
-  if ($Version -eq 'latest') {
-    return "https://github.com/$Repo/releases/latest/download/$Asset"
-  }
-
-  $tag = if ($Version.StartsWith('@guiho/runx@')) { $Version }
-         elseif ($Version.StartsWith('@')) { $Version }
-         else { "@guiho/runx@$Version" }
-
-  $encodedTag = [Uri]::EscapeDataString($tag)
-  return "https://github.com/$Repo/releases/download/$encodedTag/$Asset"
-}
-
-function Get-PathEntries {
-  param([string]$PathValue)
-
-  if ([string]::IsNullOrWhiteSpace($PathValue)) {
-    return @()
-  }
-
-  return @($PathValue -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) })
-}
-
-function Test-PathContains {
-  param(
-    [string]$PathValue,
-    [string]$Directory
-  )
-
-  $normalizedDirectory = $Directory.TrimEnd('\')
-  foreach ($entry in Get-PathEntries -PathValue $PathValue) {
-    if ($entry.TrimEnd('\').Equals($normalizedDirectory, [StringComparison]::OrdinalIgnoreCase)) {
-      return $true
+  $prerelease = (($normalized -split '\+', 2)[0] -split '-', 2)
+  if ($prerelease.Count -eq 2) {
+    foreach ($identifier in $prerelease[1] -split '\.') {
+      if ($identifier -match '^0\d+$') { throw "Invalid RunX version: $RequestedVersion" }
     }
   }
+  return $normalized
+}
 
+function Get-PathEntries { param([string]$PathValue); if ([string]::IsNullOrWhiteSpace($PathValue)) { return @() }; return @($PathValue -split ';' | Where-Object { -not [string]::IsNullOrWhiteSpace($_) }) }
+function Test-PathContains {
+  param([string]$PathValue, [string]$Directory)
+  $normalizedDirectory = $Directory.TrimEnd('\')
+  foreach ($entry in Get-PathEntries -PathValue $PathValue) {
+    if ($entry.TrimEnd('\').Equals($normalizedDirectory, [StringComparison]::OrdinalIgnoreCase)) { return $true }
+  }
   return $false
 }
-
 function Add-InstallDirToPath {
   param([string]$Directory)
-
   $userPath = [Environment]::GetEnvironmentVariable('Path', 'User')
   if (-not (Test-PathContains -PathValue $userPath -Directory $Directory)) {
-    $entries = @(Get-PathEntries -PathValue $userPath)
-    $newUserPath = (@($Directory) + $entries) -join ';'
+    $newUserPath = (@($Directory) + @(Get-PathEntries -PathValue $userPath)) -join ';'
     [Environment]::SetEnvironmentVariable('Path', $newUserPath.TrimEnd(';'), 'User')
     Write-Host "Added $Directory to user PATH. Restart your terminal to use runx globally."
-  } else {
-    Write-Host "$Directory is already configured in user PATH."
   }
-
-  if (-not (Test-PathContains -PathValue $env:Path -Directory $Directory)) {
-    $env:Path = "$Directory;$env:Path"
-  }
+  if (-not (Test-PathContains -PathValue $env:Path -Directory $Directory)) { $env:Path = "$Directory;$env:Path" }
 }
-
-$temporaryFile = Join-Path ([System.IO.Path]::GetTempPath()) ([System.IO.Path]::GetRandomFileName())
 
 function Test-NativeBinary {
   param([string]$Path)
+  $stream = [System.IO.File]::OpenRead($Path)
+  try { return $stream.Length -ge 2 -and $stream.ReadByte() -eq 0x4D -and $stream.ReadByte() -eq 0x5A }
+  finally { $stream.Dispose() }
+}
 
-  $bytes = [System.IO.File]::ReadAllBytes($Path)
-  if ($bytes.Length -lt 2) {
-    return $false
+function Test-InstalledVersion {
+  param([string]$Path, [string]$ExpectedVersion)
+  $startInfo = New-Object System.Diagnostics.ProcessStartInfo
+  $startInfo.FileName = $Path
+  $startInfo.Arguments = '--version'
+  $startInfo.UseShellExecute = $false
+  $startInfo.CreateNoWindow = $true
+  $startInfo.RedirectStandardOutput = $true
+  $startInfo.RedirectStandardError = $true
+  $process = New-Object System.Diagnostics.Process
+  $process.StartInfo = $startInfo
+  try {
+    if (-not $process.Start()) { throw 'Could not start installed RunX for version verification' }
+    if (-not $process.WaitForExit(10000)) {
+      $process.Kill()
+      $process.WaitForExit()
+      throw 'Installed RunX version check timed out after 10 seconds'
+    }
+    $stdout = $process.StandardOutput.ReadToEnd().Trim()
+    $stderr = $process.StandardError.ReadToEnd().Trim()
+    if ($process.ExitCode -ne 0) { throw "Installed RunX exited with code $($process.ExitCode) during verification: $stderr" }
+    if ($stdout -ne $ExpectedVersion) { throw "Installed RunX reported $stdout; expected $ExpectedVersion" }
+  } finally {
+    $process.Dispose()
   }
+}
 
-  return $bytes[0] -eq 0x4D -and $bytes[1] -eq 0x5A
+function Start-BackupCleanup {
+  param([string]$BackupPath)
+  $script = 'for ($attempt = 0; $attempt -lt 300; $attempt += 1) { try { Remove-Item -LiteralPath $env:RUNX_BACKUP_PATH -Force -ErrorAction Stop; exit 0 } catch { Start-Sleep -Milliseconds 100 } }; exit 1'
+  $encoded = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($script))
+  $previousBackupPath = $env:RUNX_BACKUP_PATH
+  try {
+    $env:RUNX_BACKUP_PATH = $BackupPath
+    Start-Process powershell.exe -ArgumentList @('-NoLogo', '-NoProfile', '-NonInteractive', '-EncodedCommand', $encoded) -WindowStyle Hidden
+  } finally {
+    $env:RUNX_BACKUP_PATH = $previousBackupPath
+  }
+}
+
+function Install-Transactional {
+  param([string]$DownloadedPath, [string]$Destination, [string]$ExpectedVersion)
+  $backupPath = "$Destination.old-$PID-$([Guid]::NewGuid().ToString('N'))"
+  $originalMoved = $false
+  try {
+    if (Test-Path -LiteralPath $Destination) { Move-Item -LiteralPath $Destination -Destination $backupPath; $originalMoved = $true }
+    Move-Item -LiteralPath $DownloadedPath -Destination $Destination
+    Write-Host 'Verifying...'
+    Test-InstalledVersion -Path $Destination -ExpectedVersion $ExpectedVersion
+    if ($originalMoved) {
+      try { Remove-Item -LiteralPath $backupPath -Force }
+      catch { Start-BackupCleanup -BackupPath $backupPath; Write-Host 'Old executable cleanup will finish after the running process exits.' }
+    }
+  } catch {
+    $failure = $_.Exception.Message
+    try {
+      if (Test-Path -LiteralPath $Destination) { Remove-Item -LiteralPath $Destination -Force -ErrorAction Stop }
+      if ($originalMoved) {
+        if (-not (Test-Path -LiteralPath $backupPath)) { throw "Backup is missing: $backupPath" }
+        Move-Item -LiteralPath $backupPath -Destination $Destination -ErrorAction Stop
+      }
+    } catch {
+      throw "RunX installation failed: $failure. Automatic rollback also failed: $($_.Exception.Message). Backup remains at $backupPath"
+    }
+    if ($originalMoved) { throw "RunX installation failed and the previous executable was restored: $failure" }
+    throw "RunX installation failed before a previous executable could be restored: $failure"
+  }
 }
 
 function Test-Shadowing {
   param([string]$ExpectedPath)
-
   $command = Get-Command runx -ErrorAction SilentlyContinue
-  if (-not $command) {
-    return
-  }
-
-  if (-not $command.Source.Equals($ExpectedPath, [StringComparison]::OrdinalIgnoreCase)) {
+  if ($command -and -not $command.Source.Equals($ExpectedPath, [StringComparison]::OrdinalIgnoreCase)) {
     Write-Warning "Another runx appears earlier in PATH: $($command.Source)"
     Write-Warning "The newly installed binary is at: $ExpectedPath"
   }
 }
 
-# === Main ===
-$variantLabel = if ($Variant) { " variant=$Variant" } else { "" }
-Write-Host "runx: $Version  os=windows  arch=$detectedArch$variantLabel"
-
-New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
-$InstallDir = (Resolve-Path -LiteralPath $InstallDir).Path
-$destination = Join-Path $InstallDir 'runx.exe'
-
-foreach ($asset in $assetCandidates) {
-  $url = Get-DownloadUrl -Asset $asset
-  Write-Host "  Trying $url"
-  try {
-    Invoke-WebRequest -Uri $url -OutFile $temporaryFile -UseBasicParsing -ErrorAction Stop
-    if (-not (Test-NativeBinary -Path $temporaryFile)) {
-      Write-Host "  $asset was not a native Windows binary, trying next..."
-      continue
-    }
-
-    Move-Item -Force -Path $temporaryFile -Destination $destination
-    Write-Host "Installed runx to $destination"
-
-    Add-InstallDirToPath -Directory $InstallDir
-    Test-Shadowing -ExpectedPath $destination
-
-    if (Test-Path -LiteralPath $temporaryFile) {
-      Remove-Item -LiteralPath $temporaryFile -Force
-    }
-
-    Write-Host 'Run: runx --help'
-    return
-  } catch {
-    Write-Host "  not available, trying next..."
+$detectedArch = if ($Arch) { $Arch } else { switch ($env:PROCESSOR_ARCHITECTURE) { 'AMD64' { 'x64' } 'ARM64' { 'arm64' } default { throw "Unsupported architecture: $env:PROCESSOR_ARCHITECTURE" } } }
+if ($detectedArch -notin @('x64', 'arm64')) { throw "Invalid architecture: $detectedArch" }
+if (-not [Environment]::Is64BitOperatingSystem) { throw 'Unsupported platform: Windows 32-bit is not supported.' }
+$variant = if ($Variant) { $Variant } else { 'baseline' }
+$assetCandidates = if ($detectedArch -eq 'arm64') {
+  if ($Variant) { throw '-Variant is only valid for x64 installs.' }
+  @('runx-windows-arm64.exe')
+} else {
+  switch ($variant) {
+    'baseline' { @('runx-windows-x64-baseline.exe', 'runx-windows-x64.exe', 'runx-windows-x64-modern.exe') }
+    'default' { @('runx-windows-x64.exe', 'runx-windows-x64-baseline.exe', 'runx-windows-x64-modern.exe') }
+    'modern' { @('runx-windows-x64-modern.exe', 'runx-windows-x64.exe', 'runx-windows-x64-baseline.exe') }
+    default { throw "Invalid variant: $variant" }
   }
 }
 
-if (Test-Path -LiteralPath $temporaryFile) {
-  Remove-Item -LiteralPath $temporaryFile -Force
-}
+$targetVersion = Resolve-TargetVersion -RequestedVersion $Version
+$encodedTag = [Uri]::EscapeDataString("@guiho/runx@$targetVersion")
+$temporaryDirectory = Join-Path ([System.IO.Path]::GetTempPath()) ("runx-install-$PID-$([Guid]::NewGuid().ToString('N'))")
+New-Item -ItemType Directory -Force -Path $temporaryDirectory | Out-Null
 
-throw "No compatible runx binary found. Check available assets at: https://github.com/$Repo/releases"
+try {
+  New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
+  $InstallDir = (Resolve-Path -LiteralPath $InstallDir).Path
+  $destination = Join-Path $InstallDir 'runx.exe'
+  Write-Host "Installing RunX $targetVersion  os=windows  arch=$detectedArch  path=$destination"
+  $downloadedPath = $null
+  foreach ($asset in $assetCandidates) {
+    $url = if ($DownloadBaseUrl) { "$DownloadBaseUrl/$encodedTag/$asset" } else { "https://github.com/$Repo/releases/download/$encodedTag/$asset" }
+    $candidatePath = Join-Path $temporaryDirectory $asset
+    Write-Host "Downloading $url"
+    try {
+      Invoke-WebRequest -Uri $url -OutFile $candidatePath -UseBasicParsing
+    } catch {
+      $statusCode = if ($_.Exception.Response -and $_.Exception.Response.StatusCode) { [int]$_.Exception.Response.StatusCode } else { 0 }
+      if ($statusCode -eq 404) { Write-Host "  $asset is not available; trying the next compatible candidate."; continue }
+      throw "Failed to download $url`: $($_.Exception.Message)"
+    }
+    if (-not (Test-NativeBinary $candidatePath)) { throw "Downloaded asset $asset is not a native Windows executable." }
+    Unblock-File -LiteralPath $candidatePath -ErrorAction SilentlyContinue
+    $downloadedPath = $candidatePath
+    break
+  }
+  if (-not $downloadedPath) { throw "No compatible RunX $targetVersion binary found at https://github.com/$Repo/releases" }
+  Write-Host 'Replacing...'
+  Install-Transactional -DownloadedPath $downloadedPath -Destination $destination -ExpectedVersion $targetVersion
+  if ($env:RUNX_SKIP_PATH_UPDATE -ne '1') {
+    Add-InstallDirToPath -Directory $InstallDir
+    Test-Shadowing -ExpectedPath $destination
+  }
+  Write-Host "Installed and verified RunX $targetVersion at $destination"
+} finally {
+  Remove-Item -LiteralPath $temporaryDirectory -Recurse -Force -ErrorAction SilentlyContinue
+}
