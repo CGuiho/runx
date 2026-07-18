@@ -89,6 +89,8 @@ async function showAgentInstructions(): Promise<string> {
   return instructionBlock()
 }
 
+function listAgentPrompts(namesOnly: true): string[]
+function listAgentPrompts(namesOnly?: false): Array<{ id: string, description: string }>
 function listAgentPrompts(namesOnly = false): string[] | Array<{ id: string, description: string }> {
   return namesOnly
     ? [promptId]
