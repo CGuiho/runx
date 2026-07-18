@@ -6,6 +6,7 @@ created: 2026-07-18
 flags:
   - approved
   - breaking-change
+  - completed
 tags:
   - todo
   - cli
@@ -31,7 +32,7 @@ markers, `macos` asset names, and the Bun-dependent npm launcher is not required
 ## Todo Index
 
 - Task: `1. Migrate RunX To Full RFC 0034 Compliance`
-- Status: todo
+- Status: completed
 - Index: [TODO.md](../../TODO.md)
 
 ## Outcome
@@ -145,3 +146,6 @@ RFC-named binaries plus `guiho-s-runx` and `guiho-i-runx`.
 
 - [TODO.md](../../TODO.md)
 - [AGENTS.md](../../AGENTS.md)
+- [Implementation notes](./rfc-0034-cli-compliance-migration-implementation.md)
+- [Implementation review](../reviews/implementation/rfc-0034-cli-compliance-migration-review.md)
+- [Validation report](../validation/rfc-0034-cli-compliance-migration.md)
