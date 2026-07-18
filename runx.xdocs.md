@@ -16,7 +16,7 @@ files:
   tsconfig.json: Strict TypeScript compiler configuration for library output and type checking.
   xdocs.config.toml: XDocs metadata and agent automation configuration.
 documents:
-  AGENTS.md: Repository instructions for coding agents, including Citty CLI ownership and protected release boundaries.
+  AGENTS.md: Repository instructions for coding agents, including the mandatory SWE agent, CLI engineer skill, Citty ownership, breaking RFC migration, and protected release boundaries.
   CHANGELOG.md: Mirror-managed release history, including the 0.2.6 verified Windows self-upgrade fix.
   CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
   DOCS.md: Canonical Citty-backed CLI, manifest, complete release catalog, transactional upgrade/recovery, direct installer, distribution, and release reference.
@@ -35,6 +35,8 @@ keywords:
   - yaml
   - initialization
   - native binary
+  - RFC 0034
+  - cli engineer
 flags: []
 status: stable
 ---
