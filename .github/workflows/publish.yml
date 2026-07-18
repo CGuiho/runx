@@ -34,6 +34,7 @@ jobs:
       - run: bun test
       - run: bun run build
       - run: bun run binaries
+      - run: bun run verify-assets
 
       - name: Publish native binaries to GitHub release
         env:
@@ -49,22 +50,33 @@ jobs:
           fi
 
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            gh release upload "${GITHUB_REF_NAME}" bin/runx-* --clobber
+            gh release upload "${GITHUB_REF_NAME}" bin/* --clobber
           else
-            gh release create "${GITHUB_REF_NAME}" bin/runx-* --title "${GITHUB_REF_NAME}" --notes-file CHANGELOG.md --verify-tag "${RELEASE_FLAGS[@]}"
+            gh release create "${GITHUB_REF_NAME}" bin/* --title "${GITHUB_REF_NAME}" --notes-file CHANGELOG.md --verify-tag "${RELEASE_FLAGS[@]}"
           fi
 
-      - name: Verify GitHub release binary assets
+      - name: Verify exact GitHub release asset set
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          COUNT=$(gh release view "${GITHUB_REF_NAME}" --json assets --jq '[.assets[] | select(.name | startswith("runx-"))] | length')
-
-          if [ "$COUNT" -ne 12 ]; then
-            echo "Expected 12 runx native binary assets, found $COUNT" >&2
-            gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name' >&2
-            exit 1
-          fi
+          cat > expected-assets.txt <<'EOF'
+          guiho-i-runx
+          guiho-s-runx
+          runx-darwin-arm64
+          runx-darwin-x64
+          runx-darwin-x64-baseline
+          runx-darwin-x64-modern
+          runx-linux-arm64
+          runx-linux-x64
+          runx-linux-x64-baseline
+          runx-linux-x64-modern
+          runx-windows-arm64.exe
+          runx-windows-x64-baseline.exe
+          runx-windows-x64-modern.exe
+          runx-windows-x64.exe
+          EOF
+          gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name' | sort > actual-assets.txt
+          diff -u expected-assets.txt actual-assets.txt
 
       - name: Set up npm trusted publishing
         uses: actions/setup-node@v6
