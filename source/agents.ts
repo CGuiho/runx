@@ -1,63 +1,187 @@
-import { mkdir, readFile, writeFile } from 'node:fs/promises'
-import { homedir } from 'node:os'
-import { dirname, join } from 'node:path'
-import type { AgentScope, AgentTool } from './types.js'
-import { RunXError } from './errors.js'
+/**
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ */
 
-type EmbeddedResources = { skill: string } | undefined
+import { RunXError } from './errors.js'
+import { homeDirectory, joinPath, resolvePath } from './path-utils.js'
+import { ensureDirectory, pathExists, readTextIfExists, removePath, writeTextFile } from './storage.js'
+
+import type { AgentScope } from './types.js'
+
+export {
+  applyAgentInstructions,
+  installAgentSkill,
+  listAgentPrompts,
+  listAgentSkills,
+  removeAgentInstructions,
+  showAgentInstructions,
+  showAgentPrompt,
+  showAgentSkill,
+  uninstallAgentSkill,
+  updateAgentInstructions,
+  updateAgentSkill,
+}
+
+type EmbeddedResources = { skill: string, prompt: string } | undefined
 
 declare global {
   var __RUNX_EMBEDDED_RESOURCES__: EmbeddedResources
 }
 
-const managedStart = '<!-- BEGIN RUNX AGENT INSTRUCTIONS -->'
-const managedEnd = '<!-- END RUNX AGENT INSTRUCTIONS -->'
+const skillId = 'guiho-s-runx'
+const promptId = 'guiho-i-runx'
+const managedStart = '<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->'
+const managedEnd = '<!-- END RUNX -->'
 
-export const installAgentSkill = async (scope: AgentScope, tool: AgentTool, cwd: string): Promise<string[]> => {
-  const root = scope === 'global' ? homedir() : cwd
+async function installAgentSkill(scope: AgentScope, cwd: string): Promise<string[]> {
+  return writeSkillTargets(scope, cwd)
+}
+
+async function updateAgentSkill(scope: AgentScope, cwd: string): Promise<string[]> {
+  return writeSkillTargets(scope, cwd)
+}
+
+async function uninstallAgentSkill(scope: AgentScope, cwd: string): Promise<string[]> {
+  const targets = skillDirectories(scope, cwd)
+  for (const target of targets) await removePath(target)
+  return targets
+}
+
+function listAgentSkills(filter?: string): Array<{ id: string, description: string }> {
+  const skills = [{ id: skillId, description: 'Inspect, validate, describe, and safely execute RunX command catalogs.' }]
+  const keyword = filter?.trim().toLowerCase()
+  return keyword ? skills.filter((skill) => `${skill.id} ${skill.description}`.toLowerCase().includes(keyword)) : skills
+}
+
+async function showAgentSkill(id: string): Promise<{ id: string, path: string, description: string, metadata: Record<string, string> }> {
+  if (id !== skillId) throw new RunXError(`Unknown RunX skill: ${id}`, 2)
+  return {
+    id,
+    path: `skills/${skillId}/SKILL.md`,
+    description: listAgentSkills()[0]!.description,
+    metadata: { version: '0.1.0', package: '@guiho/runx' },
+  }
+}
+
+async function applyAgentInstructions(cwd: string): Promise<string[]> {
+  return reconcileInstructions(cwd, 'apply')
+}
+
+async function updateAgentInstructions(cwd: string): Promise<string[]> {
+  return reconcileInstructions(cwd, 'update')
+}
+
+async function removeAgentInstructions(cwd: string): Promise<string[]> {
+  const changed: string[] = []
+  for (const path of await instructionTargets(cwd)) {
+    const existing = await readTextIfExists(path)
+    if (existing === null) continue
+    const next = removeManagedBlock(existing)
+    if (next !== existing) {
+      await writeTextFile(path, next)
+      changed.push(path)
+    }
+  }
+  return changed
+}
+
+async function showAgentInstructions(): Promise<string> {
+  return instructionBlock()
+}
+
+function listAgentPrompts(namesOnly = false): string[] | Array<{ id: string, description: string }> {
+  return namesOnly
+    ? [promptId]
+    : [{ id: promptId, description: 'Guide an agent through safe RunX catalog inspection and execution.' }]
+}
+
+async function showAgentPrompt(id: string): Promise<string> {
+  if (id !== promptId) throw new RunXError(`Unknown RunX prompt: ${id}`, 2)
+  return readBundledPrompt()
+}
+
+async function writeSkillTargets(scope: AgentScope, cwd: string): Promise<string[]> {
   const skill = await readBundledSkill()
-  const targets = tool === 'all' ? ['agents', 'claude'] : [tool]
   const installed: string[] = []
-
-  for (const target of targets) {
-    const directory = target === 'agents'
-      ? join(root, '.agents', 'skills', 'guiho-s-runx')
-      : join(root, '.claude', 'skills', 'guiho-s-runx')
-    const path = join(directory, 'SKILL.md')
-    await mkdir(directory, { recursive: true })
-    await writeFile(path, skill, 'utf8')
+  for (const directory of skillDirectories(scope, cwd)) {
+    const path = joinPath(directory, 'SKILL.md')
+    await ensureDirectory(directory)
+    await writeTextFile(path, skill)
     installed.push(path)
   }
-
   return installed
 }
 
-export const installAgentInstructions = async (cwd: string): Promise<string> => {
-  const path = join(cwd, 'AGENTS.md')
-  let existing = ''
-  try {
-    existing = await readFile(path, 'utf8')
-  } catch (error) {
-    if (!(error instanceof Error && 'code' in error && error.code === 'ENOENT')) throw error
-  }
-
-  const section = `${managedStart}\n## RunX Command Catalog\n\nUse the bundled \`guiho-s-runx\` skill whenever working with \`runx.yaml\` manifests. Inspect with \`runx check --format json\` and \`runx list --format json\` before selecting a command. Use a UID for automation and require explicit developer approval before \`--yes\` on confirmation-gated commands.\n${managedEnd}`
-  const pattern = new RegExp(`${escapeRegExp(managedStart)}[\\s\\S]*?${escapeRegExp(managedEnd)}`, 'g')
-  const next = pattern.test(existing) ? existing.replace(pattern, section) : `${existing.trimEnd()}${existing.trim() ? '\n\n' : ''}${section}\n`
-
-  await mkdir(dirname(path), { recursive: true })
-  await writeFile(path, next, 'utf8')
-  return path
+function skillDirectories(scope: AgentScope, cwd: string): string[] {
+  const root = scope === 'global' ? homeDirectory() : resolvePath(cwd)
+  return [
+    joinPath(root, '.agents', 'skills', skillId),
+    joinPath(root, '.claude', 'skills', skillId),
+  ]
 }
 
-const readBundledSkill = async (): Promise<string> => {
+async function instructionTargets(cwd: string): Promise<string[]> {
+  const root = resolvePath(cwd)
+  const agents = joinPath(root, 'AGENTS.md')
+  const claude = joinPath(root, 'CLAUDE.md')
+  const agentsExists = await pathExists(agents)
+  const claudeExists = await pathExists(claude)
+  if (agentsExists && claudeExists) return [agents, claude]
+  if (claudeExists) return [claude]
+  return [agents]
+}
+
+async function reconcileInstructions(cwd: string, _action: 'apply' | 'update'): Promise<string[]> {
+  const changed: string[] = []
+  for (const path of await instructionTargets(cwd)) {
+    const existing = await readTextIfExists(path) ?? ''
+    const next = replaceManagedBlock(existing, instructionBlock())
+    if (next !== existing) {
+      await writeTextFile(path, next)
+      changed.push(path)
+    }
+  }
+  return changed
+}
+
+function instructionBlock(): string {
+  return `${managedStart}
+## RunX Command Catalog
+
+Load the \`guiho-s-runx\` skill before working with \`runx.yaml\`. Inspect with
+\`runx check --format json\` and \`runx list --format json\`, select stable UIDs,
+use \`runx run <uid> --dry-run\` before unfamiliar work, and add \`--yes\` only
+after explicit approval for a confirmation-gated command.
+${managedEnd}
+`
+}
+
+function replaceManagedBlock(existing: string, block: string): string {
+  const pattern = new RegExp(`${escapeRegExp(managedStart)}[\\s\\S]*?${escapeRegExp(managedEnd)}\\s*`, 'g')
+  const stripped = existing.replace(pattern, '').trimEnd()
+  return `${stripped}${stripped ? '\n\n' : ''}${block}`
+}
+
+function removeManagedBlock(existing: string): string {
+  const pattern = new RegExp(`\\s*${escapeRegExp(managedStart)}[\\s\\S]*?${escapeRegExp(managedEnd)}\\s*`, 'g')
+  const next = existing.replace(pattern, '\n').trimEnd()
+  return next ? `${next}\n` : ''
+}
+
+async function readBundledSkill(): Promise<string> {
   if (globalThis.__RUNX_EMBEDDED_RESOURCES__?.skill) return globalThis.__RUNX_EMBEDDED_RESOURCES__.skill
   const path = new URL('../skills/guiho-s-runx/SKILL.md', import.meta.url)
-  try {
-    return await Bun.file(path).text()
-  } catch {
-    throw new RunXError('Bundled guiho-s-runx skill is unavailable. Reinstall RunX from an official release.')
-  }
+  if (!(await Bun.file(path).exists())) throw new RunXError('Bundled guiho-s-runx skill is unavailable.', 5)
+  return Bun.file(path).text()
 }
 
-const escapeRegExp = (value: string): string => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+async function readBundledPrompt(): Promise<string> {
+  if (globalThis.__RUNX_EMBEDDED_RESOURCES__?.prompt) return globalThis.__RUNX_EMBEDDED_RESOURCES__.prompt
+  const path = new URL('../prompts/guiho-i-runx.md', import.meta.url)
+  if (!(await Bun.file(path).exists())) throw new RunXError('Bundled guiho-i-runx prompt is unavailable.', 5)
+  return Bun.file(path).text()
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
