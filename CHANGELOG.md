@@ -15,6 +15,23 @@ owner: runx
 
 # Changelog
 
+## 0.4.0 - 2026-07-18
+
+### Added
+
+- Added complete Developer Context help, the singular agent skill/instruction/prompt namespace, a detached TypeBox-validated update cache, and the canonical `guiho-i-runx` prompt.
+- Added a Node-compatible npm bootstrap, complete dual-tool direct installers, and exact verification for twelve native binaries plus two agent assets.
+
+### Changed
+
+- Rebuilt RunX around the complete RFC 0034 Bun, strict ESM TypeScript, raw Citty, and TypeBox contract.
+- Configuration now resolves only through `--config`, effective-cwd `runx.yaml`, then `~/.guiho/runx/runx.yaml`.
+- The startup banner, help modes, output streams, exit codes, upgrade catalog, release names, bundled skill, documentation, and workflows now follow the canonical RFC contract.
+
+### Removed
+
+- Removed the run command alias, root selector shorthand, `--file`, parent-directory discovery, plural agent namespace, arbitrary short flags, legacy platform asset names, and Bun-dependent npm launcher.
+
 ## 0.3.0 - 2026-07-18
 
 ### Added
