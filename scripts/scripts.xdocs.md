@@ -4,7 +4,8 @@ description: Package-manager launcher scripts for RunX.
 parent: runx
 children: []
 files:
-  runx-bin.ts: Executes a packaged native binary, the published compiled library launcher, or the source CLI fallback in a checkout.
+  runx-bin.mjs: Node-compatible npm bootstrap that downloads, caches, and delegates to the exact native release binary.
+  runx-bin.spec.ts: Packs the npm package and proves Node-only bootstrap download/delegation with Bun absent from PATH.
 documents: {}
 tags:
   - scripts
@@ -16,5 +17,4 @@ flags: []
 status: stable
 ---
 
-The package launcher preserves the `runx` bin command in installed npm packages
-and development checkouts without requiring unpublished source files.
+The npm launcher contains no RunX domain logic and requires no Bun installation.
