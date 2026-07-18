@@ -1,30 +1,38 @@
-import type { Static } from '@sinclair/typebox'
-import type { CommandSchema, ManifestSchema } from './manifest.js'
+/**
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ */
 
-export type RunXManifest = Static<typeof ManifestSchema>
-export type RunXCommand = Static<typeof CommandSchema>
+import type { RunXCommand, RunXManifest } from './configuration.js'
 
-export type ResolvedCommand = RunXCommand & {
+export type {
+  AgentScope,
+  CliOptions,
+  OutputFormat,
+  ResolvedCommand,
+  RunXCommand,
+  RunXManifest,
+  UpdateResult,
+}
+
+type ResolvedCommand = RunXCommand & {
   index: number
   selector: string
   manifestPath: string
   cwd: string
 }
 
-export type OutputFormat = 'text' | 'json'
+type OutputFormat = 'text' | 'json'
 
-export type CliOptions = {
+type CliOptions = {
   cwd: string
-  file?: string
+  config?: string
   format: OutputFormat
   verbose: boolean
 }
 
-export type AgentTool = 'agents' | 'claude' | 'all'
+type AgentScope = 'local' | 'global'
 
-export type AgentScope = 'local' | 'global'
-
-export type UpdateResult = {
+type UpdateResult = {
   currentVersion: string
   latestVersion: string
   updateAvailable: boolean
