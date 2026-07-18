@@ -79,16 +79,18 @@ describe('RunX manifests', () => {
       await Bun.write(executable, process.platform === 'win32' ? 'MZ' : '\x7fELF')
       globalThis.fetch = async () => {
         fetchCount += 1
-        return Response.json({
+        return Response.json([{
           tag_name: `@guiho/runx@${readVersion()}`,
+          draft: false,
+          prerelease: false,
+          published_at: '2026-07-15T00:00:00Z',
           assets: [{ name: updateAssetName(), browser_download_url: 'https://example.test/runx' }],
-        })
+        }])
       }
 
       const result = await upgradeSelf(false)
-      expect(result.upToDate).toBe(true)
-      expect(result.scheduled).toBe(false)
-      expect(await Bun.file(`${executable}.new`).exists()).toBe(false)
+      expect(result.outcome).toBe('up-to-date')
+      expect(result.error).toBeNull()
 
       const stdout: string[] = []
       process.stdout.write = ((chunk: string | Uint8Array) => {
@@ -96,9 +98,9 @@ describe('RunX manifests', () => {
         return true
       }) as typeof process.stdout.write
       await runCli(['upgrade'])
-      expect(stdout.join('')).toContain('Already up to date.')
+      expect(stdout.join('')).toContain('Already up to date:')
+      expect(stdout.join('')).toContain('-Version')
       expect(fetchCount).toBe(2)
-      expect(await Bun.file(`${executable}.new`).exists()).toBe(false)
     } finally {
       globalThis.fetch = originalFetch
       process.stdout.write = originalStdoutWrite
@@ -121,9 +123,12 @@ describe('RunX manifests', () => {
       globalThis.fetch = async (input) => {
         const release = {
           tag_name: `@guiho/runx@${readVersion()}`,
+          draft: false,
+          prerelease: false,
+          published_at: '2026-07-15T00:00:00Z',
           assets: [{ name: updateAssetName(), browser_download_url: 'https://example.test/runx' }],
         }
-        return Response.json(String(input).includes('?per_page=20') ? [release] : release)
+        return Response.json([release])
       }
 
       const stdout: string[] = []
@@ -136,7 +141,7 @@ describe('RunX manifests', () => {
       expect(JSON.parse(stdout.splice(0).join('')).updateAvailable).toBe(false)
 
       await runCli(['upgrade', 'list', '--format=json'])
-      expect(JSON.parse(stdout.splice(0).join('')).versions).toEqual([readVersion()])
+      expect(JSON.parse(stdout.splice(0).join('')).releases.map((release: { version: string }) => release.version)).toEqual([readVersion()])
 
       await runCli(['uninstall', '--dry-run', '--format=json'])
       expect(JSON.parse(stdout.join('')).dryRun).toBe(true)
@@ -144,6 +149,51 @@ describe('RunX manifests', () => {
     } finally {
       globalThis.fetch = originalFetch
       process.stdout.write = originalStdoutWrite
+      if (previousSelfPath === undefined) delete process.env['RUNX_SELF_PATH']
+      else process.env['RUNX_SELF_PATH'] = previousSelfPath
+    }
+  })
+
+  test('emits one exact failed JSON envelope without a generic trailing error', async () => {
+    const previousSelfPath = process.env['RUNX_SELF_PATH']
+    const originalFetch = globalThis.fetch
+    const originalStdoutWrite = process.stdout.write
+    const originalStderrWrite = process.stderr.write
+    const originalExitCode = process.exitCode
+    const stdout: string[] = []
+    const stderr: string[] = []
+    try {
+      delete process.env['RUNX_SELF_PATH']
+      globalThis.fetch = (async () => Response.json([{
+        tag_name: `@guiho/runx@${readVersion()}`,
+        draft: false,
+        prerelease: false,
+        published_at: '2026-07-15T00:00:00Z',
+        assets: [{ name: updateAssetName(), browser_download_url: 'https://example.test/runx' }],
+      }])) as typeof fetch
+      process.stdout.write = ((chunk: string | Uint8Array) => { stdout.push(String(chunk)); return true }) as typeof process.stdout.write
+      process.stderr.write = ((chunk: string | Uint8Array) => { stderr.push(String(chunk)); return true }) as typeof process.stderr.write
+      process.exitCode = undefined
+
+      await runCli(['upgrade', '--format=json'])
+
+      const document = JSON.parse(stdout.join(''))
+      expect(document).toMatchObject({
+        schemaVersion: 1,
+        command: 'runx upgrade',
+        outcome: 'failed',
+        result: null,
+        recovery: { targetVersion: readVersion(), targetSource: 'resolved' },
+        error: { code: 'verification_failed', phase: 'plan' },
+      })
+      expect(Object.keys(document.recovery)).toEqual(['targetVersion', 'targetSource', 'installCommand', 'stopProcessCommand'])
+      expect(stderr.join('')).toContain('requires a native RunX executable')
+      expect(process.exitCode).toBe(1)
+    } finally {
+      globalThis.fetch = originalFetch
+      process.stdout.write = originalStdoutWrite
+      process.stderr.write = originalStderrWrite
+      process.exitCode = originalExitCode
       if (previousSelfPath === undefined) delete process.env['RUNX_SELF_PATH']
       else process.env['RUNX_SELF_PATH'] = previousSelfPath
     }
@@ -157,7 +207,11 @@ const fixture = async (content: string): Promise<string> => {
   return directory
 }
 
-const updateAssetName = (): string => `runx-${process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'darwin' : 'linux'}-${process.arch}${process.platform === 'win32' ? '.exe' : ''}`
+const updateAssetName = (): string => {
+  const os = process.platform === 'win32' ? 'windows' : process.platform === 'darwin' ? 'macos' : 'linux'
+  const suffix = process.platform === 'win32' ? '.exe' : ''
+  return process.arch === 'arm64' ? `runx-${os}-arm64${suffix}` : `runx-${os}-x64-baseline${suffix}`
+}
 
 const manifest = (): string => `version: "1.0.0"
 scripts:
