@@ -21,6 +21,23 @@ owner: runx
 Always read this: /c/GUIHO/superiority/agents/guiho-a-0001-swe.AGENTS.md (C:\GUIHO\superiority\agents\guiho-a-0001-swe.AGENTS.md)
 Stop if you can not find it.
 
+## Required CLI Engineering
+
+- Use `guiho-a-0001-swe` as the coordinating GUIHO Software Engineer/SWE agent
+  for CLI architecture, planning, execution, review, validation, and release
+  work.
+- Load and follow the `guiho-s-0034-cli-engineer` agent skill whenever creating,
+  upgrading, refactoring, reviewing, testing, packaging, installing, or
+  releasing the RunX CLI.
+- `guiho-s-0034-cli-engineer` is a skill, not an agent. It supplements the SWE
+  agent and does not replace the lifecycle controller required by that agent.
+- During RFC 0034 implementation, also load the Bun, TypeScript, TypeBox, xdocs,
+  Mirror, documentation, TODO, plan execution, implementation review, and
+  validation skills named by the approved plan.
+- The approved RFC 0034 migration may make breaking changes. RunX is pre-1.0;
+  do not preserve legacy aliases, configuration discovery, command shapes, or
+  release names when they conflict with the approved migration plan.
+
 
 ## Repository Notes
 
