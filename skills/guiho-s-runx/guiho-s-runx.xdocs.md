@@ -4,7 +4,7 @@ description: Agent workflow for safe RunX catalog execution and verified native 
 parent: runx-skills
 children: []
 files:
-  SKILL.md: RunX catalog safety plus complete release listing, transactional upgrade, JSON, and pinned recovery guidance.
+  SKILL.md: RFC-aligned RunX catalog inspection, execution safety, YAML precedence, agent, and upgrade guidance.
 documents:
   SKILL.md: RunX-specific command execution and verified native self-upgrade workflow.
 tags:
