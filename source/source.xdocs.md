@@ -4,9 +4,9 @@ description: Bun and TypeScript implementation of the RunX command-catalog CLI a
 parent: runx
 children: []
 files:
-  agents.ts: Implements dual-tool skill actions, idempotent instruction blocks, and bundled prompt discovery.
-  cli.spec.ts: Exercises Citty help, version, command routing, aliases, global options, errors, safety gates, and agent paths.
-  cli.ts: Defines and routes the single RFC Citty tree, startup lifecycle, catalog, agent, upgrade, and uninstall commands.
+  agents.ts: Implements dual-tool skill actions, idempotent instruction blocks, and typed bundled prompt discovery.
+  cli.spec.ts: Exercises Citty help, root/nested version routing, upgrade flags, cached no-argument startup, aliases, errors, safety gates, and agent output.
+  cli.ts: Defines the single RFC Citty tree, routes public upgrade flags without root-version interception, and owns startup, catalog, agent, and uninstall output.
   configuration.ts: Resolves YAML by explicit/cwd/global precedence, TypeBox-decodes manifests, and resolves catalog selectors.
   embedded-resources.ts: Embeds the agent skill and canonical prompt in compiled native executables.
   errors.ts: Defines user-facing RunX errors and assertions.
