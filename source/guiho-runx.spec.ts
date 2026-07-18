@@ -98,8 +98,9 @@ describe('RunX manifests', () => {
         return true
       }) as typeof process.stdout.write
       await runCli(['upgrade'])
-      expect(stdout.join('')).toContain('Already up to date:')
-      expect(stdout.join('')).toContain('-Version')
+      const output = stdout.join('')
+      expect(output).toContain('Already up to date:')
+      expect(output).toContain(process.platform === 'win32' ? '-Version' : '--version')
       expect(fetchCount).toBe(2)
     } finally {
       globalThis.fetch = originalFetch
