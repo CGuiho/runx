@@ -69,7 +69,8 @@ RFC-named binaries plus `guiho-s-runx` and `guiho-i-runx`.
 ## Acceptance Signals
 
 - No prohibited Node built-ins exist in core CLI source.
-- No arguments prints exactly `Hello Windows - runx v<version>`.
+- No arguments prints a decoded cached update notice first when one is
+  available, followed by exactly `Hello Windows - runx v<version>`.
 - `runx.yaml` resolves only by `--config`, effective cwd, then the standardized
   global path, and prints its absolute loaded path.
 - TypeBox decodes configuration, cache, remote releases, structured flags, and
