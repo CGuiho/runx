@@ -89,8 +89,9 @@ function Test-InstalledVersion {
       $process.WaitForExit()
       throw 'Installed RunX version check timed out after 10 seconds'
     }
-    $stdout = (Get-Content -LiteralPath $stdoutPath -Raw -ErrorAction SilentlyContinue).Trim()
-    $stderr = (Get-Content -LiteralPath $stderrPath -Raw -ErrorAction SilentlyContinue).Trim()
+    $process.WaitForExit()
+    $stdout = ([string](Get-Content -LiteralPath $stdoutPath -Raw -ErrorAction SilentlyContinue)).Trim()
+    $stderr = ([string](Get-Content -LiteralPath $stderrPath -Raw -ErrorAction SilentlyContinue)).Trim()
     if ($process.ExitCode -ne 0) { throw "Installed RunX exited with code $($process.ExitCode) during verification: $stderr" }
     if ($stdout -ne $ExpectedVersion) { throw "Installed RunX reported $stdout; expected $ExpectedVersion" }
   } finally {
