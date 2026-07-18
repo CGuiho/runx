@@ -44,13 +44,15 @@ Stop if you can not find it.
 - RunX is the open-source `@guiho/runx` Bun/TypeScript CLI for a documented,
   language-agnostic `runx.yaml` command catalog.
 - The executable entrypoint is `source/guiho-runx-bin.ts`; native builds use
-  `source/guiho-runx-native-bin.ts`. Do not add a Node.js runtime dependency.
+  `source/guiho-runx-native-bin.ts`. The npm entrypoint is the isolated
+  Node-compatible `scripts/runx-bin.mjs` bootstrap.
 - Use Bun for installs, tests, typechecking, builds, and executable compilation.
-- `runx` without arguments shows the home page and usage. `runx list` lists a
-  manifest; `runx run` and `runx r` execute a selected command.
-- Citty owns argument parsing, aliases, command routing, and ordinary usage.
-  Keep `-h`/`--help` and `-v`/`--version` manifest-free, and do not add a
-  second handwritten token parser or manual execution router.
+- `runx` without arguments prints the exact RFC banner. `runx list` lists a
+  configuration; only `runx run <selector>` executes a catalog command.
+- Citty owns argument parsing and command routing. Only `-h`/`--help` and root
+  `-v`/`--version` have short aliases.
+- Configuration resolves by `--config`, effective cwd `runx.yaml`, then
+  `~/.guiho/runx/runx.yaml`; never search parent directories.
 - Treat manifests as trusted executable code. Listing, describing, checking,
   and dry runs must never spawn a configured command.
 - Keep the bundled `skills/guiho-s-runx/SKILL.md` aligned with the CLI contract.
