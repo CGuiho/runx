@@ -31,6 +31,15 @@ JSON output, directory existence checking initially rejected valid command
 working directories, and legacy Windows cleanup tests waited indefinitely.
 Focused tests now cover each corrected behavior.
 
+An independent post-release audit then found and corrected three additional
+contract defects: the public upgrade flags were unreachable through the Citty
+group and root `--version` intercepted the nested version selector;
+no-argument startup skipped the decoded cached update notice; and text-mode
+prompt names rendered as a JSON array. The corrected CLI routes all upgrade
+flags through `runx upgrade`, prints a cached notice before the banner without
+network work, and prints raw names one per line. Live-routing regression tests
+cover each path.
+
 ## Acceptance Criteria Check
 
 - Mandatory Bun, TypeScript, Citty, and TypeBox stack: accepted.
@@ -48,9 +57,10 @@ Focused tests now cover each corrected behavior.
 
 ## Residual Risk
 
-Publishing and GitHub Release creation are intentionally outside this delivery.
-The workflows are validated locally and will execute only on a protected
-Mirror-managed version tag.
+Package publication and GitHub Release creation remain tag-triggered workflow
+effects rather than direct local actions. The patch release validates the
+workflow inputs and exact asset set locally; the protected production workflow
+still owns publication.
 
 ## References
 
