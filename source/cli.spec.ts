@@ -2,10 +2,11 @@
  * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
-import { afterEach, describe, expect, test } from 'bun:test'
+import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
+import { runCliWithErrorHandling } from './cli.js'
 import { readVersion } from './help.js'
 
 type CliResult = { exitCode: number, stdout: string, stderr: string }
@@ -23,6 +24,23 @@ describe('RunX RFC 0034 CLI', () => {
     expect((await cli([], cwd)).stdout).toBe(`Hello Windows - runx v${readVersion()}\n`)
     for (const flag of ['-v', '--version']) expect((await cli([flag], cwd)).stdout.trim()).toBe(readVersion())
     for (const flag of ['-h', '--help']) expect((await cli([flag], cwd)).stdout).toContain('USAGE')
+  })
+
+  test('prints the cached update notice before the no-argument banner without network work', async () => {
+    const cwd = await temporaryDirectory()
+    const home = await temporaryDirectory()
+    await Bun.write(join(home, '.guiho', 'runx', 'cache.json'), JSON.stringify({
+      newVersionAvailable: true,
+      latestVersion: '99.0.0',
+      upgradeCommand: 'runx upgrade',
+      lastCheck: '2026-07-18T00:00:00.000Z',
+    }))
+
+    const result = await cli([], cwd, home)
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toBe(`New version available. Run this command to upgrade: runx upgrade\nHello Windows - runx v${readVersion()}\n`)
+    expect(result.stderr).toBe('')
   })
 
   test('renders every public scope with all Developer Context help modes', async () => {
@@ -104,8 +122,54 @@ describe('RunX RFC 0034 CLI', () => {
       const text = await Bun.file(join(cwd, name)).text()
       expect(text.match(/BEGIN RUNX — DO NOT EDIT THIS SECTION/g)).toHaveLength(1)
     }
-    expect((await cli(['agent', 'prompt', 'list', '--names'], cwd)).stdout.trim()).toBe('[\n  "guiho-i-runx"\n]')
+    expect((await cli(['agent', 'prompt', 'list', '--names'], cwd)).stdout).toBe('guiho-i-runx\n')
+    expect(JSON.parse((await cli(['agent', 'prompt', 'list', '--names', '--format', 'json'], cwd)).stdout)).toEqual(['guiho-i-runx'])
     expect((await cli(['agent', 'prompt', 'show', 'guiho-i-runx'], cwd)).stdout).toContain('# RunX Agent Instruction')
+  })
+
+  test('routes public upgrade flags to the upgrade command without root version interception', async () => {
+    const cwd = await temporaryDirectory()
+    const originalFetch = globalThis.fetch
+    const originalHome = Bun.env.HOME
+    const originalSelfPath = Bun.env.RUNX_SELF_PATH
+    const originalWorker = Bun.env.RUNX_DISABLE_UPDATE_WORKER
+    const originalExitCode = process.exitCode
+    let stdout = ''
+    let stderr = ''
+    const stdoutSpy = spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      stdout += String(chunk)
+      return true
+    })
+    const stderrSpy = spyOn(process.stderr, 'write').mockImplementation((chunk) => {
+      stderr += String(chunk)
+      return true
+    })
+
+    try {
+      Bun.env.HOME = cwd
+      Bun.env.RUNX_SELF_PATH = join(cwd, process.platform === 'win32' ? 'runx.exe' : 'runx')
+      Bun.env.RUNX_DISABLE_UPDATE_WORKER = '1'
+      globalThis.fetch = releaseFetch(readVersion())
+      process.exitCode = 0
+
+      await runCliWithErrorHandling(['upgrade', '--version', readVersion(), '--arch', 'x64', '--variant', 'baseline', '--dry-run', '--format', 'json'])
+
+      expect(process.exitCode).toBe(0)
+      const output = JSON.parse(stdout)
+      expect(output.command).toBe('runx upgrade')
+      expect(output.outcome).toBe('up-to-date')
+      expect(output.plan.targetVersion).toBe(readVersion())
+      expect(stdout.trim()).not.toBe(readVersion())
+      expect(stderr).toBe('')
+    } finally {
+      stdoutSpy.mockRestore()
+      stderrSpy.mockRestore()
+      globalThis.fetch = originalFetch
+      restoreEnvironment('HOME', originalHome)
+      restoreEnvironment('RUNX_SELF_PATH', originalSelfPath)
+      restoreEnvironment('RUNX_DISABLE_UPDATE_WORKER', originalWorker)
+      process.exitCode = originalExitCode
+    }
   })
 })
 
@@ -141,4 +205,22 @@ commands:
     description: Selected command for tests.
     command: ${command}
 `
+}
+
+function releaseFetch(version: string): typeof fetch {
+  return (async () => Response.json([{
+    tag_name: `@guiho/runx@${version}`,
+    draft: false,
+    prerelease: false,
+    published_at: '2026-07-18T00:00:00Z',
+    assets: [{
+      name: process.platform === 'win32' ? 'runx-windows-x64-baseline.exe' : process.platform === 'darwin' ? 'runx-darwin-x64-baseline' : 'runx-linux-x64-baseline',
+      browser_download_url: 'https://example.test/runx',
+    }],
+  }])) as typeof fetch
+}
+
+function restoreEnvironment(name: string, value: string | undefined): void {
+  if (value === undefined) delete Bun.env[name]
+  else Bun.env[name] = value
 }
