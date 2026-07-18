@@ -2,6 +2,8 @@
  * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
  */
 
+import { Type } from '@sinclair/typebox'
+import { Value } from '@sinclair/typebox/value'
 import { compare, parse, valid } from 'semver'
 import { RunXError } from './errors.js'
 import type { ReleaseAsset, ReleaseCatalog, ReleaseCatalogEntry, UpgradeArch, UpgradeOs, UpgradeVariant } from './upgrade-types.js'
@@ -14,14 +16,21 @@ export {
   resolveUpgradePlatform,
 }
 
-export type GitHubRelease = {
-  tag_name: string
-  draft?: boolean
-  prerelease?: boolean
-  published_at?: string | null
-  created_at?: string | null
-  assets: Array<{ name: string, browser_download_url: string }>
-}
+const githubReleaseSchema = Type.Object({
+  tag_name: Type.String(),
+  draft: Type.Optional(Type.Boolean()),
+  prerelease: Type.Optional(Type.Boolean()),
+  published_at: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+  created_at: Type.Optional(Type.Union([Type.String(), Type.Null()])),
+  assets: Type.Array(Type.Object({
+    name: Type.String(),
+    browser_download_url: Type.String(),
+  }, { additionalProperties: true })),
+}, { additionalProperties: true })
+
+const githubReleasesSchema = Type.Array(githubReleaseSchema)
+
+export type GitHubRelease = import('@sinclair/typebox').Static<typeof githubReleaseSchema>
 
 export type ReleasePlatform = {
   os: UpgradeOs
@@ -46,12 +55,13 @@ const fetchReleaseCatalog = async (options: FetchCatalogOptions): Promise<Releas
     const response = await fetchImpl(`${repositoryApi}?per_page=100&page=${page}`, {
       headers: { accept: 'application/vnd.github+json' },
     })
-    if (!response.ok) throw new RunXError(`Could not retrieve RunX releases page ${page}: HTTP ${response.status}`)
+    if (!response.ok) throw new RunXError(`Could not retrieve RunX releases page ${page}: HTTP ${response.status}`, 4)
     const payload: unknown = await response.json()
-    if (!Array.isArray(payload)) throw new RunXError(`Could not retrieve RunX releases page ${page}: malformed response`)
-    const pageReleases = payload as GitHubRelease[]
-    if (pageReleases.some((release) => !isGitHubRelease(release))) {
-      throw new RunXError(`Could not retrieve RunX releases page ${page}: malformed release`)
+    let pageReleases: GitHubRelease[]
+    try {
+      pageReleases = Value.Decode(githubReleasesSchema, payload)
+    } catch {
+      throw new RunXError(`Could not retrieve RunX releases page ${page}: malformed release`, 4)
     }
     releases.push(...pageReleases.filter((release) => !release.draft))
     next = hasNextPage(response.headers.get('link'))
@@ -110,7 +120,7 @@ const assetCandidates = ({ os, arch, variant }: ReleasePlatform): string[] => {
 }
 
 const resolveUpgradePlatform = (platform = process.platform, architecture = process.arch): ReleasePlatform => {
-  const os = platform === 'win32' ? 'windows' : platform === 'darwin' ? 'macos' : platform === 'linux' ? 'linux' : null
+  const os = platform === 'win32' ? 'windows' : platform === 'darwin' ? 'darwin' : platform === 'linux' ? 'linux' : null
   const arch = architecture === 'x64' ? 'x64' : architecture === 'arm64' ? 'arm64' : null
   if (!os) throw new RunXError(`Self-upgrade is not supported on ${platform}.`)
   if (!arch) throw new RunXError(`Self-upgrade is not supported on architecture ${architecture}.`)
@@ -139,11 +149,3 @@ const compareCatalogEntries = (left: ReleaseCatalogEntry, right: ReleaseCatalogE
 const timestamp = (value: string | null): number => value ? Date.parse(value) || 0 : 0
 
 const hasNextPage = (link: string | null): boolean => Boolean(link?.split(',').some((part) => /rel="next"/.test(part)))
-
-const isGitHubRelease = (value: unknown): value is GitHubRelease => {
-  if (!value || typeof value !== 'object') return false
-  const release = value as Partial<GitHubRelease>
-  return typeof release.tag_name === 'string'
-    && Array.isArray(release.assets)
-    && release.assets.every((asset) => typeof asset?.name === 'string' && typeof asset?.browser_download_url === 'string')
-}
