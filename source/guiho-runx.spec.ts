@@ -194,7 +194,7 @@ describe('RunX manifests', () => {
       globalThis.fetch = originalFetch
       process.stdout.write = originalStdoutWrite
       process.stderr.write = originalStderrWrite
-      process.exitCode = originalExitCode
+      process.exitCode = originalExitCode ?? 0
       if (previousSelfPath === undefined) delete process.env['RUNX_SELF_PATH']
       else process.env['RUNX_SELF_PATH'] = previousSelfPath
     }
