@@ -181,7 +181,13 @@ try {
   New-Item -ItemType Directory -Force -Path $InstallDir | Out-Null
   $InstallDir = (Resolve-Path -LiteralPath $InstallDir).Path
   $destination = Join-Path $InstallDir 'runx.exe'
-  Write-Host "Installing RunX $targetVersion  os=windows  arch=$detectedArch  path=$destination"
+  $firstAsset = $assetCandidates[0]
+  $sourceUrl = if ($DownloadBaseUrl) { "$DownloadBaseUrl/$encodedTag/$firstAsset" } else { "https://github.com/$Repo/releases/download/$encodedTag/$firstAsset" }
+  Write-Host 'Initiating GUIHO CLI Upgrade / Installation Sequence...'
+  Write-Host "Target Version: v$targetVersion"
+  Write-Host "Architecture:   $detectedArch"
+  Write-Host "Variant:        $variant"
+  Write-Host "Source URL:     $sourceUrl"
   $downloadedPath = $null
   foreach ($asset in $assetCandidates) {
     $url = if ($DownloadBaseUrl) { "$DownloadBaseUrl/$encodedTag/$asset" } else { "https://github.com/$Repo/releases/download/$encodedTag/$asset" }
@@ -202,10 +208,38 @@ try {
   if (-not $downloadedPath) { throw "No compatible RunX $targetVersion binary found at https://github.com/$Repo/releases" }
   Write-Host 'Replacing...'
   Install-Transactional -DownloadedPath $downloadedPath -Destination $destination -ExpectedVersion $targetVersion
+  $skillAsset = Join-Path $temporaryDirectory 'guiho-s-runx'
+  $promptAsset = Join-Path $temporaryDirectory 'guiho-i-runx'
+  $assetBase = if ($DownloadBaseUrl) { "$DownloadBaseUrl/$encodedTag" } else { "https://github.com/$Repo/releases/download/$encodedTag" }
+  Write-Host "Downloading skill asset: $assetBase/guiho-s-runx"
+  Invoke-WebRequest -Uri "$assetBase/guiho-s-runx" -OutFile $skillAsset -UseBasicParsing
+  Write-Host "Downloading instruction asset: $assetBase/guiho-i-runx"
+  Invoke-WebRequest -Uri "$assetBase/guiho-i-runx" -OutFile $promptAsset -UseBasicParsing
+  foreach ($skillRoot in @((Join-Path $HOME '.agents\skills\guiho-s-runx'), (Join-Path $HOME '.claude\skills\guiho-s-runx'))) {
+    New-Item -ItemType Directory -Force -Path $skillRoot | Out-Null
+    Copy-Item -LiteralPath $skillAsset -Destination (Join-Path $skillRoot 'SKILL.md') -Force
+    Write-Host "Installed skill: $(Join-Path $skillRoot 'SKILL.md')"
+  }
+  $instructionTargets = @()
+  if (Test-Path -LiteralPath (Join-Path (Get-Location) 'AGENTS.md')) { $instructionTargets += (Join-Path (Get-Location) 'AGENTS.md') }
+  if (Test-Path -LiteralPath (Join-Path (Get-Location) 'CLAUDE.md')) { $instructionTargets += (Join-Path (Get-Location) 'CLAUDE.md') }
+  if ($instructionTargets.Count -eq 0) { $instructionTargets += (Join-Path (Get-Location) 'AGENTS.md') }
+  $startMarker = '<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->'
+  $endMarker = '<!-- END RUNX -->'
+  $prompt = Get-Content -Raw -LiteralPath $promptAsset
+  foreach ($instructionPath in $instructionTargets) {
+    Write-Host "Reconciling instruction file: $instructionPath"
+    $existing = if (Test-Path -LiteralPath $instructionPath) { Get-Content -Raw -LiteralPath $instructionPath } else { '' }
+    $pattern = [Regex]::Escape($startMarker) + '[\s\S]*?' + [Regex]::Escape($endMarker) + '\s*'
+    $clean = ([Regex]::Replace($existing, $pattern, '')).TrimEnd()
+    $prefix = if ($clean) { "$clean`r`n`r`n" } else { '' }
+    Set-Content -LiteralPath $instructionPath -Value "$prefix$startMarker`r`n$($prompt.Trim())`r`n$endMarker`r`n" -Encoding utf8
+  }
   if ($env:RUNX_SKIP_PATH_UPDATE -ne '1') {
     Add-InstallDirToPath -Directory $InstallDir
     Test-Shadowing -ExpectedPath $destination
   }
+  Write-Host "Final verification: $destination --version"
   Write-Host "Installed and verified RunX $targetVersion at $destination"
 } finally {
   Remove-Item -LiteralPath $temporaryDirectory -Recurse -Force -ErrorAction SilentlyContinue
