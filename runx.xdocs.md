@@ -6,13 +6,14 @@ children:
   - runx-source
   - runx-scripts
   - runx-skills
+  - runx-prompts
   - runx-devops
   - runx-docs
 files:
   .gitignore: Ignores local dependencies and generated build outputs.
   bun.lock: Locks Bun dependencies for reproducible installs.
   mirror.config.toml: Mirror semantic versioning configuration.
-  package.json: Package metadata, scripts, native CLI entrypoint, and runtime dependencies.
+  package.json: Package metadata, RFC scripts, Node-compatible npm bootstrap entrypoint, and runtime dependencies.
   tsconfig.json: Strict TypeScript compiler configuration for library output and type checking.
   xdocs.config.toml: XDocs metadata and agent automation configuration.
 documents:
@@ -21,7 +22,7 @@ documents:
   CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
   DOCS.md: Canonical Citty-backed CLI, manifest, complete release catalog, transactional upgrade/recovery, direct installer, distribution, and release reference.
   LICENSE.md: MIT license.
-  README.md: Public project overview, installation, interactive quick start, Citty aliases, and verified upgrade/list/recovery commands.
+  README.md: Public RFC 0034 overview, installation, command catalog, YAML precedence, and help entrypoints.
   SECURITY.md: Vulnerability reporting and manifest trust-boundary policy.
   TODO.md: Package-local task index.
 tags:
@@ -41,8 +42,6 @@ flags: []
 status: stable
 ---
 
-RunX is a standalone command-catalog CLI. It keeps project operations in a
-strict, documented `runx.yaml` manifest and supports local human and agent use
-without requiring the target project to use JavaScript. `runx init` creates an
-empty, strict catalog through a guided terminal workflow before commands are
-added.
+RunX is a standalone RFC 0034 command-catalog CLI with one Citty tree, TypeBox
+boundaries, Bun-only core source, complete agent integration, transactional
+native upgrades, a Node-compatible npm bootstrap, and fourteen release assets.
