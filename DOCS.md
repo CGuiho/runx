@@ -1,184 +1,155 @@
 ---
 name: RunX Documentation
-purpose: Provide the canonical user-facing RunX CLI and manifest reference.
-description: Documents command behavior, manifest schema, safety model, agent workflow, and native distribution.
+purpose: Define the canonical supported RunX CLI contract.
+description: Complete reference for command routing, YAML configuration, startup, help, output, agents, upgrades, installation, and release assets.
 created: 2026-07-12
-flags: []
+flags:
+  - canonical
 tags:
-  - documentation
   - cli
+  - reference
 keywords:
-  - runx
-  - manifest
+  - RFC 0034
+  - runx.yaml
+  - agent namespace
+  - release assets
 owner: runx
 ---
 
 # RunX Documentation
 
-## Purpose
+## Runtime Contract
 
-RunX makes project operations visible and documented. A `runx.yaml` file is a
-single local command catalog; RunX discovers the nearest catalog, validates it,
-lists its commands, and runs exactly one selected command.
+RunX uses Bun, strict ESM TypeScript, raw Citty, and TypeBox. Core source is
+Bun-only. The isolated npm bootstrap is Node-compatible because it must work
+before Bun is installed.
 
-## Commands
-
-| Command | Purpose |
-| --- | --- |
-| `runx` | Show the home page and usage without loading a manifest. |
-| `runx -h`, `runx --help` | Show Citty-generated usage without loading a manifest. Append help to a command for command-specific usage. |
-| `runx -v`, `runx --version` | Show the installed version without loading a manifest. |
-| `runx init [--cwd <path>]` | Interactively create an empty `runx.yaml` catalog in the selected directory. |
-| `runx list` | List all manifest commands. Add `--format json` for structured output. |
-| `runx describe <selector>` | Show one command's description and operational metadata. |
-| `runx check` | Validate discovery and the manifest without execution. |
-| `runx run <selector>` | Execute a selected command. |
-| `runx r <selector>` | Short alias for `runx run`. |
-| `runx <selector>` | Human shorthand for `runx run <selector>` when no built-in name conflicts. |
-| `runx agents install <local|global>` | Install `guiho-s-runx`; add `--tool agents|claude|all` when needed. |
-| `runx agents instructions` | Add or refresh the managed RunX section in `AGENTS.md`. |
-| `runx upgrade` | Plan, download, validate, transactionally replace, and verify the latest stable native executable. |
-| `runx upgrade check` | Check whether a newer release is available. |
-| `runx upgrade list` | List every published release with SemVer order, channel, date, current/latest markers, and compatible asset data. |
-| `runx uninstall [--dry-run]` | Remove a native installed executable. |
-
-Global flags: `--cwd <path>`, `--file <path>`, `--format <text|json>`,
-`--verbose`, `-v`/`--version`, `-h`/`--help`, `--help-tree`, and
-`--help-docs`. Applicable command flags include `--dry-run`, `--yes`, and
-`--tool <agents|claude|all>`. Options may appear before or after their command.
-Unknown options and missing required arguments produce command usage instead
-of falling through to manifest discovery.
-
-`runx init` is intentionally an interactive text workflow: it accepts `--cwd`
-to select the target project, but rejects `--file` (the target is always
-`runx.yaml`) and `--format json`. It previews the exact file, requires a final
-confirmation, asks before replacing an existing file, and leaves no partial
-file when cancelled. It creates the manifest only; the configured scripts
-directory is created later when the first script is added.
-
-Citty is the CLI parser, command router, alias registry, and ordinary usage
-renderer. RunX keeps its home page, extended command tree, and manifest guide
-as the explicit `runx`, `--help-tree`, and `--help-docs` surfaces.
-
-## Manifest
-
-RunX searches upward from the current directory for `runx.yaml`. Use `--file`
-to select an explicit manifest. RunX does not merge files.
-
-```yaml
-version: "1.0.0"
-project:
-  name: example
-scripts:
-  directory: scripts
-groups:
-  public:
-    summary: Default public project commands.
-  development:
-    summary: Local development work.
-  release:
-    summary: Explicit release actions.
-commands:
-  - uid: example-check
-    id: check
-    group: development
-    summary: Type-check the project.
-    description: Runs the project's static type checker without emitting build files.
-    command: bun run typecheck
-    cwd: .
-    shell: auto
-    tags: [validation]
-  - uid: example-release
-    id: release
-    group: release
-    summary: Build the release artifact.
-    description: Builds the release artifact after the project has passed its required checks.
-    command: bun run build
-    confirm: always
-```
-
-`version` is a Semantic Versioning string. RunX currently supports major
-version `1`, including valid prerelease and build metadata forms. Every manifest
-also requires `scripts.directory`, which must be a relative subdirectory inside
-the manifest directory, and a `public` group with a non-empty summary. A
-catalog may start with `commands: []`; every command added later must explicitly
-name an existing group (normally `public`).
-
-Required command fields are `uid`, `id`, `group`, `summary`, `description`,
-and `command`. `uid` and `id` begin with a lowercase letter and use lowercase
-letters, digits, and hyphens. `uid` is globally unique; the group and ID pair
-is also unique.
-
-Optional command fields are `cwd`, `shell`, `tags`, and `confirm`. `cwd` is
-relative to the manifest and cannot escape its directory. Shell values are
-`auto`, `bash`, `sh`, `powershell`, and `cmd`. Confirmation values are `never`
-and `always`.
-
-## Selectors and Safety
-
-RunX resolves selectors in this order: exact UID, exact `group/id`, one-based
-manifest index, then an unambiguous bare ID. Use UIDs in automation. An index is
-only stable until commands are reordered, and an ambiguous bare ID fails rather
-than selecting a command.
-
-`list`, `describe`, `check`, and `run --dry-run` never execute a configured
-command. A real run streams stdout/stderr and uses the child process exit code.
-`confirm: always` requires the user to add `--yes`.
-
-Manifests are executable local code. Do not place secrets in a manifest and do
-not assume a group name determines safety.
-
-## Agent Skill
-
-The bundled `guiho-s-runx` skill directs agents to validate and list a catalog,
-select a UID, inspect unfamiliar commands, use dry runs, and obtain explicit
-authorization before `--yes` for high-impact commands. Install it with:
+No arguments prints exactly:
 
 ```text
-runx agents install local
+Hello Windows - runx v<version>
 ```
 
-## Native Install, Upgrade, and Uninstall
+The foreground reads `~/.guiho/runx/cache.json` and never waits for network
+work. A detached worker validates GitHub release data and atomically refreshes
+that cache. When a decoded cache announces an update, RunX prints:
 
-`devops/install.ps1` installs Windows assets and `devops/install.sh` installs
-macOS/Linux assets from GitHub Releases into the user's local bin directory.
-Both accept an exact stable or prerelease version, resolve `latest` to one exact
-stable version, use unique temporary state, validate native format, replace the
-canonical executable transactionally, execute it with `--version`, and restore
-the previous binary after installation or verification failure.
+```text
+New version available. Run this command to upgrade: runx upgrade
+```
 
-`runx upgrade` resolves the full immutable plan before download and prints the
-current/target versions, OS, architecture, selected binary, canonical path, and
-exact URL. Human text is flushed before awaiting each slow phase:
-`Downloading`, `Validating`, `Replacing`, and `Verifying`. On Windows it first
-renames the mapped running executable, places the new binary at the canonical
-path immediately, and verifies that path. Only deletion of the renamed old
-image may be deferred; replacement itself is never reported as scheduled.
-`runx uninstall` removes the same native executable and supports `--dry-run`.
+## Configuration
 
-When the latest stable release matches the installed version, `runx upgrade`
-prints `Already up to date` and exits successfully without downloading or
-replacing. Every upgraded, up-to-date, dry-run, rolled-back, or failed result ends with
-an exact-version direct-install command and a separate safe process-stop
-command. JSON output is one schema-versioned document with `plan` (nullable
-when target discovery fails), ordered `events`, `outcome`, `result`, stable
-`error.code`, and `recovery`. Recovery contains `targetSource` and the separate
-`stopProcessCommand`. A successful rollback uses outcome `rolled-back`, retains
-the primary error, reports the restored version in `result`, and exits nonzero.
+RunX loads YAML only. Resolution is:
 
-If the installed version has greater SemVer precedence than the greatest stable
-release—including an installed prerelease above an older stable line—RunX does
-not downgrade it. A stable release still supersedes prereleases of that same
-version, following SemVer precedence.
+1. `--config <path>`;
+2. `<effective-cwd>/runx.yaml`;
+3. `~/.guiho/runx/runx.yaml`.
 
-`runx upgrade list` follows every GitHub Releases page. Valid SemVer entries are
-ordered by precedence (stable above its prereleases), with `alpha`, `beta`,
-`rc`, other prerelease channels, publication date, current/latest flags, and
-compatible asset metadata. Published non-SemVer tags remain visible after the
-SemVer catalog. The default upgrade target is the greatest stable SemVer, not
-the first release returned by GitHub.
+Whenever loaded, the absolute path is reported as:
 
-CI validates code and compiles the local executable plus the native release
-matrix. Protected `@guiho/runx@*` tags run the `production` publish workflow,
-which uploads twelve native assets to GitHub Releases and publishes the public
-npm package through OIDC trusted publishing.
+```text
+configuration file loaded: <absolute-path>
+```
+
+The complete manifest and nested records are TypeBox-decoded. Invalid or absent
+configuration exits `3`.
+
+## Commands And Help
+
+The public command tree is the catalog shown in [README.md](README.md). Citty is
+the only parser and router. The only short flags are `-h` and root `-v`.
+
+Every root, group, and leaf supports:
+
+- standard help with usage, description, positionals, flags, and examples;
+- `--help-tree`, using Unicode box-drawing branches;
+- `--help-tree-depth <positive-integer>`;
+- redirect-safe Markdown through `--help-docs`.
+
+Only `runx run <selector>` executes catalog code. Listing, describing, checking,
+help, initialization, agent operations, upgrade inspection, and dry runs do not.
+
+## Output And Exit Codes
+
+Text results use stdout and diagnostics use stderr. JSON mode emits one valid
+JSON document on stdout; configuration reports and diagnostics remain on
+stderr.
+
+| Code | Meaning |
+| ---: | --- |
+| `0` | Success |
+| `1` | Unexpected operational failure |
+| `2` | Usage or structured flag validation failure |
+| `3` | Configuration resolution or decoding failure |
+| `4` | Release or network failure |
+| `5` | Installation, upgrade, or filesystem mutation failure |
+| `130` | Interruption |
+
+An executed catalog command preserves its exact delegated exit code.
+
+## Agent Integration
+
+Skill install, update, and uninstall default to global scope and target both:
+
+```text
+~/.agents/skills/guiho-s-runx
+~/.claude/skills/guiho-s-runx
+```
+
+Use `--local` for the corresponding project-local paths.
+
+Instruction actions manage both `AGENTS.md` and `CLAUDE.md` when both exist,
+the existing one when only one exists, and create `AGENTS.md` when neither
+exists. The exact idempotent boundaries are:
+
+```text
+<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->
+<!-- END RUNX -->
+```
+
+The canonical prompt is `guiho-i-runx`. `agent prompt list --names` prints raw
+names; `agent prompt show <id>` prints only the raw prompt.
+
+## Upgrade And Installation
+
+`runx upgrade` accepts `--version`, `--arch`, `--variant`, `--dry-run`, and
+`--format`. x64 defaults to `baseline`. `upgrade list` supports positive
+`--page` and `--per-page` plus `--pre-releases`.
+
+Replacement is transactional: download, native-format validation, backup,
+replacement, version verification, rollback on failure, agent-skill refresh,
+instruction reconciliation, then cleanup.
+
+Both direct installers show target metadata and download progress, configure
+PATH, install both global skill copies, reconcile project instructions, and
+verify the final version.
+
+## Npm Bootstrap
+
+`scripts/runx-bin.mjs` detects platform and architecture, chooses the exact
+versioned native asset, caches it under `~/.guiho/runx/npm/<version>/`, applies
+Unix execute permissions, delegates args/stdin/stdout/stderr/environment, and
+preserves the native exit code. It contains no RunX domain logic.
+
+## Release Assets
+
+Every release contains exactly fourteen assets: twelve native binaries and two
+agent assets.
+
+```text
+runx-linux-arm64
+runx-linux-x64
+runx-linux-x64-baseline
+runx-linux-x64-modern
+runx-darwin-arm64
+runx-darwin-x64
+runx-darwin-x64-baseline
+runx-darwin-x64-modern
+runx-windows-arm64.exe
+runx-windows-x64.exe
+runx-windows-x64-baseline.exe
+runx-windows-x64-modern.exe
+guiho-s-runx
+guiho-i-runx
+```
