@@ -32,6 +32,9 @@ jobs:
       - run: bun run build
       - run: bun run binary
       - run: bun run binaries
+      - run: bun run verify-assets
+      - name: Verify npm bootstrap parses under Node
+        run: node --check scripts/runx-bin.mjs
 
   test-windows:
     runs-on: windows-latest
@@ -43,3 +46,5 @@ jobs:
       - run: bun test
       - run: bun run build
       - run: bun run binary
+      - name: Verify npm bootstrap parses under Node
+        run: node --check scripts/runx-bin.mjs
