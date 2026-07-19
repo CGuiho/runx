@@ -14,6 +14,7 @@ files:
   automatic-agent-maintenance.md: Records focused and full tests, native builds, exact assets, import scan, XDocs, and Git evidence for issue 11.
   upgrade-reliability-issue-12.md: Records transaction, complete catalog, Citty routing, native matrix, live GitHub, XDocs, and Git evidence for issue 12.
   upgrade-reliability-issue-13.md: Records all-outcome recovery, exact target, executable installer, native text/JSON, XDocs, and Git evidence for issue 13.
+  unicode-help-tree.md: Records focused/full tests, explicit glyph/alignment assertions, native smoke, assets, XDocs, and Git evidence for issue 17.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
@@ -26,6 +27,7 @@ documents:
   automatic-agent-maintenance.md: Complete validation report for automatic RunX agent maintenance.
   upgrade-reliability-issue-12.md: Current-main validation report for GitHub issue 12.
   upgrade-reliability-issue-13.md: Current-main validation report for GitHub issue 13.
+  unicode-help-tree.md: Current-main validation report for the RunX Unicode help tree.
 tags:
   - validation
 keywords:
