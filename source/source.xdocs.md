@@ -4,9 +4,11 @@ description: Bun and TypeScript implementation of the RunX command-catalog CLI a
 parent: runx
 children: []
 files:
-  agents.ts: Implements dual-tool skill actions, idempotent instruction blocks, and typed bundled prompt discovery.
-  cli.spec.ts: Exercises Citty help, root/nested version routing, upgrade flags, cached no-argument startup, aliases, errors, safety gates, and agent output.
-  cli.ts: Defines the single RFC Citty tree, routes public upgrade flags without root-version interception, and owns startup, catalog, agent, and uninstall output.
+  agent-maintenance.spec.ts: Proves missing/current/stale resources, legacy migration, concurrency convergence, hidden worker validation, and spawn failure isolation.
+  agent-maintenance.ts: Validates and runs the hidden automatic agent worker and detaches failure-isolated maintenance with effective cwd.
+  agents.ts: Implements explicit dual-tool actions plus atomic global skill and nearest AGENTS.md reconciliation.
+  cli.spec.ts: Exercises Citty help, routing, startup, errors, automatic agent maintenance, output isolation, safety gates, and agent output.
+  cli.ts: Defines the single RFC Citty tree, hidden worker entrypoints, automatic maintenance scheduling, and public command output.
   configuration.ts: Resolves YAML by explicit/cwd/global precedence, TypeBox-decodes manifests, and resolves catalog selectors.
   embedded-resources.ts: Embeds the agent skill and canonical prompt in compiled native executables.
   errors.ts: Defines user-facing RunX errors and assertions.
@@ -21,7 +23,7 @@ files:
   manifest.ts: Compatibility export surface for the schema-backed configuration module.
   path-utils.ts: Provides narrow Bun-first cross-platform path resolution without prohibited Node path imports.
   render.ts: Renders text and JSON command catalog output.
-  storage.ts: Provides Bun and Bun-shell backed global storage, text I/O, directory, and removal operations.
+  storage.ts: Provides Bun-first global storage, directory operations, and direct or atomic text writes.
   self-management.spec.ts: Proves output/envelope contracts, downgrade prevention, synchronous replacement, second-rename failure state, rollback success/failure, and Windows mapped-image behavior.
   self-management.ts: Plans upgrades, prevents downgrade, preserves post-backup mutation state, classifies stable failures, verifies replacement, rolls back, and performs native uninstall operations.
   release-catalog.ts: Retrieves every GitHub release page, applies SemVer ordering and channel labels, and selects compatible assets.
