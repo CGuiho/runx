@@ -5,6 +5,7 @@
 import { Type } from '@sinclair/typebox'
 import { Value } from '@sinclair/typebox/value'
 import { defineCommand, renderUsage, runCommand as runCittyCommand } from 'citty'
+import { agentMaintenanceWorkerCwd, runAgentMaintenanceWorker, spawnAgentMaintenanceWorker } from './agent-maintenance.js'
 import {
   applyAgentInstructions,
   installAgentSkill,
@@ -291,6 +292,11 @@ async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> 
     await runUpdateWorker()
     return
   }
+  const maintenanceWorkerCwd = agentMaintenanceWorkerCwd(rawArgs)
+  if (maintenanceWorkerCwd !== null) {
+    await runAgentMaintenanceWorker(maintenanceWorkerCwd)
+    return
+  }
   const { command, state } = createCommandTree()
   const cleanOutput = rawArgs.some((arg) => ['-h', '--help', '-v', '--version', '--help-tree', '--help-docs'].includes(arg) || arg.startsWith('--help-tree-depth'))
   if (!cleanOutput) {
@@ -308,7 +314,15 @@ async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> 
     if (error instanceof CliUsageError) throw error
     if (error instanceof Error && error.name === 'CLIError') throw new CliUsageError(error.message, await renderUsage(state.command))
     throw error
+  } finally {
+    if (shouldScheduleAgentMaintenance(rawArgs)) {
+      spawnAgentMaintenanceWorker(resolvePath(state.args.cwd ?? process.cwd()))
+    }
   }
+}
+
+function shouldScheduleAgentMaintenance(rawArgs: string[]): boolean {
+  return !['agent', 'uninstall'].includes(rawArgs[0] ?? '')
 }
 
 async function runCliWithErrorHandling(rawArgs?: string[]): Promise<void> {
