@@ -4,6 +4,7 @@ description: Execution-readiness reviews for RunX implementation and release pla
 parent: runx-reviews
 children: []
 files:
+  automatic-agent-maintenance-review.md: Reviews the issue 11 automatic agent-maintenance plan for safe execution.
   citty-cli-migration-review.md: Reviews completeness, compatibility, safety invariants, native packaging, and release sequencing for the Citty migration.
   interactive-init-manifest-review.md: Reviews the RunX init manifest schema, terminal workflow, tests, XDocs, and pull-request delivery.
   mirror-automatic-push-review.md: Reviews synchronized-main safeguards, read-only validation, protected delivery, and release side effects.
@@ -12,6 +13,7 @@ files:
   windows-self-upgrade-review.md: Reviews synchronous replacement, rollback, regression coverage, issue closure, and patch delivery.
   upgrade-reliability-implementation-review.md: Reviews execution readiness for complete release discovery, transactional upgrades, recovery, installers, and validation.
 documents:
+  automatic-agent-maintenance-review.md: Ready-for-execution review for automatic agent maintenance.
   citty-cli-migration-review.md: Ready-for-execution review of the full Citty CLI migration plan.
   interactive-init-manifest-review.md: Ready-for-execution review of the RunX interactive init manifest plan.
   mirror-automatic-push-review.md: Ready-for-execution review of the Mirror automatic-push configuration plan.
