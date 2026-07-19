@@ -5,7 +5,7 @@ description: Implementation plan for release discovery, progress reporting, tran
 created: 2026-07-15
 flags:
   - approved
-  - in-progress
+  - implemented
 tags:
   - plans
   - cli
