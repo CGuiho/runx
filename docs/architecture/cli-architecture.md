@@ -20,13 +20,18 @@ owner: runx-architecture
 
 ## Flow
 
-`cli.ts` defines a Citty command tree. Citty parses options and positionals,
-resolves nested commands and aliases, and renders ordinary usage. A bounded
-command-map adapter preserves the legacy `runx <selector>` shorthand while
-known Citty commands retain precedence. Manifest commands use `manifest.ts` to
-discover the nearest `runx.yaml`, parse YAML, validate a strict TypeBox schema,
-and resolve a selector. `render.ts` presents text or JSON. `executor.ts` spawns
-exactly one configured shell command only for a real run.
+`cli.ts` defines one Citty command tree. Citty parses options and positionals,
+resolves nested commands, and renders usage. Manifest commands use
+`configuration.ts` to resolve `runx.yaml` by explicit path, effective cwd, then
+global fallback; TypeBox validates the complete shape. `render.ts` presents
+text or JSON. `executor.ts` spawns exactly one configured shell command only for
+a real `runx run`.
+
+After an ordinary command routes through Citty, `agent-maintenance.ts` receives
+the decoded effective cwd and detaches a hidden worker. The worker compares
+embedded skill content with both global copies and atomically reconciles one
+nearest `AGENTS.md` block. Explicit agent-resource and uninstall commands are
+excluded so intentional removal is not reversed.
 
 ## Boundaries
 
@@ -34,8 +39,12 @@ exactly one configured shell command only for a real run.
 - Help, version, and CLI usage failures do not discover a manifest.
 - `source/flags.ts` no longer exists; RunX has no second token parser or manual
   execution router behind Citty.
-- `agents.ts` copies the embedded or packaged skill into the requested standard
-  or Claude-compatible skill location.
+- `agents.ts` owns explicit dual-tool actions plus idempotent, legacy-aware
+  automatic skill and instruction reconciliation.
+- `storage.ts` performs same-directory temporary writes and atomic replacement
+  for automatic resource maintenance.
+- Hidden update and agent-maintenance routes never appear in public help and
+  cannot recursively schedule themselves.
 - `self-management.ts` queries GitHub Releases and only replaces/removes a
   native executable, never a Bun development process.
 - Native builds register `embedded-resources.ts`, which includes the skill.
