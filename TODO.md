@@ -29,7 +29,7 @@ owner: runx
 | in progress | 1 |
 | testing | 0 |
 | stopped | 0 |
-| completed | 4 |
+| completed | 5 |
 
 ## Tasks
 
@@ -91,3 +91,13 @@ owner: runx
 - Spec: [docs/todo/bash-installer.md](docs/todo/bash-installer.md)
 - Review: [docs/reviews/implementation/bash-installer-review.md](docs/reviews/implementation/bash-installer-review.md)
 - Validation: [docs/validation/bash-installer.md](docs/validation/bash-installer.md)
+
+### 5. Preserve The RunX Unicode Help Tree
+
+- Status: completed
+- Created: `2026-07-19`
+- Updated: `2026-07-19`
+- Outcome: RunX renders a Unicode, nested, description-aligned command tree and explicitly rejects the legacy ASCII form in regression tests.
+- Spec: [docs/todo/unicode-help-tree.md](docs/todo/unicode-help-tree.md)
+- Review: [docs/reviews/implementation/unicode-help-tree-review.md](docs/reviews/implementation/unicode-help-tree-review.md)
+- Validation: [docs/validation/unicode-help-tree.md](docs/validation/unicode-help-tree.md)
