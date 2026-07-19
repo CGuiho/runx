@@ -51,8 +51,11 @@ cover each path.
 - Output/exit codes and delegated exit preservation: accepted.
 - Upgrade selection, catalog, replacement, rollback, and reconciliation:
   accepted.
-- Direct installers and Node-only npm bootstrap: accepted.
-- Twelve native binaries plus two named agent assets: accepted.
+- Direct installers, including downloaded Markdown identity/binary validation,
+  and Node-only npm bootstrap: accepted.
+- Twelve native binaries plus `guiho-s-runx.md` and `guiho-i-runx.md`: accepted.
+- Exact-version GitHub Release note extraction and idempotent note refresh:
+  accepted.
 - Docs, TODO, xdocs, tests, and build evidence: accepted.
 
 ## Residual Risk
