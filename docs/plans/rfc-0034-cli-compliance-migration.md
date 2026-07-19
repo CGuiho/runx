@@ -447,13 +447,17 @@ execution session rather than assuming it remains active from an earlier unit.
   4. Validate integrity and architecture.
   5. Transactionally install and verify the binary.
   6. Add the global binary directory to PATH when missing.
-  7. Download/extract `guiho-s-runx` into both global skill locations.
-  8. Download `guiho-i-runx`, discover instruction files, and reconcile their
+  7. Download `guiho-s-runx.md` and install it as `SKILL.md` in both global
+     skill locations.
+  8. Download `guiho-i-runx.md`, discover instruction files, and reconcile their
      managed blocks.
-  9. Log every action and final `runx --version` verification.
+  9. Reject empty, executable, binary, invalid UTF-8, missing-frontmatter, or
+     wrong-identity agent assets before any skill or instruction write.
+  10. Log every action and final `runx --version` verification.
 - Acceptance:
   - Isolated Windows and POSIX installer tests cover success, fallback,
-    corruption, rollback, PATH, both skills, instructions, and progress.
+    binary Markdown rejection, rollback, PATH, both skills, instructions, and
+    progress.
 
 ### Unit RX-13 - Replace The Npm Launcher With A Node-Compatible Bootstrap
 
@@ -494,18 +498,23 @@ execution session rather than assuming it remains active from an earlier unit.
   - `runx-windows-x64-baseline.exe`
   - `runx-windows-x64-modern.exe`
 - Agent asset names:
-  - `guiho-s-runx`
-  - `guiho-i-runx`
+  - `guiho-s-runx.md`
+  - `guiho-i-runx.md`
 - Actions:
   1. Replace every `macos` name and selector with `darwin`.
   2. Use Bun APIs in the binary builder rather than Node filesystem/path
      imports.
   3. Package the skill directory and instruction/prompt artifact reproducibly.
-  4. Upload only the fourteen expected assets.
-  5. Make CI fail for missing, duplicate, extra, wrongly suffixed, or legacy
+  4. Treat the `.md` suffixes as part of both public agent-asset filenames.
+  5. Extract only the exact version heading and body from `CHANGELOG.md` for
+     GitHub Release notes; fail closed if it is missing and update existing
+     releases idempotently.
+  6. Upload only the fourteen expected assets.
+  7. Make CI fail for missing, duplicate, extra, wrongly suffixed, or legacy
      assets.
 - Acceptance:
   - Automated verification observes exactly fourteen unique names.
+  - Release notes exclude changelog frontmatter and every older/newer version.
 
 ### Unit RX-15 - Align Documentation, Skill, TODO, And XDocs
 
