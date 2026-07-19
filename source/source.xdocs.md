@@ -31,7 +31,7 @@ files:
   recovery.ts: Generates exact-version platform installation and explicit process-stop recovery commands.
   recovery.spec.ts: Verifies pinned and separate recovery commands for Windows and POSIX systems.
   upgrade-reporting.ts: Renders streamed human upgrade phases, complete release tables, final outcomes, and recovery instructions.
-  upgrade-reporting.spec.ts: Verifies human output ordering, aligned catalog metadata, and recovery visibility.
+  upgrade-reporting.spec.ts: Verifies output ordering, aligned catalog metadata, and exact recovery after every terminal outcome.
   types.ts: Defines shared CLI, manifest, command, agent, and self-upgrade result types.
   update-cache.spec.ts: Covers foreground cache decoding and worker update/up-to-date writes.
   update-cache.ts: Reads cached notices, detaches update workers, validates releases, and atomically refreshes cache data.
