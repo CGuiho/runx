@@ -39,6 +39,11 @@ The direct installers select and verify a native asset, install `runx` on PATH,
 install `guiho-s-runx` into both global agent-tool directories, and reconcile
 RunX instructions in the current project.
 
+After installation, ordinary RunX invocations schedule a silent background
+maintenance worker. It repairs missing or stale global skill copies and keeps
+one compact RunX block in the nearest `AGENTS.md` without delaying or changing
+the requested command's output.
+
 The npm package is a Node-compatible bootstrap that downloads and delegates to
 the version-matched native binary. Bun is not required for npm installation or
 first execution.
