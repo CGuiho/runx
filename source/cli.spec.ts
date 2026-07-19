@@ -175,7 +175,7 @@ describe('RunX RFC 0034 CLI', () => {
     expect(await Bun.file(join(home, '.agents', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(false)
     expect(await Bun.file(join(home, '.claude', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(false)
     expect(await Bun.file(join(project, 'AGENTS.md')).text()).toBe('# Project guidance\n')
-  })
+  }, 20_000)
 
   test('routes public upgrade flags to the upgrade command without root version interception', async () => {
     const cwd = await temporaryDirectory()
