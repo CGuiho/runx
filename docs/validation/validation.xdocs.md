@@ -11,6 +11,7 @@ files:
   upgrade-reliability.md: Tracks the superseded first pass and required revalidation after independent upgrade reliability review corrections.
   rfc-0034-cli-compliance-migration.md: Records passing RFC tests, live upgrade/startup/prompt regressions, builds, bootstrap, installers, import scan, and fourteen-asset evidence.
   automatic-agent-maintenance.md: Records focused and full tests, native builds, exact assets, import scan, XDocs, and Git evidence for issue 11.
+  upgrade-reliability-issue-12.md: Records transaction, complete catalog, Citty routing, native matrix, live GitHub, XDocs, and Git evidence for issue 12.
 documents:
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
   citty-cli-migration.md: Validation evidence for TypeScript, tests, native assets, npm packaging, CLI behavior, and XDocs.
@@ -20,6 +21,7 @@ documents:
   upgrade-reliability.md: Revalidation record for GitHub issues 12 and 13; currently marked needs-revalidation.
   rfc-0034-cli-compliance-migration.md: Complete RFC 0034 correction validation and patch-release readiness report.
   automatic-agent-maintenance.md: Complete validation report for automatic RunX agent maintenance.
+  upgrade-reliability-issue-12.md: Current-main validation report for GitHub issue 12.
 tags:
   - validation
 keywords:
