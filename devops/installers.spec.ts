@@ -24,8 +24,9 @@ describe('RunX direct installers', () => {
     expect(script).toContain('not valid UTF-8 text')
   })
 
-  test('POSIX installer selects Darwin assets and has no Bun dependency', async () => {
+  test('Bash installer selects Darwin assets and has no runtime Bun dependency', async () => {
     const script = await Bun.file(new URL('./install.sh', import.meta.url)).text()
+    expect(script).toStartWith('#!/usr/bin/env bash\nset -euo pipefail')
     expect(script).toContain("Darwin) printf 'darwin")
     expect(script).toContain('--progress-bar')
     expect(script).toContain('guiho-s-runx.md')
@@ -40,6 +41,40 @@ describe('RunX direct installers', () => {
     expect(script).toContain('iconv -f UTF-8 -t UTF-8')
     expect(script).toContain('BEGIN RUNX — DO NOT EDIT THIS SECTION')
     expect(script).not.toContain(' bun ')
+  })
+
+  test('Bash installer passes syntax, piped startup, exact versions, and executable verification', async () => {
+    const bash = await bashExecutable()
+    const script = Bun.fileURLToPath(new URL('./install.sh', import.meta.url))
+    const syntax = Bun.spawnSync([bash, '-n', script])
+    expect(syntax.exitCode).toBe(0)
+
+    const piped = Bun.spawnSync([
+      bash,
+      '-c',
+      'cat "$1" | RUNX_INSTALLER_SOURCE_ONLY=1 bash -s --',
+      'bash',
+      script,
+    ])
+    expect(piped.exitCode).toBe(0)
+    expect(piped.stderr.toString()).toBe('')
+
+    const functions = Bun.spawnSync([
+      bash,
+      '-c',
+      [
+        'RUNX_INSTALLER_SOURCE_ONLY=1 source "$1"',
+        'stable=$(normalize_version v1.2.3)',
+        'prerelease=$(normalize_version @guiho/runx@1.3.0-alpha.2)',
+        'test "$stable" = 1.2.3',
+        'test "$prerelease" = 1.3.0-alpha.2',
+        'TARGET_VERSION=$(bun --version)',
+        'verify_installed_version "$(command -v bun)"',
+      ].join('; '),
+      'bash',
+      script,
+    ])
+    expect(functions.exitCode).toBe(0)
   })
 
   test('platform installer rejects a PE payload disguised as Markdown', async () => {
@@ -78,19 +113,20 @@ describe('RunX direct installers', () => {
         expect(invalid.stderr.toString()).toContain('Windows executable header')
       } else {
         const script = Bun.fileURLToPath(new URL('./install.sh', import.meta.url))
+        const bash = await bashExecutable()
         const valid = Bun.spawnSync([
-          'sh',
+          bash,
           '-c',
           `RUNX_INSTALLER_SOURCE_ONLY=1 . "$1"; verify_markdown_asset "$2" guiho-s-runx`,
-          'sh',
+          'bash',
           script,
           validAsset,
         ])
         const invalid = Bun.spawnSync([
-          'sh',
+          bash,
           '-c',
           `RUNX_INSTALLER_SOURCE_ONLY=1 . "$1"; verify_markdown_asset "$2" guiho-s-runx`,
-          'sh',
+          'bash',
           script,
           executableAsset,
         ])
@@ -132,3 +168,11 @@ describe('RunX direct installers', () => {
     })
   }
 })
+
+async function bashExecutable(): Promise<string> {
+  const gitBash = 'C:\\Program Files\\Git\\bin\\bash.exe'
+  if (process.platform === 'win32' && await Bun.file(gitBash).exists()) return gitBash
+  const bash = Bun.which('bash')
+  if (!bash) throw new Error('Bash is required to validate devops/install.sh.')
+  return bash
+}
