@@ -4,6 +4,7 @@ description: Delivery-readiness reviews of implemented RunX plans and behavior c
 parent: runx-reviews
 children: []
 files:
+  bash-installer-review.md: Accepts the canonical Bash shebang, strict mode, recovery invocation, and executable shell tests for GitHub issue 15.
   citty-cli-migration-review.md: Reviews the implemented Citty command tree, compatibility adapter, tests, documentation, packaging, and release readiness.
   interactive-init-manifest-review.md: Reviews the implemented RunX initializer, strict manifest contract, tests, documentation, and delivery readiness.
   windows-self-upgrade-review.md: Reviews synchronous Windows replacement, rollback, cleanup, tests, CI coverage, and release readiness.
@@ -12,6 +13,7 @@ files:
   upgrade-reliability-issue-12-review.md: Accepts synchronous verified replacement and the corrected complete, single-document release listing for GitHub issue 12.
   upgrade-reliability-issue-13-review.md: Accepts exact recovery across all outcomes and executable direct-installer version verification for GitHub issue 13.
 documents:
+  bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   citty-cli-migration-review.md: Accepted implementation review for the full Citty CLI migration.
   interactive-init-manifest-review.md: Accepted implementation review for the RunX interactive init manifest feature.
   windows-self-upgrade-review.md: Accepted implementation review for the Windows native self-upgrade fix.
