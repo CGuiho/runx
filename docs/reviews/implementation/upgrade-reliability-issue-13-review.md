@@ -51,9 +51,9 @@ successful `--version` verification, and mismatch rejection.
 ## Platform Note
 
 The current Windows gate executes PowerShell normalization and version
-verification directly. The POSIX installer is covered by source/contract tests
-here and remains exercised by the repository's Ubuntu CI; no local WSL
-distribution is installed.
+verification directly. Git for Windows Bash executes the Linux/macOS installer
+syntax, piped startup, exact-version normalization, and executable verification
+locally; Ubuntu CI remains the native Linux gate.
 
 ## References
 
