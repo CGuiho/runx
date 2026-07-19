@@ -14,7 +14,7 @@ describe('recovery instructions', () => {
   test('pins POSIX installation and exact process matching', () => {
     const recovery = createRecoveryInstructions('1.2.3', 'linux')
     expect(recovery.installCommand).toContain("--version '1.2.3'")
-    expect(recovery.installCommand).toContain('| sh -s --')
+    expect(recovery.installCommand).toContain('| bash -s --')
     expect(recovery.stopProcessCommand).toBe('pkill -x runx')
   })
 })
