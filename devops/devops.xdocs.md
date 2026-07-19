@@ -10,7 +10,7 @@ files:
   verify-release-assets.ts: Fails on missing, duplicate, extra, legacy, empty, binary, or misidentified release assets.
   installers.spec.ts: Verifies installer progress, resources, exact stable/prerelease normalization, executable version matching, Markdown rejection, and no POSIX Bun dependency.
   install.ps1: Resolves an exact Windows release, downloads and validates a compatible asset, transactionally replaces the canonical executable, verifies its version, and rolls back on failure.
-  install.sh: POSIX installer for Linux or Darwin with progress, validation, PATH, dual skills, instructions, verification, and rollback.
+  install.sh: Bash installer for Linux or Darwin with strict mode, progress, validation, PATH, dual skills, instructions, verification, and rollback.
 documents: {}
 tags:
   - devops
