@@ -28,8 +28,8 @@ files:
   self-management.ts: Plans upgrades, prevents downgrade, preserves post-backup mutation state, classifies stable failures, verifies replacement, rolls back, and performs native uninstall operations.
   release-catalog.ts: Retrieves every GitHub release page, applies SemVer ordering and channel labels, selects compatible assets, and applies only explicit view pagination.
   release-catalog.spec.ts: Covers complete default output, explicit pagination, SemVer/prerelease ordering, malformed responses, and platform asset candidates.
-  recovery.ts: Generates exact-version platform installation and explicit process-stop recovery commands.
-  recovery.spec.ts: Verifies pinned and separate recovery commands for Windows and POSIX systems.
+  recovery.ts: Generates exact-version PowerShell or Bash installation and explicit process-stop recovery commands.
+  recovery.spec.ts: Verifies pinned and separate recovery commands for Windows and Bash-based systems.
   upgrade-reporting.ts: Renders streamed human upgrade phases, complete release tables, final outcomes, and recovery instructions.
   upgrade-reporting.spec.ts: Verifies output ordering, aligned catalog metadata, and exact recovery after every terminal outcome.
   types.ts: Defines shared CLI, manifest, command, agent, and self-upgrade result types.
