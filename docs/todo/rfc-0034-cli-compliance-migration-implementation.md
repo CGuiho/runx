@@ -26,6 +26,11 @@ cache and release boundaries, complete Developer Context help, the singular
 agent namespace, transactional upgrades, complete installers, a Node-compatible
 npm bootstrap, and the exact fourteen release assets.
 
+The final release contract intentionally overrides the original RFC asset
+spelling: the two public Markdown artifacts are `guiho-s-runx.md` and
+`guiho-i-runx.md`. The publish workflow extracts the exact version section from
+the changelog and creates or updates GitHub Release notes idempotently.
+
 ## Implementation Map
 
 - RX-02-RX-05: `path-utils.ts`, `storage.ts`, `configuration.ts`,
@@ -39,8 +44,8 @@ npm bootstrap, and the exact fourteen release assets.
 - RX-10-RX-11: CLI output, release pagination, upgrade selection, replacement,
   rollback, reconciliation, and cache behavior use stable contracts.
 - RX-12-RX-14: both installers, `scripts/runx-bin.mjs`, the binary builder,
-  asset verifier, and GitHub workflows enforce the installation and fourteen
-  asset contracts.
+  asset verifier, exact-version release-note extractor, and GitHub workflows
+  enforce the installation, release-description, and fourteen-asset contracts.
 - RX-15-RX-16: canonical docs, TODO, xdocs, review, validation, tests, builds,
   and release preparation were aligned to the executable.
 
