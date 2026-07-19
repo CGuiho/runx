@@ -99,6 +99,14 @@ Skill install, update, and uninstall default to global scope and target both:
 
 Use `--local` for the corresponding project-local paths.
 
+Ordinary RunX commands schedule a hidden detached worker that compares the
+bundled skill with both global copies and rewrites only missing or stale
+targets. The worker finds the nearest existing `AGENTS.md` from effective
+`--cwd`; when none exists in an ancestor, it creates `AGENTS.md` at effective
+cwd. Reconciliation is atomic, migrates legacy RunX markers, preserves content
+outside managed markers, and is silent when no change is required. Worker
+failures never change foreground output or exit status.
+
 Instruction actions manage both `AGENTS.md` and `CLAUDE.md` when both exist,
 the existing one when only one exists, and create `AGENTS.md` when neither
 exists. The exact idempotent boundaries are:
