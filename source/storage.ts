@@ -14,6 +14,7 @@ export {
   readTextIfExists,
   removePath,
   writeTextFile,
+  writeTextFileAtomic,
 }
 
 function globalRunXDirectory(): string {
@@ -49,6 +50,18 @@ async function readTextIfExists(path: string): Promise<string | null> {
 async function writeTextFile(path: string, value: string): Promise<void> {
   await ensureDirectory(directoryName(path))
   await Bun.write(path, value)
+}
+
+async function writeTextFileAtomic(path: string, value: string): Promise<void> {
+  await ensureDirectory(directoryName(path))
+  const temporary = `${path}.${process.pid}.${crypto.randomUUID()}.tmp`
+  try {
+    await Bun.write(temporary, value)
+    await movePath(temporary, path)
+  } catch (error) {
+    await removePath(temporary)
+    throw error
+  }
 }
 
 async function copyTextFile(source: string, target: string): Promise<void> {
