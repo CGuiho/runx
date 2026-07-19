@@ -78,6 +78,25 @@ function Test-NativeBinary {
   finally { $stream.Dispose() }
 }
 
+function Test-MarkdownAsset {
+  param([string]$Path, [string]$ExpectedName)
+  $bytes = [System.IO.File]::ReadAllBytes($Path)
+  if ($bytes.Length -eq 0) { throw "Downloaded Markdown asset is empty: $Path" }
+  if ($bytes.Length -ge 2 -and $bytes[0] -eq 0x4D -and $bytes[1] -eq 0x5A) {
+    throw "Downloaded Markdown asset has a Windows executable header: $Path"
+  }
+  if ($bytes -contains 0) { throw "Downloaded Markdown asset contains binary NUL bytes: $Path" }
+  try {
+    $text = ([System.Text.UTF8Encoding]::new($false, $true)).GetString($bytes).Replace("`r`n", "`n")
+  } catch {
+    throw "Downloaded Markdown asset is not valid UTF-8 text: $Path"
+  }
+  if (-not $text.StartsWith("---`n")) { throw "Downloaded Markdown asset does not begin with YAML frontmatter: $Path" }
+  if ($text -notmatch "(?m)^name:\s*$([Regex]::Escape($ExpectedName))\s*$") {
+    throw "Downloaded Markdown asset identity does not match $ExpectedName`: $Path"
+  }
+}
+
 function Test-InstalledVersion {
   param([string]$Path, [string]$ExpectedVersion)
   $startInfo = New-Object System.Diagnostics.ProcessStartInfo
@@ -156,6 +175,8 @@ function Test-Shadowing {
   }
 }
 
+if ($env:RUNX_INSTALLER_SOURCE_ONLY -eq '1') { return }
+
 $detectedArch = if ($Arch) { $Arch } else { switch ($env:PROCESSOR_ARCHITECTURE) { 'AMD64' { 'x64' } 'ARM64' { 'arm64' } default { throw "Unsupported architecture: $env:PROCESSOR_ARCHITECTURE" } } }
 if ($detectedArch -notin @('x64', 'arm64')) { throw "Invalid architecture: $detectedArch" }
 if (-not [Environment]::Is64BitOperatingSystem) { throw 'Unsupported platform: Windows 32-bit is not supported.' }
@@ -208,13 +229,15 @@ try {
   if (-not $downloadedPath) { throw "No compatible RunX $targetVersion binary found at https://github.com/$Repo/releases" }
   Write-Host 'Replacing...'
   Install-Transactional -DownloadedPath $downloadedPath -Destination $destination -ExpectedVersion $targetVersion
-  $skillAsset = Join-Path $temporaryDirectory 'guiho-s-runx'
-  $promptAsset = Join-Path $temporaryDirectory 'guiho-i-runx'
+  $skillAsset = Join-Path $temporaryDirectory 'guiho-s-runx.md'
+  $promptAsset = Join-Path $temporaryDirectory 'guiho-i-runx.md'
   $assetBase = if ($DownloadBaseUrl) { "$DownloadBaseUrl/$encodedTag" } else { "https://github.com/$Repo/releases/download/$encodedTag" }
-  Write-Host "Downloading skill asset: $assetBase/guiho-s-runx"
-  Invoke-WebRequest -Uri "$assetBase/guiho-s-runx" -OutFile $skillAsset -UseBasicParsing
-  Write-Host "Downloading instruction asset: $assetBase/guiho-i-runx"
-  Invoke-WebRequest -Uri "$assetBase/guiho-i-runx" -OutFile $promptAsset -UseBasicParsing
+  Write-Host "Downloading skill asset: $assetBase/guiho-s-runx.md"
+  Invoke-WebRequest -Uri "$assetBase/guiho-s-runx.md" -OutFile $skillAsset -UseBasicParsing
+  Test-MarkdownAsset -Path $skillAsset -ExpectedName 'guiho-s-runx'
+  Write-Host "Downloading instruction asset: $assetBase/guiho-i-runx.md"
+  Invoke-WebRequest -Uri "$assetBase/guiho-i-runx.md" -OutFile $promptAsset -UseBasicParsing
+  Test-MarkdownAsset -Path $promptAsset -ExpectedName 'guiho-i-runx'
   foreach ($skillRoot in @((Join-Path $HOME '.agents\skills\guiho-s-runx'), (Join-Path $HOME '.claude\skills\guiho-s-runx'))) {
     New-Item -ItemType Directory -Force -Path $skillRoot | Out-Null
     Copy-Item -LiteralPath $skillAsset -Destination (Join-Path $skillRoot 'SKILL.md') -Force
