@@ -11,6 +11,7 @@ files:
   rfc-0034-cli-compliance-migration.md: Defines the required breaking migration outcome, scope, constraints, and completion signals for full RFC 0034 compliance.
   rfc-0034-cli-compliance-migration-implementation.md: Records the delivered RX units, implementation map, test-hang diagnosis, and independent audit corrections.
   upgrade-reliability.md: Completes GitHub issues 12 and 13 for verified replacement, complete listing, exact recovery, and direct installers.
+  unicode-help-tree.md: Completes GitHub issue 17 with Unicode branches, nested guides, aligned descriptions, and legacy ASCII rejection.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   automatic-agent-maintenance.md: Task specification for automatic RunX skill and AGENTS.md maintenance.
@@ -19,6 +20,7 @@ documents:
   rfc-0034-cli-compliance-migration.md: Task specification linked from TODO task 1 for the full RunX CLI contract migration.
   rfc-0034-cli-compliance-migration-implementation.md: Completed implementation, independent correction, and validation handoff for TODO task 1.
   upgrade-reliability.md: Completed task specification for RunX upgrade reliability.
+  unicode-help-tree.md: Completed task specification for the RunX Unicode help tree.
 tags:
   - todo
 keywords:
