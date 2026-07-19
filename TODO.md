@@ -29,13 +29,13 @@ owner: runx
 | in progress | 1 |
 | testing | 0 |
 | stopped | 0 |
-| completed | 1 |
+| completed | 2 |
 
 ## Tasks
 
 ### 0. Protect RunX Branches and Tag Creation
 
-- Status: in progress
+- Status: completed
 - Priority: highest
 - Created: `2026-07-12T02:10:04+02:00`
 - Updated: `2026-07-14T15:47:04+02:00`
@@ -53,3 +53,18 @@ owner: runx
   - [docs/plans/rfc-0034-cli-compliance-migration.md](docs/plans/rfc-0034-cli-compliance-migration.md) - Approved step-by-step migration plan.
   - [docs/reviews/plans/rfc-0034-cli-compliance-migration-review.md](docs/reviews/plans/rfc-0034-cli-compliance-migration-review.md) - Ready-for-execution plan review.
 - Implementation: [docs/todo/rfc-0034-cli-compliance-migration-implementation.md](docs/todo/rfc-0034-cli-compliance-migration-implementation.md)
+
+### 2. Add Automatic RunX Agent Maintenance
+
+- Status: in progress
+- Created: `2026-07-19`
+- Updated: `2026-07-19`
+- Outcome: Ordinary RunX commands non-blockingly reconcile current global skills and one nearest managed `AGENTS.md` block without changing foreground output or exit behavior.
+- Spec: [docs/todo/automatic-agent-maintenance.md](docs/todo/automatic-agent-maintenance.md)
+- External: GitHub issue [CGuiho/runx#11](https://github.com/CGuiho/runx/issues/11)
+- Related files:
+  - [docs/plans/automatic-agent-maintenance.md](docs/plans/automatic-agent-maintenance.md) - Approved implementation plan.
+  - [docs/reviews/plans/automatic-agent-maintenance-review.md](docs/reviews/plans/automatic-agent-maintenance-review.md) - Ready-for-execution plan review.
+- Implementation: [docs/todo/automatic-agent-maintenance-implementation.md](docs/todo/automatic-agent-maintenance-implementation.md)
+- Review: [docs/reviews/implementation/automatic-agent-maintenance-review.md](docs/reviews/implementation/automatic-agent-maintenance-review.md)
+- Validation: [docs/validation/automatic-agent-maintenance.md](docs/validation/automatic-agent-maintenance.md)
