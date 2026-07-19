@@ -127,6 +127,50 @@ describe('RunX RFC 0034 CLI', () => {
     expect((await cli(['agent', 'prompt', 'show', 'guiho-i-runx'], cwd)).stdout).toContain('# RunX Agent Instruction')
   })
 
+  test('plain and catalog invocations schedule isolated agent maintenance with stable output', async () => {
+    const home = await temporaryDirectory()
+    const project = await temporaryDirectory()
+    const nested = join(project, 'packages', 'catalog')
+    await Bun.write(join(project, 'AGENTS.md'), '# Project guidance\n')
+    await Bun.write(join(nested, 'runx.yaml'), manifest('automatic-maintenance'))
+
+    const plain = await cli([], project, home, true)
+    expect(plain).toEqual({
+      exitCode: 0,
+      stdout: `Hello Windows - runx v${readVersion()}\n`,
+      stderr: '',
+    })
+    await waitFor(async () => (
+      await Bun.file(join(home, '.agents', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()
+      && await Bun.file(join(home, '.claude', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()
+      && (await Bun.file(join(project, 'AGENTS.md')).text()).includes('BEGIN RUNX — DO NOT EDIT THIS SECTION')
+    ))
+    expect(await Bun.file(join(home, '.claude', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(true)
+    await Bun.sleep(250)
+
+    const listed = await cli(['list', '--cwd', nested, '--format', 'json'], project, home, true)
+    expect(listed.exitCode).toBe(0)
+    expect(JSON.parse(listed.stdout).manifest.commands[0].uid).toBe('automatic-maintenance')
+    expect(listed.stderr).toBe(`configuration file loaded: ${join(nested, 'runx.yaml')}\n`)
+    await waitFor(async () => (await Bun.file(join(project, 'AGENTS.md')).text()).includes('BEGIN RUNX — DO NOT EDIT THIS SECTION'))
+
+    const agents = await Bun.file(join(project, 'AGENTS.md')).text()
+    expect(agents).toContain('# Project guidance')
+    expect(agents.match(/BEGIN RUNX — DO NOT EDIT THIS SECTION/g)).toHaveLength(1)
+    expect((await cli(['--help-tree'], project)).stdout).not.toContain('maintain-agent-integration-worker')
+
+    const blockedHome = join(await temporaryDirectory(), 'not-a-directory')
+    await Bun.write(blockedHome, 'file')
+    expect((await cli([], project, blockedHome, true)).stdout).toBe(`Hello Windows - runx v${readVersion()}\n`)
+
+    expect((await cli(['agent', 'skill', 'uninstall', '--format', 'json'], project, home, true)).exitCode).toBe(0)
+    expect((await cli(['agent', 'instruction', 'remove', '--cwd', project, '--format', 'json'], project, home, true)).exitCode).toBe(0)
+    await Bun.sleep(500)
+    expect(await Bun.file(join(home, '.agents', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(false)
+    expect(await Bun.file(join(home, '.claude', 'skills', 'guiho-s-runx', 'SKILL.md')).exists()).toBe(false)
+    expect(await Bun.file(join(project, 'AGENTS.md')).text()).toBe('# Project guidance\n')
+  })
+
   test('routes public upgrade flags to the upgrade command without root version interception', async () => {
     const cwd = await temporaryDirectory()
     const originalFetch = globalThis.fetch
@@ -173,15 +217,32 @@ describe('RunX RFC 0034 CLI', () => {
   })
 })
 
-async function cli(args: string[], cwd: string, home = cwd): Promise<CliResult> {
+async function cli(args: string[], cwd: string, home = cwd, enableAgentMaintenance = false): Promise<CliResult> {
   const child = Bun.spawn([process.execPath, cliPath, ...args], {
     cwd,
-    env: { ...process.env, HOME: home, USERPROFILE: home, NO_COLOR: '1', FORCE_COLOR: '0', RUNX_DISABLE_UPDATE_WORKER: '1' },
+    env: {
+      ...process.env,
+      HOME: home,
+      USERPROFILE: home,
+      NO_COLOR: '1',
+      FORCE_COLOR: '0',
+      RUNX_DISABLE_UPDATE_WORKER: '1',
+      RUNX_DISABLE_AGENT_MAINTENANCE_WORKER: enableAgentMaintenance ? '0' : '1',
+    },
     stdout: 'pipe',
     stderr: 'pipe',
   })
   const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
   return { exitCode, stdout, stderr }
+}
+
+async function waitFor(predicate: () => Promise<boolean>, timeout = 5_000): Promise<void> {
+  const deadline = Date.now() + timeout
+  while (Date.now() < deadline) {
+    if (await predicate()) return
+    await Bun.sleep(50)
+  }
+  throw new Error(`Timed out after ${timeout}ms waiting for background agent maintenance.`)
 }
 
 async function temporaryDirectory(): Promise<string> {
