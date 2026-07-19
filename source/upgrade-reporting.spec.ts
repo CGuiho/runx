@@ -61,6 +61,40 @@ describe('upgrade reporting', () => {
     expect(renderUpgradeResult(result)).toContain('Repair reinstall (target lookup failed; pinned to installed RunX 0.2.7)')
   })
 
+  test('renders exact recovery after every terminal upgrade outcome', () => {
+    const outcomes = [
+      ['upgraded', 'Upgrade complete: 0.2.7 -> 0.2.8'],
+      ['up-to-date', 'Already up to date: 0.2.8'],
+      ['dry-run', 'Dry run complete: 0.2.7 -> 0.2.8'],
+      ['rolled-back', 'Upgrade failed during verify; restored RunX 0.2.7.'],
+      ['failed', 'Upgrade failed during verify.'],
+    ] as const
+
+    for (const [outcome, summary] of outcomes) {
+      const failed = outcome === 'rolled-back' || outcome === 'failed'
+      const result: UpgradeEnvelope = {
+        schemaVersion: 1,
+        command: 'runx upgrade',
+        outcome,
+        plan,
+        events: [],
+        result: outcome === 'upgraded'
+          ? { installedVersion: '0.2.8', cleanupDeferred: false }
+          : outcome === 'up-to-date'
+            ? { installedVersion: '0.2.8', cleanupDeferred: false }
+            : outcome === 'rolled-back'
+              ? { installedVersion: '0.2.7', cleanupDeferred: false }
+              : null,
+        recovery: { targetVersion: '0.2.8', targetSource: 'resolved', installCommand: 'install --version 0.2.8', stopProcessCommand: 'stop runx' },
+        error: failed ? { code: 'verification_failed', phase: 'verify', message: 'controlled failure' } : null,
+      }
+      const output = renderUpgradeResult(result)
+      expect(output).toContain(summary)
+      expect(output.indexOf(summary)).toBeLessThan(output.indexOf('install --version 0.2.8'))
+      expect(output.indexOf('install --version 0.2.8')).toBeLessThan(output.indexOf('stop runx'))
+    }
+  })
+
   test('renders a complete aligned release table', () => {
     const catalog: ReleaseCatalog = {
       schemaVersion: 1,
