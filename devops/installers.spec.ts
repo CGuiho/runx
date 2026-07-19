@@ -102,4 +102,33 @@ describe('RunX direct installers', () => {
       await $`rm -rf ${temporaryDirectory}`
     }
   })
+
+  if (process.platform === 'win32') {
+    test('PowerShell installer accepts exact stable and prerelease versions and verifies the executable', () => {
+      const script = Bun.fileURLToPath(new URL('./install.ps1', import.meta.url)).replaceAll("'", "''")
+      const bun = process.execPath.replaceAll("'", "''")
+      const command = [
+        "$env:RUNX_INSTALLER_SOURCE_ONLY='1'",
+        `. '${script}'`,
+        "$stable = Resolve-TargetVersion -RequestedVersion 'v1.2.3'",
+        "$prerelease = Resolve-TargetVersion -RequestedVersion '@guiho/runx@1.3.0-alpha.2'",
+        "if ($stable -ne '1.2.3' -or $prerelease -ne '1.3.0-alpha.2') { throw 'exact version normalization failed' }",
+        `Test-InstalledVersion -Path '${bun}' -ExpectedVersion '${process.versions.bun}'`,
+        "$mismatchRejected = $false",
+        `try { Test-InstalledVersion -Path '${bun}' -ExpectedVersion '0.0.0-impossible' } catch { $mismatchRejected = $true }`,
+        "if (-not $mismatchRejected) { throw 'version mismatch was not rejected' }",
+      ].join('; ')
+      const result = Bun.spawnSync([
+        'powershell',
+        '-NoLogo',
+        '-NoProfile',
+        '-NonInteractive',
+        '-ExecutionPolicy',
+        'Bypass',
+        '-Command',
+        command,
+      ])
+      expect(result.exitCode).toBe(0)
+    })
+  }
 })
