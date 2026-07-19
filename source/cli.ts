@@ -26,7 +26,7 @@ import { initializeRunXManifest } from './init.js'
 import { readManifest, resolveCommand } from './manifest.js'
 import { resolvePath } from './path-utils.js'
 import { renderDescription, renderExecutionPlan, renderJson, renderList } from './render.js'
-import { fetchReleaseCatalog, resolveUpgradePlatform } from './release-catalog.js'
+import { fetchReleaseCatalog, paginateReleaseCatalog, resolveUpgradePlatform } from './release-catalog.js'
 import { checkForLatestVersion, uninstallSelf, upgradeSelf } from './self-management.js'
 import { readCachedUpdateNotice, runUpdateWorker, spawnUpdateWorker } from './update-cache.js'
 import { renderReleaseCatalog, renderUpgradeEvent, renderUpgradeHeading, renderUpgradePlan, renderUpgradeResult } from './upgrade-reporting.js'
@@ -196,7 +196,7 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
   const upgradeList = leaf('runx upgrade list', 'List RunX releases newest first.', {
     page: { type: 'string', valueHint: 'positive-integer', description: 'Select result page.' },
     'per-page': { type: 'string', valueHint: 'positive-integer', description: 'Select page size.' },
-    'pre-releases': { type: 'boolean', description: 'Include prerelease versions.' },
+    'pre-releases': { type: 'boolean', description: 'Accepted explicitly; prereleases are always included.' },
     arch: { type: 'string', valueHint: 'x64|arm64', description: 'Select target architecture.' },
     variant: { type: 'string', valueHint: 'baseline|default|modern', description: 'Select x64 variant.' },
     format: catalogArgs.format,
@@ -206,7 +206,10 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
     args: { ...upgradeArgs, ...helpArgs },
     subCommands: { check: upgradeCheck, list: upgradeList },
     setup: helpSetup(state),
-    run: async () => runUpgrade(options(state.args), state.args),
+    run: async () => {
+      if (state.command === upgradeCheck || state.command === upgradeList) return
+      await runUpgrade(options(state.args), state.args)
+    },
   })
   state.commands.set('upgrade', upgrade)
   const uninstall = leaf('runx uninstall', 'Uninstall the native RunX executable.', {
@@ -403,11 +406,10 @@ async function runUpgradeList(args: GlobalArgs): Promise<void> {
   const requestedArch = args.arch ? decode<UpgradeArch>(archSchema, args.arch, '--arch') : process.arch
   const platform = resolveUpgradePlatform(process.platform, requestedArch)
   const variant = decode<UpgradeVariant>(variantSchema, args.variant ?? 'baseline', '--variant')
-  const page = positiveInteger(args.page ?? '1', '--page')
-  const perPage = positiveInteger(args.perPage ?? '20', '--per-page')
+  const page = args.page ? positiveInteger(args.page, '--page') : undefined
+  const perPage = args.perPage ? positiveInteger(args.perPage, '--per-page') : undefined
   const catalog = await fetchReleaseCatalog({ ...platform, variant, currentVersion: readVersion() })
-  const filtered = args.preReleases ? catalog.releases : catalog.releases.filter((release) => !release.prerelease)
-  const paged = { ...catalog, releases: filtered.slice((page - 1) * perPage, page * perPage) }
+  const paged = paginateReleaseCatalog(catalog, page, perPage)
   write(options(args).format === 'json' ? renderJson(paged) : renderReleaseCatalog(paged))
 }
 
