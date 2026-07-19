@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.5.1 - 2026-07-19
+
+### Fixed
+
+- Enforced LF line endings for Bash scripts so Windows checkouts preserve
+  portable installer syntax.
+- Gave the detached agent-maintenance integration test an explicit
+  platform-appropriate timeout so slower Windows CI runners validate the full
+  workflow without changing runtime behavior.
+
 ## 0.5.0 - 2026-07-19
 
 ### Added
