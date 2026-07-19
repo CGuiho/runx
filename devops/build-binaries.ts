@@ -31,7 +31,7 @@ const binaryTargets: readonly BinaryTarget[] = [
   { bunTarget: 'bun-windows-x64-modern', assetName: 'runx-windows-x64-modern.exe' },
 ]
 
-const agentAssetNames = ['guiho-s-runx', 'guiho-i-runx'] as const
+const agentAssetNames = ['guiho-s-runx.md', 'guiho-i-runx.md'] as const
 const expectedReleaseAssetNames = [...binaryTargets.map((target) => target.assetName), ...agentAssetNames]
 
 if (expectedReleaseAssetNames.length !== 14 || new Set(expectedReleaseAssetNames).size !== 14) {
@@ -69,8 +69,8 @@ if (import.meta.main) {
     process.stdout.write(`built: ${target.assetName}\n`)
   }
 
-  await Bun.write(joinPath(bin, 'guiho-s-runx'), Bun.file(joinPath(root, 'skills', 'guiho-s-runx', 'SKILL.md')))
-  await Bun.write(joinPath(bin, 'guiho-i-runx'), Bun.file(joinPath(root, 'prompts', 'guiho-i-runx.md')))
+  await Bun.write(joinPath(bin, 'guiho-s-runx.md'), Bun.file(joinPath(root, 'skills', 'guiho-s-runx', 'SKILL.md')))
+  await Bun.write(joinPath(bin, 'guiho-i-runx.md'), Bun.file(joinPath(root, 'prompts', 'guiho-i-runx.md')))
 
   const observed = [...new Bun.Glob('*').scanSync({ cwd: bin, onlyFiles: true })].sort()
   const expected = [...expectedReleaseAssetNames].sort()
