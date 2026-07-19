@@ -7,8 +7,8 @@ files:
   agent-maintenance.spec.ts: Proves missing/current/stale resources, legacy migration, concurrency convergence, hidden worker validation, and spawn failure isolation.
   agent-maintenance.ts: Validates and runs the hidden automatic agent worker and detaches failure-isolated maintenance with effective cwd.
   agents.ts: Implements explicit dual-tool actions plus atomic global skill and nearest AGENTS.md reconciliation.
-  cli.spec.ts: Exercises Citty help, routing, startup, errors, automatic agent maintenance, output isolation, safety gates, and agent output.
-  cli.ts: Defines the single RFC Citty tree, hidden worker entrypoints, automatic maintenance scheduling, and public command output.
+  cli.spec.ts: Exercises Citty help, routing, startup, errors, automatic agent maintenance, upgrade leaf isolation, output safety, and agent behavior.
+  cli.ts: Defines the single RFC Citty tree, hidden workers, automatic maintenance, isolated upgrade leaf routing, and public output.
   configuration.ts: Resolves YAML by explicit/cwd/global precedence, TypeBox-decodes manifests, and resolves catalog selectors.
   embedded-resources.ts: Embeds the agent skill and canonical prompt in compiled native executables.
   errors.ts: Defines user-facing RunX errors and assertions.
@@ -26,8 +26,8 @@ files:
   storage.ts: Provides Bun-first global storage, directory operations, and direct or atomic text writes.
   self-management.spec.ts: Proves output/envelope contracts, downgrade prevention, synchronous replacement, second-rename failure state, rollback success/failure, and Windows mapped-image behavior.
   self-management.ts: Plans upgrades, prevents downgrade, preserves post-backup mutation state, classifies stable failures, verifies replacement, rolls back, and performs native uninstall operations.
-  release-catalog.ts: Retrieves every GitHub release page, applies SemVer ordering and channel labels, and selects compatible assets.
-  release-catalog.spec.ts: Covers pagination, SemVer/prerelease ordering, malformed responses, and platform asset candidates.
+  release-catalog.ts: Retrieves every GitHub release page, applies SemVer ordering and channel labels, selects compatible assets, and applies only explicit view pagination.
+  release-catalog.spec.ts: Covers complete default output, explicit pagination, SemVer/prerelease ordering, malformed responses, and platform asset candidates.
   recovery.ts: Generates exact-version platform installation and explicit process-stop recovery commands.
   recovery.spec.ts: Verifies pinned and separate recovery commands for Windows and POSIX systems.
   upgrade-reporting.ts: Renders streamed human upgrade phases, complete release tables, final outcomes, and recovery instructions.
