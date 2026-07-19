@@ -464,7 +464,7 @@ powershell.exe -NoProfile -Command "Get-Process runx -ErrorAction SilentlyContin
 Linux and macOS use the supported shell installer with an explicit version:
 
 ```text
-curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | sh -s -- --version '0.2.7'
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash -s -- --version '0.2.7'
 ```
 
 Their separate stop command is:
