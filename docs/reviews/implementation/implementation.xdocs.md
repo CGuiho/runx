@@ -10,6 +10,7 @@ files:
   rfc-0034-cli-compliance-migration-review.md: Accepts the RFC 0034 migration after independent upgrade-routing, cached-notice, prompt-output, asset, and release-readiness corrections.
   automatic-agent-maintenance-review.md: Accepts atomic global skill and nearest AGENTS.md reconciliation, detached failure isolation, command boundaries, and regression evidence.
   upgrade-reliability-issue-12-review.md: Accepts synchronous verified replacement and the corrected complete, single-document release listing for GitHub issue 12.
+  upgrade-reliability-issue-13-review.md: Accepts exact recovery across all outcomes and executable direct-installer version verification for GitHub issue 13.
 documents:
   citty-cli-migration-review.md: Accepted implementation review for the full Citty CLI migration.
   interactive-init-manifest-review.md: Accepted implementation review for the RunX interactive init manifest feature.
@@ -17,6 +18,7 @@ documents:
   rfc-0034-cli-compliance-migration-review.md: Accepted implementation and independent correction review for RX-01 through RX-16.
   automatic-agent-maintenance-review.md: Accepted implementation review for GitHub issue 11 automatic agent maintenance.
   upgrade-reliability-issue-12-review.md: Accepted implementation review for GitHub issue 12 upgrade reliability.
+  upgrade-reliability-issue-13-review.md: Accepted implementation review for GitHub issue 13 recovery reliability.
 tags:
   - reviews
   - implementation
