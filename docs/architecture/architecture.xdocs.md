@@ -1,6 +1,6 @@
 ---
 subject: runx-architecture
-description: Technical architecture for the RunX manifest, Citty command tree, agent skill, and native distribution.
+description: Technical architecture for the RunX manifest, Citty command tree, automatic agent maintenance, and native distribution.
 parent: runx-docs
 children: []
 files:
@@ -14,6 +14,7 @@ keywords:
   - bun
   - cli
   - citty
+  - agent maintenance
 flags: []
 status: stable
 ---
