@@ -150,6 +150,16 @@ runx-windows-arm64.exe
 runx-windows-x64.exe
 runx-windows-x64-baseline.exe
 runx-windows-x64-modern.exe
-guiho-s-runx
-guiho-i-runx
+guiho-s-runx.md
+guiho-i-runx.md
 ```
+
+The Markdown suffix is part of the public GitHub Release filename contract.
+Installers retain the standard installed skill filename `SKILL.md` and use the
+instruction asset contents when reconciling managed instruction blocks. Before
+either write, installers reject empty, executable, binary, invalid UTF-8, or
+misidentified Markdown payloads.
+
+Release descriptions contain only the matching `## <version> - <date>`
+changelog section. The publish workflow fails closed when that exact section is
+missing and refreshes the notes when rerunning an existing release.
