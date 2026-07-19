@@ -29,7 +29,7 @@ owner: runx
 | in progress | 1 |
 | testing | 0 |
 | stopped | 0 |
-| completed | 3 |
+| completed | 4 |
 
 ## Tasks
 
@@ -81,3 +81,13 @@ owner: runx
   - [docs/reviews/implementation/upgrade-reliability-issue-12-review.md](docs/reviews/implementation/upgrade-reliability-issue-12-review.md)
   - [docs/reviews/implementation/upgrade-reliability-issue-13-review.md](docs/reviews/implementation/upgrade-reliability-issue-13-review.md)
 - Validation: [docs/validation/upgrade-reliability.md](docs/validation/upgrade-reliability.md)
+
+### 4. Use Bash For The RunX Installer
+
+- Status: completed
+- Created: `2026-07-19`
+- Updated: `2026-07-19`
+- Outcome: Every canonical Linux/macOS installer and recovery surface invokes Bash, and real Bash tests cover syntax, piping, exact versions, and executable verification.
+- Spec: [docs/todo/bash-installer.md](docs/todo/bash-installer.md)
+- Review: [docs/reviews/implementation/bash-installer-review.md](docs/reviews/implementation/bash-installer-review.md)
+- Validation: [docs/validation/bash-installer.md](docs/validation/bash-installer.md)
