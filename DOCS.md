@@ -122,8 +122,10 @@ names; `agent prompt show <id>` prints only the raw prompt.
 ## Upgrade And Installation
 
 `runx upgrade` accepts `--version`, `--arch`, `--variant`, `--dry-run`, and
-`--format`. x64 defaults to `baseline`. `upgrade list` supports positive
-`--page` and `--per-page` plus `--pre-releases`.
+`--format`. x64 defaults to `baseline`. `upgrade list` returns the complete
+published catalog, including labeled prereleases, by default. Positive
+`--page` and `--per-page` values request an explicit view; `--pre-releases` is
+accepted but is unnecessary because prereleases are never hidden.
 
 Replacement is transactional: download, native-format validation, backup,
 replacement, version verification, rollback on failure, agent-skill refresh,
