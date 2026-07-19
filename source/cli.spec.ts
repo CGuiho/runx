@@ -177,6 +177,7 @@ describe('RunX RFC 0034 CLI', () => {
     const originalHome = Bun.env.HOME
     const originalSelfPath = Bun.env.RUNX_SELF_PATH
     const originalWorker = Bun.env.RUNX_DISABLE_UPDATE_WORKER
+    const originalAgentWorker = Bun.env.RUNX_DISABLE_AGENT_MAINTENANCE_WORKER
     const originalExitCode = process.exitCode
     let stdout = ''
     let stderr = ''
@@ -193,6 +194,7 @@ describe('RunX RFC 0034 CLI', () => {
       Bun.env.HOME = cwd
       Bun.env.RUNX_SELF_PATH = join(cwd, process.platform === 'win32' ? 'runx.exe' : 'runx')
       Bun.env.RUNX_DISABLE_UPDATE_WORKER = '1'
+      Bun.env.RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = '1'
       globalThis.fetch = releaseFetch(readVersion())
       process.exitCode = 0
 
@@ -212,6 +214,57 @@ describe('RunX RFC 0034 CLI', () => {
       restoreEnvironment('HOME', originalHome)
       restoreEnvironment('RUNX_SELF_PATH', originalSelfPath)
       restoreEnvironment('RUNX_DISABLE_UPDATE_WORKER', originalWorker)
+      restoreEnvironment('RUNX_DISABLE_AGENT_MAINTENANCE_WORKER', originalAgentWorker)
+      process.exitCode = originalExitCode
+    }
+  })
+
+  test('routes upgrade list once and returns every release including prereleases by default', async () => {
+    const cwd = await temporaryDirectory()
+    const originalFetch = globalThis.fetch
+    const originalHome = Bun.env.HOME
+    const originalUpdateWorker = Bun.env.RUNX_DISABLE_UPDATE_WORKER
+    const originalAgentWorker = Bun.env.RUNX_DISABLE_AGENT_MAINTENANCE_WORKER
+    const originalExitCode = process.exitCode
+    let stdout = ''
+    let request = 0
+    const stdoutSpy = spyOn(process.stdout, 'write').mockImplementation((chunk) => {
+      stdout += String(chunk)
+      return true
+    })
+
+    try {
+      Bun.env.HOME = cwd
+      Bun.env.RUNX_DISABLE_UPDATE_WORKER = '1'
+      Bun.env.RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = '1'
+      globalThis.fetch = (async () => {
+        request += 1
+        const version = request === 1 ? '1.0.0-alpha.1' : '0.9.0'
+        return Response.json([{
+          tag_name: `@guiho/runx@${version}`,
+          draft: false,
+          prerelease: version.includes('-'),
+          published_at: '2026-07-19T00:00:00Z',
+          assets: [],
+        }], { headers: request === 1 ? { link: '<https://api.github.test/releases?page=2>; rel="next"' } : {} })
+      }) as typeof fetch
+      process.exitCode = 0
+
+      await runCliWithErrorHandling(['upgrade', 'list', '--format', 'json'])
+
+      expect(process.exitCode).toBe(0)
+      expect(request).toBe(2)
+      const output = JSON.parse(stdout)
+      expect(output.command).toBe('runx upgrade list')
+      expect(output.releases.map((release: { version: string }) => release.version)).toEqual(['1.0.0-alpha.1', '0.9.0'])
+      expect(output.releases[0].channel).toBe('alpha')
+      expect(output.outcome).toBeUndefined()
+    } finally {
+      stdoutSpy.mockRestore()
+      globalThis.fetch = originalFetch
+      restoreEnvironment('HOME', originalHome)
+      restoreEnvironment('RUNX_DISABLE_UPDATE_WORKER', originalUpdateWorker)
+      restoreEnvironment('RUNX_DISABLE_AGENT_MAINTENANCE_WORKER', originalAgentWorker)
       process.exitCode = originalExitCode
     }
   })
