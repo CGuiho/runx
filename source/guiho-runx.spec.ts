@@ -17,8 +17,8 @@ describe('RunX RFC structural contracts', () => {
     expect(expectedReleaseAssetNames).toHaveLength(14)
     expect(new Set(expectedReleaseAssetNames).size).toBe(14)
     expect(expectedReleaseAssetNames.filter((name) => name.startsWith('runx-'))).toHaveLength(12)
-    expect(expectedReleaseAssetNames).toContain('guiho-s-runx')
-    expect(expectedReleaseAssetNames).toContain('guiho-i-runx')
+    expect(expectedReleaseAssetNames).toContain('guiho-s-runx.md')
+    expect(expectedReleaseAssetNames).toContain('guiho-i-runx.md')
     expect(expectedReleaseAssetNames.some((name) => name.includes('macos'))).toBe(false)
   })
 
