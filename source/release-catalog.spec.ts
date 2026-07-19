@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { assetCandidates, fetchReleaseCatalog, normalizeReleaseVersion } from './release-catalog.js'
+import { assetCandidates, fetchReleaseCatalog, normalizeReleaseVersion, paginateReleaseCatalog } from './release-catalog.js'
 
 describe('release catalog', () => {
   test('paginates every release and sorts valid SemVer before invalid tags', async () => {
@@ -40,6 +40,31 @@ describe('release catalog', () => {
     ])
     expect(assetCandidates({ os: 'darwin', arch: 'arm64', variant: 'baseline' })).toEqual(['runx-darwin-arm64'])
     expect(normalizeReleaseVersion('v2.0.0-rc.1')).toBe('2.0.0-rc.1')
+  })
+
+  test('returns the complete catalog by default and paginates only when requested', () => {
+    const releases = Array.from({ length: 25 }, (_, index) => ({
+      tag: `@guiho/runx@1.0.${24 - index}${index === 0 ? '-alpha.1' : ''}`,
+      version: `1.0.${24 - index}${index === 0 ? '-alpha.1' : ''}`,
+      channel: index === 0 ? 'alpha' : 'stable',
+      prerelease: index === 0,
+      publishedAt: '2026-07-19T00:00:00Z',
+      current: false,
+      latestStable: index === 1,
+      compatibleAsset: null,
+    }))
+    const catalog = {
+      schemaVersion: 1 as const,
+      command: 'runx upgrade list' as const,
+      currentVersion: '1.0.0',
+      latestStableVersion: '1.0.23',
+      releases,
+    }
+
+    expect(paginateReleaseCatalog(catalog).releases).toEqual(releases)
+    expect(paginateReleaseCatalog(catalog).releases[0]?.prerelease).toBe(true)
+    expect(paginateReleaseCatalog(catalog, 2, 10).releases).toEqual(releases.slice(10, 20))
+    expect(paginateReleaseCatalog(catalog, undefined, 5).releases).toEqual(releases.slice(0, 5))
   })
 })
 
