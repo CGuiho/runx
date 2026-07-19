@@ -4,6 +4,7 @@ description: Linked task specifications for the RunX TODO index.
 parent: runx-docs
 children: []
 files:
+  bash-installer.md: Completes the GitHub issue 15 Bash shebang, invocation, strict-mode, and executable test contract.
   automatic-agent-maintenance.md: Defines issue 11 automatic agent-resource maintenance outcomes and acceptance signals.
   automatic-agent-maintenance-implementation.md: Records the delivered issue 11 reconciler, hidden worker, command boundaries, tests, and release handoff.
   protect-branches-and-tag-creation.md: Records the verified active GitHub branch and release-tag rulesets for RunX.
@@ -11,6 +12,7 @@ files:
   rfc-0034-cli-compliance-migration-implementation.md: Records the delivered RX units, implementation map, test-hang diagnosis, and independent audit corrections.
   upgrade-reliability.md: Completes GitHub issues 12 and 13 for verified replacement, complete listing, exact recovery, and direct installers.
 documents:
+  bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   automatic-agent-maintenance.md: Task specification for automatic RunX skill and AGENTS.md maintenance.
   automatic-agent-maintenance-implementation.md: Completed implementation record for automatic RunX agent maintenance.
   protect-branches-and-tag-creation.md: Completed task specification with active RunX ruleset IDs, protected patterns, and verification evidence.
