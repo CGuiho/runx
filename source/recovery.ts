@@ -20,7 +20,7 @@ const createRecoveryInstructions = (targetVersion: string, os: UpgradeOs, target
   return {
     targetVersion,
     targetSource,
-    installCommand: `curl -fsSL ${installerBaseUrl}/install.sh | sh -s -- --version '${escapeShell(targetVersion)}'`,
+    installCommand: `curl -fsSL ${installerBaseUrl}/install.sh | bash -s -- --version '${escapeShell(targetVersion)}'`,
     stopProcessCommand: 'pkill -x runx',
   }
 }
