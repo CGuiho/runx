@@ -13,6 +13,7 @@ export {
   fetchReleaseCatalog,
   findCompatibleAsset,
   normalizeReleaseVersion,
+  paginateReleaseCatalog,
   resolveUpgradePlatform,
 }
 
@@ -128,6 +129,14 @@ const resolveUpgradePlatform = (platform = process.platform, architecture = proc
 }
 
 const normalizeReleaseVersion = (tag: string): string => tag.replace(/^@guiho\/runx@/, '').replace(/^v/, '')
+
+const paginateReleaseCatalog = (catalog: ReleaseCatalog, page?: number, perPage?: number): ReleaseCatalog => {
+  if (page === undefined && perPage === undefined) return catalog
+  const selectedPage = page ?? 1
+  const selectedPageSize = perPage ?? 20
+  const start = (selectedPage - 1) * selectedPageSize
+  return { ...catalog, releases: catalog.releases.slice(start, start + selectedPageSize) }
+}
 
 const releaseChannel = (version: string, prerelease: boolean): string => {
   const parsed = parse(version)
