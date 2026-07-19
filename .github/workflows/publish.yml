@@ -49,10 +49,13 @@ jobs:
             RELEASE_FLAGS+=(--latest)
           fi
 
+          bun run devops/extract-release-notes.ts "$VERSION" release-notes.md
+
           if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
+            gh release edit "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes-file release-notes.md "${RELEASE_FLAGS[@]}"
             gh release upload "${GITHUB_REF_NAME}" bin/* --clobber
           else
-            gh release create "${GITHUB_REF_NAME}" bin/* --title "${GITHUB_REF_NAME}" --notes-file CHANGELOG.md --verify-tag "${RELEASE_FLAGS[@]}"
+            gh release create "${GITHUB_REF_NAME}" bin/* --title "${GITHUB_REF_NAME}" --notes-file release-notes.md --verify-tag "${RELEASE_FLAGS[@]}"
           fi
 
       - name: Verify exact GitHub release asset set
@@ -60,8 +63,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cat > expected-assets.txt <<'EOF'
-          guiho-i-runx
-          guiho-s-runx
+          guiho-i-runx.md
+          guiho-s-runx.md
           runx-darwin-arm64
           runx-darwin-x64
           runx-darwin-x64-baseline
