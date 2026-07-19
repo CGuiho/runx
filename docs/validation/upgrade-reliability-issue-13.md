@@ -61,9 +61,10 @@ remains.
 
 ## Platform Boundary
 
-No WSL distribution is installed in the current Windows environment, so the
-POSIX installer was not executed locally. Its shell behavior remains covered
-by repository contract tests and Ubuntu CI.
+No WSL distribution is installed in the current Windows environment. Git for
+Windows Bash executes the installer syntax, piped startup, exact-version
+normalization, and executable verification locally; Ubuntu CI remains the
+native Linux gate.
 
 ## References
 
