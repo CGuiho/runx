@@ -40,7 +40,7 @@ markers, `macos` asset names, and the Bun-dependent npm launcher is not required
 RunX uses the mandatory Bun/TypeScript/Citty/TypeBox stack, has a Bun-only core,
 implements the exact startup/configuration/help/agent/upgrade/installer/output
 contracts, ships a Node-compatible npm bootstrap, and publishes exactly twelve
-RFC-named binaries plus `guiho-s-runx` and `guiho-i-runx`.
+RFC-named binaries plus `guiho-s-runx.md` and `guiho-i-runx.md`.
 
 ## Scope
 
@@ -84,8 +84,12 @@ RFC-named binaries plus `guiho-s-runx` and `guiho-i-runx`.
   raw/names-only rules.
 - Upgrade, list pagination, pre-release filtering, installers, and the npm
   wrapper pass isolated tests.
-- Release verification finds exactly fourteen correctly named assets and no
-  `macos` names.
+- Release verification finds exactly fourteen correctly named assets, including
+  both `.md` agent artifacts, and no `macos` names.
+- GitHub Release notes contain only the exact matching changelog version section,
+  including when an existing release is rerun.
+- Direct installers reject empty, executable, binary, invalid UTF-8, and
+  misidentified downloaded agent Markdown before writing installation targets.
 - Typecheck, tests, safe builds, xdocs validation, implementation review, and
   validation reporting complete successfully.
 
