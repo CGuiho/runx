@@ -1,5 +1,5 @@
-#!/usr/bin/env sh
-set -eu
+#!/usr/bin/env bash
+set -euo pipefail
 
 REPO="${RUNX_REPO:-CGuiho/runx}"
 VERSION="${RUNX_VERSION:-latest}"
@@ -154,10 +154,10 @@ verify_installed_version() {
 ensure_path() {
   PATH="$INSTALL_DIR:$PATH"; export PATH
   profile="$HOME/.profile"
-  case "${SHELL##*/}" in zsh) profile="$HOME/.zshrc" ;; bash) profile="$HOME/.bashrc" ;; fish) profile="$HOME/.config/fish/config.fish" ;; esac
+  case "${SHELL:-bash}" in */zsh|zsh) profile="$HOME/.zshrc" ;; */bash|bash) profile="$HOME/.bashrc" ;; */fish|fish) profile="$HOME/.config/fish/config.fish" ;; esac
   mkdir -p -- "$(dirname "$profile")"
   if ! grep -Fq "$INSTALL_DIR" "$profile" 2>/dev/null; then
-    if [ "${SHELL##*/}" = fish ]; then printf '\n# Added by runx installer\nfish_add_path %s\n' "$INSTALL_DIR" >>"$profile"
+    if [ "${SHELL:-bash}" = fish ] || [ "${SHELL:-bash}" = */fish ]; then printf '\n# Added by runx installer\nfish_add_path %s\n' "$INSTALL_DIR" >>"$profile"
     else printf '\n# Added by runx installer\nexport PATH=%s:$PATH\n' "$INSTALL_DIR" >>"$profile"; fi
   fi
 }
