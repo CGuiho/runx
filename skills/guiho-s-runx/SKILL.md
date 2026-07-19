@@ -76,3 +76,14 @@ runx upgrade --dry-run
 
 Use `--help`, `--help-tree`, or `--help-docs` at any command scope for the
 current executable contract.
+
+## Automatic Agent Maintenance
+
+Ordinary RunX commands schedule a silent, non-blocking worker that keeps the
+bundled skill current in both global agent-tool directories and reconciles one
+compact managed block in the nearest `AGENTS.md`. A current installation is not
+rewritten. Automatic failures never fail or pollute the foreground command.
+
+Explicit `runx agent ...` commands remain the manual repair and local-scope
+interface. Explicit agent-resource removal and `runx uninstall` do not schedule
+automatic reinstallation.
