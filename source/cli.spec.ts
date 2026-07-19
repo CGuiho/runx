@@ -59,6 +59,12 @@ describe('RunX RFC 0034 CLI', () => {
       expect((await cli([...path, '--help-tree'], cwd)).stdout).toStartWith('COMMAND TREE\n\n')
       expect((await cli([...path, '--help-docs'], cwd)).stdout).toStartWith(`# runx${path.length ? ` ${path.join(' ')}` : ''}\n`)
     }
+    const rootTree = (await cli(['--help-tree'], cwd)).stdout
+    expect(rootTree).toContain('├── list')
+    expect(rootTree).toContain('└── --help-docs')
+    expect(rootTree).toContain('│   ├── skill')
+    expect(rootTree).toMatch(/├── list\s{2,}List commands in a RunX configuration\./)
+    expect(rootTree).not.toContain('|-')
     const depth = await cli(['agent', '--help-tree-depth', '1'], cwd)
     expect(depth.stdout).toContain('├── skill')
     expect(depth.stdout).not.toContain('install')
