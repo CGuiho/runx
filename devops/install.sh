@@ -106,6 +106,25 @@ verify_native_binary() {
   esac
 }
 
+verify_markdown_asset() {
+  path=$1
+  expected_name=$2
+  [ -s "$path" ] || fail "downloaded Markdown asset is empty: $path"
+  magic=$(od -An -tx1 -N2 "$path" 2>/dev/null | tr -d ' \n')
+  [ "$magic" != 4d5a ] || fail "downloaded Markdown asset has a Windows executable header: $path"
+  if od -An -tx1 "$path" 2>/dev/null | grep -Eq '(^|[[:space:]])00([[:space:]]|$)'; then
+    fail "downloaded Markdown asset contains binary NUL bytes: $path"
+  fi
+  iconv -f UTF-8 -t UTF-8 "$path" >/dev/null 2>&1 || fail "downloaded Markdown asset is not valid UTF-8 text: $path"
+  first_line=$(sed -n '1{s/\r$//;p;}' "$path")
+  [ "$first_line" = '---' ] || fail "downloaded Markdown asset does not begin with YAML frontmatter: $path"
+  awk -v expected="$expected_name" '
+    { sub(/\r$/, "") }
+    $0 == "name: " expected { found=1 }
+    END { exit(found ? 0 : 1) }
+  ' "$path" || fail "downloaded Markdown asset identity does not match $expected_name: $path"
+}
+
 verify_installed_version() {
   verify_output=$(mktemp "${TMPDIR:-/tmp}/runx-version.XXXXXX") || return 1
   "$1" --version >"$verify_output" 2>&1 &
@@ -183,15 +202,17 @@ install_transactional() {
 
 install_agent_assets() {
   tag_base=${DOWNLOAD_BASE_URL:-"https://github.com/${REPO}/releases/download"}
-  skill_url="${tag_base%/}/${encoded_tag}/guiho-s-runx"
-  prompt_url="${tag_base%/}/${encoded_tag}/guiho-i-runx"
+  skill_url="${tag_base%/}/${encoded_tag}/guiho-s-runx.md"
+  prompt_url="${tag_base%/}/${encoded_tag}/guiho-i-runx.md"
   printf 'Downloading skill asset: %s\n' "$skill_url"
-  download_asset "$skill_url" "$TMP/guiho-s-runx" || fail 'could not download guiho-s-runx'
+  download_asset "$skill_url" "$TMP/guiho-s-runx.md" || fail 'could not download guiho-s-runx.md'
+  verify_markdown_asset "$TMP/guiho-s-runx.md" 'guiho-s-runx'
   printf 'Downloading instruction asset: %s\n' "$prompt_url"
-  download_asset "$prompt_url" "$TMP/guiho-i-runx" || fail 'could not download guiho-i-runx'
+  download_asset "$prompt_url" "$TMP/guiho-i-runx.md" || fail 'could not download guiho-i-runx.md'
+  verify_markdown_asset "$TMP/guiho-i-runx.md" 'guiho-i-runx'
   for skill_root in "$HOME/.agents/skills/guiho-s-runx" "$HOME/.claude/skills/guiho-s-runx"; do
     mkdir -p -- "$skill_root"
-    install -m 0644 "$TMP/guiho-s-runx" "$skill_root/SKILL.md"
+    install -m 0644 "$TMP/guiho-s-runx.md" "$skill_root/SKILL.md"
     printf 'Installed skill: %s\n' "$skill_root/SKILL.md"
   done
   targets=""
@@ -214,7 +235,7 @@ install_agent_assets() {
       cat "$clean_file"
       [ ! -s "$clean_file" ] || printf '\n'
       printf '<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->\n'
-      cat "$TMP/guiho-i-runx"
+      cat "$TMP/guiho-i-runx.md"
       printf '\n<!-- END RUNX -->\n'
     } >"$instruction_file"
   done
@@ -222,7 +243,7 @@ install_agent_assets() {
 
 main() {
   parse_args "$@"
-  for command in awk cat curl date dirname grep head install mktemp mv od rm sed tr uname; do require_command "$command"; done
+  for command in awk cat curl date dirname grep head iconv install mktemp mv od rm sed tr uname; do require_command "$command"; done
   OS=$(detect_os); ARCH=$(detect_arch); TARGET_VERSION=$(resolve_target_version)
   TMP=$(mktemp -d "${TMPDIR:-/tmp}/runx-install.XXXXXX")
   mkdir -p -- "$INSTALL_DIR"
@@ -255,5 +276,9 @@ main() {
   printf 'Final verification: %s --version\n' "$destination"
   printf 'Installed and verified RunX %s at %s\n' "$TARGET_VERSION" "$destination"
 }
+
+if [ "${RUNX_INSTALLER_SOURCE_ONLY:-0}" = 1 ]; then
+  return 0 2>/dev/null || exit 0
+fi
 
 main "$@"
