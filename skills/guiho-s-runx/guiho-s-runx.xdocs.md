@@ -1,6 +1,6 @@
 ---
 subject: guiho-s-runx
-description: Agent workflow for safe RunX catalog execution and verified native upgrade/list/recovery operations.
+description: Agent workflow for safe RunX catalog work, automatic resource maintenance, and verified native upgrade/list/recovery operations.
 parent: runx-skills
 children: []
 files:
@@ -17,6 +17,7 @@ keywords:
   - dry run
   - runx upgrade
   - recovery install
+  - automatic maintenance
 flags: []
 status: stable
 ---
@@ -24,3 +25,5 @@ status: stable
 The skill makes manifest inspection, UID selection, dry runs, and explicit
 confirmation the default agent workflow for RunX commands and teaches agents
 how to interpret transactional native upgrades and their recovery contract.
+Ordinary RunX invocations also reconcile the current global skill and nearest
+managed project instruction block through a silent detached worker.
