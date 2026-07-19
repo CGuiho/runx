@@ -3,29 +3,103 @@
  */
 
 import { describe, expect, test } from 'bun:test'
+import { $ } from 'bun'
 
 describe('RunX direct installers', () => {
   test('PowerShell installer exposes the complete RFC sequence', async () => {
     const script = await Bun.file(new URL('./install.ps1', import.meta.url)).text()
     expect(script).toContain('Initiating GUIHO CLI Upgrade / Installation Sequence...')
-    expect(script).toContain('guiho-s-runx')
-    expect(script).toContain('guiho-i-runx')
+    expect(script).toContain('guiho-s-runx.md')
+    expect(script).toContain('guiho-i-runx.md')
     expect(script).toContain('.agents\\skills\\guiho-s-runx')
     expect(script).toContain('.claude\\skills\\guiho-s-runx')
     expect(script).toContain('BEGIN RUNX — DO NOT EDIT THIS SECTION')
     expect(script).toContain('Test-NativeBinary')
     expect(script).toContain('Install-Transactional')
+    expect(script).toContain('function Test-MarkdownAsset')
+    expect(script).toContain("Test-MarkdownAsset -Path $skillAsset -ExpectedName 'guiho-s-runx'")
+    expect(script).toContain("Test-MarkdownAsset -Path $promptAsset -ExpectedName 'guiho-i-runx'")
+    expect(script).toContain('Windows executable header')
+    expect(script).toContain('binary NUL bytes')
+    expect(script).toContain('not valid UTF-8 text')
   })
 
   test('POSIX installer selects Darwin assets and has no Bun dependency', async () => {
     const script = await Bun.file(new URL('./install.sh', import.meta.url)).text()
     expect(script).toContain("Darwin) printf 'darwin")
     expect(script).toContain('--progress-bar')
-    expect(script).toContain('guiho-s-runx')
-    expect(script).toContain('guiho-i-runx')
+    expect(script).toContain('guiho-s-runx.md')
+    expect(script).toContain('guiho-i-runx.md')
     expect(script).toContain('.agents/skills/guiho-s-runx')
     expect(script).toContain('.claude/skills/guiho-s-runx')
+    expect(script).toContain('verify_markdown_asset()')
+    expect(script).toContain("verify_markdown_asset \"$TMP/guiho-s-runx.md\" 'guiho-s-runx'")
+    expect(script).toContain("verify_markdown_asset \"$TMP/guiho-i-runx.md\" 'guiho-i-runx'")
+    expect(script).toContain('Windows executable header')
+    expect(script).toContain('binary NUL bytes')
+    expect(script).toContain('iconv -f UTF-8 -t UTF-8')
     expect(script).toContain('BEGIN RUNX — DO NOT EDIT THIS SECTION')
     expect(script).not.toContain(' bun ')
+  })
+
+  test('platform installer rejects a PE payload disguised as Markdown', async () => {
+    const temporaryDirectory = `${Bun.env.TEMP ?? Bun.env.TMPDIR ?? '/tmp'}/runx-markdown-${crypto.randomUUID()}`
+    const validAsset = `${temporaryDirectory}/valid.md`
+    const executableAsset = `${temporaryDirectory}/payload.md`
+    await $`mkdir -p ${temporaryDirectory}`
+    try {
+      await Bun.write(validAsset, '---\nname: guiho-s-runx\n---\n\n# Skill\n')
+      await Bun.write(executableAsset, new Uint8Array([0x4d, 0x5a, 0x00, 0x00]))
+
+      if (process.platform === 'win32') {
+        const script = Bun.fileURLToPath(new URL('./install.ps1', import.meta.url))
+        const valid = Bun.spawnSync([
+          'powershell',
+          '-NoLogo',
+          '-NoProfile',
+          '-NonInteractive',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          `$env:RUNX_INSTALLER_SOURCE_ONLY='1'; . '${script.replaceAll("'", "''")}'; Test-MarkdownAsset -Path '${validAsset.replaceAll("'", "''")}' -ExpectedName 'guiho-s-runx'`,
+        ])
+        const invalid = Bun.spawnSync([
+          'powershell',
+          '-NoLogo',
+          '-NoProfile',
+          '-NonInteractive',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          `$env:RUNX_INSTALLER_SOURCE_ONLY='1'; . '${script.replaceAll("'", "''")}'; Test-MarkdownAsset -Path '${executableAsset.replaceAll("'", "''")}' -ExpectedName 'guiho-s-runx'`,
+        ])
+        expect(valid.exitCode).toBe(0)
+        expect(invalid.exitCode).not.toBe(0)
+        expect(invalid.stderr.toString()).toContain('Windows executable header')
+      } else {
+        const script = Bun.fileURLToPath(new URL('./install.sh', import.meta.url))
+        const valid = Bun.spawnSync([
+          'sh',
+          '-c',
+          `RUNX_INSTALLER_SOURCE_ONLY=1 . "$1"; verify_markdown_asset "$2" guiho-s-runx`,
+          'sh',
+          script,
+          validAsset,
+        ])
+        const invalid = Bun.spawnSync([
+          'sh',
+          '-c',
+          `RUNX_INSTALLER_SOURCE_ONLY=1 . "$1"; verify_markdown_asset "$2" guiho-s-runx`,
+          'sh',
+          script,
+          executableAsset,
+        ])
+        expect(valid.exitCode).toBe(0)
+        expect(invalid.exitCode).not.toBe(0)
+        expect(invalid.stderr.toString()).toContain('Windows executable header')
+      }
+    } finally {
+      await $`rm -rf ${temporaryDirectory}`
+    }
   })
 })
