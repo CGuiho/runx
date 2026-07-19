@@ -29,7 +29,7 @@ owner: runx
 | in progress | 1 |
 | testing | 0 |
 | stopped | 0 |
-| completed | 2 |
+| completed | 3 |
 
 ## Tasks
 
@@ -68,3 +68,16 @@ owner: runx
 - Implementation: [docs/todo/automatic-agent-maintenance-implementation.md](docs/todo/automatic-agent-maintenance-implementation.md)
 - Review: [docs/reviews/implementation/automatic-agent-maintenance-review.md](docs/reviews/implementation/automatic-agent-maintenance-review.md)
 - Validation: [docs/validation/automatic-agent-maintenance.md](docs/validation/automatic-agent-maintenance.md)
+
+### 3. Complete RunX Upgrade Reliability
+
+- Status: completed
+- Created: `2026-07-15`
+- Updated: `2026-07-19`
+- Outcome: RunX completes synchronous verified replacement, complete release listing, and exact-version recovery for every upgrade outcome.
+- Spec: [docs/todo/upgrade-reliability.md](docs/todo/upgrade-reliability.md)
+- Plan: [docs/plans/upgrade-reliability-implementation.md](docs/plans/upgrade-reliability-implementation.md)
+- Reviews:
+  - [docs/reviews/implementation/upgrade-reliability-issue-12-review.md](docs/reviews/implementation/upgrade-reliability-issue-12-review.md)
+  - [docs/reviews/implementation/upgrade-reliability-issue-13-review.md](docs/reviews/implementation/upgrade-reliability-issue-13-review.md)
+- Validation: [docs/validation/upgrade-reliability.md](docs/validation/upgrade-reliability.md)
