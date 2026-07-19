@@ -18,4 +18,4 @@ status: stable
 ---
 
 RunX embeds this prompt in native binaries and publishes it as the exact
-`guiho-i-runx` release asset.
+`guiho-i-runx.md` release asset.
