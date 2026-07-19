@@ -10,7 +10,7 @@ tags:
   - cli
 keywords:
   - RFC 0034
-  - 40 tests
+  - 44 tests
   - 14 assets
   - RunX
 owner: runx-validation
@@ -29,17 +29,19 @@ validation blocker remains.
 | Command or check | Result |
 | --- | --- |
 | `bun run typecheck` | Passed |
-| `bun test --timeout 30000` | Passed: 40 tests, 272 assertions |
+| `bun test --timeout 30000` | Passed: 44 tests, 288 assertions |
 | `bun run build` | Passed |
 | `bun run binary` | Passed |
 | `bun run binaries` | Passed: twelve native targets |
 | `bun run verify-assets` | Passed: exactly fourteen unique assets |
+| `bun test devops/extract-release-notes.spec.ts` | Passed: exact heading boundaries, missing-section failure, and frontmatter/older-section exclusion |
 | `node --check scripts/runx-bin.mjs` | Passed |
 | packed npm bootstrap local-server smoke | Passed with Node and Bun removed from PATH |
 | prohibited core Node-import scan | Passed: zero matches |
 | CLI banner/help/config/agent/output/exit smoke tests | Passed in CLI suite |
 | live `upgrade --help`, prompt names, source banner, and compiled version smokes | Passed |
 | PowerShell and POSIX installer contract tests | Passed |
+| disguised-PE Markdown installer regression | Passed: installer rejected `MZ` payload before any resource write |
 | `xdocs doctor --warnings-as-errors` | Passed: zero errors and zero warnings |
 | `git diff --check` | Passed |
 
@@ -59,8 +61,12 @@ validation blocker remains.
 ## Exact Release Asset Evidence
 
 The verifier observed twelve `runx-*` assets using Linux, Darwin, and Windows
-names plus `guiho-s-runx` and `guiho-i-runx`. It found no duplicate, extra,
-missing, or legacy platform name.
+names plus `guiho-s-runx.md` and `guiho-i-runx.md`. It found no duplicate,
+extra, missing, or legacy platform name.
+
+The publish workflow writes a temporary notes file containing only the exact
+version section from `CHANGELOG.md`. Existing releases receive the same notes
+through `gh release edit` before their asset set is refreshed.
 
 ## Skipped Checks
 
