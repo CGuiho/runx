@@ -24,11 +24,13 @@ describe('RunX direct installers', () => {
     expect(script).toContain('not valid UTF-8 text')
   })
 
-  test('Bash installer selects Darwin assets and has no runtime Bun dependency', async () => {
+  test('Bash installer selects Darwin assets and resolves latest assets without parsing redirect tags', async () => {
     const script = await Bun.file(new URL('./install.sh', import.meta.url)).text()
     expect(script).toStartWith('#!/usr/bin/env bash\nset -euo pipefail')
     expect(script).toContain("Darwin) printf 'darwin")
     expect(script).toContain('--progress-bar')
+    expect(script).toContain('/releases/latest/download/')
+    expect(script).not.toContain("write-out '%{url_effective}'")
     expect(script).toContain('guiho-s-runx.md')
     expect(script).toContain('guiho-i-runx.md')
     expect(script).toContain('.agents/skills/guiho-s-runx')
@@ -68,6 +70,14 @@ describe('RunX direct installers', () => {
         'prerelease=$(normalize_version @guiho/runx@1.3.0-alpha.2)',
         'test "$stable" = 1.2.3',
         'test "$prerelease" = 1.3.0-alpha.2',
+        'VERSION=latest',
+        'TARGET_VERSION=$(resolve_target_version)',
+        'latest=$(build_asset_url runx-linux-x64-baseline)',
+        'test "$latest" = https://github.com/CGuiho/runx/releases/latest/download/runx-linux-x64-baseline',
+        'VERSION=@guiho/runx@1.3.0-alpha.2',
+        'TARGET_VERSION=$(resolve_target_version)',
+        'exact=$(build_asset_url runx-linux-x64-baseline)',
+        'test "$exact" = https://github.com/CGuiho/runx/releases/download/%40guiho%2Frunx%401.3.0-alpha.2/runx-linux-x64-baseline',
         'TARGET_VERSION=$(bun --version)',
         'verify_installed_version "$(command -v bun)"',
       ].join('; '),
