@@ -36,6 +36,7 @@ import type { AgentScope, CliOptions, OutputFormat } from './types.js'
 import type { UpgradeArch, UpgradeVariant } from './upgrade-types.js'
 
 export {
+  renderStartupBanner,
   runCli,
   runCliWithErrorHandling,
   runxCommand,
@@ -88,6 +89,15 @@ const formatSchema = Type.Union([Type.Literal('text'), Type.Literal('json')])
 const archSchema = Type.Union([Type.Literal('x64'), Type.Literal('arm64')])
 const variantSchema = Type.Union([Type.Literal('baseline'), Type.Literal('default'), Type.Literal('modern')])
 const positiveIntegerSchema = Type.Integer({ minimum: 1 })
+const platformLabels: Readonly<Record<string, string>> = {
+  darwin: 'macOS',
+  linux: 'Linux',
+  win32: 'Windows',
+}
+
+function renderStartupBanner(platform = process.platform, version = readVersion()): string {
+  return `Hello ${platformLabels[platform] ?? platform} - runx v${version}\n`
+}
 
 const helpArgs = {
   help: { type: 'boolean', alias: 'h', description: 'Show command help.' },
@@ -233,7 +243,7 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
       await handleHelp(state)
     },
     run: ({ args }) => {
-      if ((args._ as string[]).length === 0) write(`Hello Windows - runx v${readVersion()}\n`)
+      if ((args._ as string[]).length === 0) write(renderStartupBanner())
     },
   })
   state.commands.set('', root)
