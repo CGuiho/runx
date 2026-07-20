@@ -35,6 +35,22 @@ jobs:
       - run: bun run verify-assets
       - name: Verify npm bootstrap parses under Node
         run: node --check scripts/runx-bin.mjs
+      - name: Verify public Linux installer
+        run: |
+          expected_version="$(bun -e 'console.log((await Bun.file("package.json").json()).version)')"
+          public_home="$(mktemp -d)"
+          project_dir="$(mktemp -d)"
+          install_dir="$public_home/.local/bin"
+          trap 'rm -rf "$public_home" "$project_dir"' EXIT
+          export HOME="$public_home"
+          export RUNX_INSTALL_DIR="$install_dir"
+          export RUNX_SKIP_PATH_UPDATE=1
+          cd "$project_dir"
+          curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
+          test "$("$install_dir/runx" --version)" = "$expected_version"
+          test "$("$install_dir/runx")" = "Hello Linux - runx v$expected_version"
+          test -s "$HOME/.agents/skills/guiho-s-runx/SKILL.md"
+          test -s "$HOME/.claude/skills/guiho-s-runx/SKILL.md"
 
   test-windows:
     runs-on: windows-latest
