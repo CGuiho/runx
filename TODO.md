@@ -26,10 +26,10 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
-| testing | 0 |
+| in progress | 0 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 5 |
+| completed | 6 |
 
 ## Tasks
 
@@ -56,9 +56,9 @@ owner: runx
 
 ### 2. Add Automatic RunX Agent Maintenance
 
-- Status: in progress
+- Status: completed
 - Created: `2026-07-19`
-- Updated: `2026-07-19`
+- Updated: `2026-07-20`
 - Outcome: Ordinary RunX commands non-blockingly reconcile current global skills and one nearest managed `AGENTS.md` block without changing foreground output or exit behavior.
 - Spec: [docs/todo/automatic-agent-maintenance.md](docs/todo/automatic-agent-maintenance.md)
 - External: GitHub issue [CGuiho/runx#11](https://github.com/CGuiho/runx/issues/11)
@@ -101,3 +101,23 @@ owner: runx
 - Spec: [docs/todo/unicode-help-tree.md](docs/todo/unicode-help-tree.md)
 - Review: [docs/reviews/implementation/unicode-help-tree-review.md](docs/reviews/implementation/unicode-help-tree-review.md)
 - Validation: [docs/validation/unicode-help-tree.md](docs/validation/unicode-help-tree.md)
+
+### 6. Resolve The Latest RunX Bash Install
+
+- Status: testing
+- Created: `2026-07-20`
+- Updated: `2026-07-20`
+- Outcome: The Linux/macOS installer resolves latest release assets without parsing a scoped package tag from a redirect URL.
+- Spec: [docs/todo/linux-installer-latest-release.md](docs/todo/linux-installer-latest-release.md)
+- Plan: [docs/plans/linux-installer-latest-release.md](docs/plans/linux-installer-latest-release.md)
+- External: GitHub issue [CGuiho/runx#20](https://github.com/CGuiho/runx/issues/20)
+
+### 7. Use The Runtime Platform In The RunX Greeting
+
+- Status: testing
+- Created: `2026-07-20`
+- Updated: `2026-07-20`
+- Outcome: A no-argument RunX invocation reports Windows, Linux, or macOS according to the runtime platform.
+- Spec: [docs/todo/platform-aware-startup-greeting.md](docs/todo/platform-aware-startup-greeting.md)
+- Plan: [docs/plans/platform-aware-startup-greeting.md](docs/plans/platform-aware-startup-greeting.md)
+- External: GitHub issue [CGuiho/runx#21](https://github.com/CGuiho/runx/issues/21)
