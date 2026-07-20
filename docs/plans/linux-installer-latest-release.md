@@ -1,4 +1,11 @@
 ---
+name: Latest RunX Bash Installer Plan
+purpose: Sequence the GitHub issue 20 installer fix from URL resolution through public release verification.
+description: Replaces redirect-tag parsing with latest-download aliases while preserving exact releases and transactional installation.
+created: 2026-07-20
+flags:
+  - approved
+  - implemented
 owner: runx-plans
 tags:
   - installer
