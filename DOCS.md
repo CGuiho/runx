@@ -27,8 +27,10 @@ before Bun is installed.
 No arguments prints exactly:
 
 ```text
-Hello Windows - runx v<version>
+Hello <Windows|Linux|macOS> - runx v<version>
 ```
+
+The platform label matches the runtime operating system.
 
 The foreground reads `~/.guiho/runx/cache.json` and never waits for network
 work. A detached worker validates GitHub release data and atomically refreshes
