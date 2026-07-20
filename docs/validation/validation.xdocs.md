@@ -8,6 +8,8 @@ files:
   alpha-implementation-summary.md: Records the completed alpha implementation, checks, and release boundaries.
   citty-cli-migration.md: Records the complete local validation gate for the Citty command-tree migration.
   interactive-init-manifest.md: Records validation evidence for the interactive initializer and strict manifest contract.
+  linux-installer-latest-release.md: Records Bash syntax, latest and exact URL regression coverage, full tests, builds, exact assets, public alias resolution, and the issue 20 live-install gate.
+  platform-aware-startup-greeting.md: Records deterministic platform assertions, runtime smoke tests, full package checks, and the issue 21 released-Linux gate.
   windows-self-upgrade.md: Records Windows replacement, rollback, cleanup, native build, CI, and XDocs validation evidence.
   upgrade-reliability.md: Summarizes completed current-main validation for GitHub issues 12 and 13.
   rfc-0034-cli-compliance-migration.md: Records passing RFC tests, live upgrade/startup/prompt regressions, builds, bootstrap, installers, import scan, and fourteen-asset evidence.
@@ -20,6 +22,8 @@ documents:
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
   citty-cli-migration.md: Validation evidence for TypeScript, tests, native assets, npm packaging, CLI behavior, and XDocs.
   interactive-init-manifest.md: Validation evidence for the RunX interactive init manifest feature.
+  linux-installer-latest-release.md: Patch-release validation report for GitHub issue 20.
+  platform-aware-startup-greeting.md: Patch-release validation report for GitHub issue 21.
   npm-trusted-publishing-0.2.2.md: Validation evidence for the blocked 0.2.2 npm trusted-publishing retry.
   windows-self-upgrade.md: Validation evidence for GitHub issues #9 and #1 and the Windows self-upgrade patch.
   upgrade-reliability.md: Completed umbrella validation for GitHub issues 12 and 13.
