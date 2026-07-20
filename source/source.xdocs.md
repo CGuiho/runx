@@ -7,8 +7,8 @@ files:
   agent-maintenance.spec.ts: Proves missing/current/stale resources, legacy migration, concurrency convergence, hidden worker validation, and spawn failure isolation.
   agent-maintenance.ts: Validates and runs the hidden automatic agent worker and detaches failure-isolated maintenance with effective cwd.
   agents.ts: Implements explicit dual-tool actions plus atomic global skill and nearest AGENTS.md reconciliation.
-  cli.spec.ts: Exercises Citty Unicode help/alignment, routing, startup, errors, automatic maintenance, upgrade leaf isolation, output safety, and agent behavior.
-  cli.ts: Defines the single RFC Citty tree, hidden workers, automatic maintenance, isolated upgrade leaf routing, and public output.
+  cli.spec.ts: Exercises platform-aware startup, Citty Unicode help/alignment, routing, errors, automatic maintenance, upgrade leaf isolation, output safety, and agent behavior.
+  cli.ts: Defines the single RFC Citty tree, platform-aware greeting, hidden workers, automatic maintenance, isolated upgrade leaf routing, and public output.
   configuration.ts: Resolves YAML by explicit/cwd/global precedence, TypeBox-decodes manifests, and resolves catalog selectors.
   embedded-resources.ts: Embeds the agent skill and canonical prompt in compiled native executables.
   errors.ts: Defines user-facing RunX errors and assertions.
