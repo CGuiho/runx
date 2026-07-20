@@ -15,6 +15,22 @@ owner: runx
 
 # Changelog
 
+## 0.5.2 - 2026-07-20
+
+### Fixed
+
+- Changed the Linux/macOS installer to download latest native and agent assets
+  through GitHub's stable `releases/latest/download` aliases, avoiding scoped
+  package-tag truncation during redirect parsing.
+- Changed the no-argument greeting to report Windows, Linux, or macOS according
+  to the runtime operating system.
+
+### Changed
+
+- Migrated RunX release configuration from legacy `mirror.config.toml` to
+  `mirror.yaml` while preserving package, commit, tag, push, and changelog
+  behavior.
+
 ## 0.5.1 - 2026-07-19
 
 ### Fixed
