@@ -100,7 +100,7 @@ skill, native installers, and package-local documentation.
 ## Semantic Project Versioning -- GUIHO Mirror
 
 Use the `guiho-s-mirror` skill whenever versioning, tags, changelogs, or release
-configuration changes. Read `mirror.config.toml`, run `mirror version plan`
+configuration changes. Read `mirror.yaml`, run `mirror version plan`
 before applying a version, and never hand-edit Mirror-managed version fields.
 
 <!-- BEGIN XDOCS — DO NOT EDIT THIS SECTION -->
@@ -139,7 +139,7 @@ frontmatter. Other commands: `xdocs scan`, `xdocs tree`, `xdocs generate`,
 
 Invoke the guiho-s-mirror agent skill every time the user wants to bump, tag, release, plan, initialize, configure, or troubleshoot semantic project versioning with GUIHO Mirror.
 
-Before editing release docs or changelogs, inspect mirror.config.toml. If [agents].write_changelog is false, skip changelog edits. If it is missing or true, changelog edits are allowed when the project has a changelog.
+Before editing release docs or changelogs, inspect mirror.yaml. If agents.write_changelog is false, skip changelog edits. If it is missing or true, changelog edits are allowed when the project has a changelog.
 
 Use [agents].changelog_path as the changelog file path. If it is missing, use CHANGELOG.md in the project root.
 <!-- END GUIHO MIRROR -->
