@@ -12,7 +12,7 @@ children:
 files:
   .gitignore: Ignores local dependencies and generated build outputs.
   bun.lock: Locks Bun dependencies for reproducible installs.
-  mirror.config.toml: Mirror semantic versioning configuration.
+  mirror.yaml: Mirror semantic versioning configuration for package, Git commit, tag, push, and changelog behavior.
   package.json: Package metadata, RFC scripts, Node-compatible npm bootstrap entrypoint, and runtime dependencies.
   tsconfig.json: Strict TypeScript compiler configuration for library output and type checking.
   xdocs.config.toml: XDocs metadata and agent automation configuration.
