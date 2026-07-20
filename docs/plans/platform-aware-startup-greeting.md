@@ -1,4 +1,11 @@
 ---
+name: Platform-Aware RunX Greeting Plan
+purpose: Sequence the GitHub issue 21 greeting fix from pure rendering through released Linux verification.
+description: Centralizes supported platform labels, deterministic tests, documentation, patch release, and issue closure.
+created: 2026-07-20
+flags:
+  - approved
+  - implemented
 owner: runx-plans
 tags:
   - cli
