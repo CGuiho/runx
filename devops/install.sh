@@ -10,6 +10,7 @@ VARIANT_OVERRIDE=""
 OS=""
 ARCH=""
 TARGET_VERSION=""
+INSTALLED_VERSION=""
 TMP=""
 
 cleanup() { [ -z "$TMP" ] || rm -rf -- "$TMP"; }
@@ -76,11 +77,21 @@ normalize_version() {
 
 resolve_target_version() {
   if [ "$VERSION" != latest ]; then normalize_version "$VERSION"; return; fi
-  printf 'Resolving latest stable RunX release...\n' >&2
-  effective=$(curl --fail --location --silent --show-error --proto '=https' --tlsv1.2 --output /dev/null --write-out '%{url_effective}' "https://github.com/${REPO}/releases/latest")
-  tag=${effective##*/}
-  tag=$(printf '%s' "$tag" | sed 's/%40/@/g; s/%2[Ff]/\//g')
-  normalize_version "$tag"
+  printf 'latest\n'
+}
+
+build_asset_url() {
+  asset=$1
+  if [ -n "$DOWNLOAD_BASE_URL" ]; then
+    printf '%s/%s\n' "${DOWNLOAD_BASE_URL%/}" "$asset"
+    return
+  fi
+  if [ "$TARGET_VERSION" = latest ]; then
+    printf 'https://github.com/%s/releases/latest/download/%s\n' "$REPO" "$asset"
+    return
+  fi
+  encoded_tag="%40guiho%2Frunx%40${TARGET_VERSION}"
+  printf 'https://github.com/%s/releases/download/%s/%s\n' "$REPO" "$encoded_tag" "$asset"
 }
 
 build_candidates() {
@@ -148,7 +159,12 @@ verify_installed_version() {
   fi
   actual=$(cat "$verify_output")
   rm -f -- "$verify_output"
-  [ "$actual" = "$TARGET_VERSION" ] || { printf 'error: installed RunX reported %s; expected %s\n' "${actual:-<empty>}" "$TARGET_VERSION" >&2; return 1; }
+  normalized=$(normalize_version "$actual") || return 1
+  if [ "$TARGET_VERSION" != latest ] && [ "$normalized" != "$TARGET_VERSION" ]; then
+    printf 'error: installed RunX reported %s; expected %s\n' "${actual:-<empty>}" "$TARGET_VERSION" >&2
+    return 1
+  fi
+  INSTALLED_VERSION=$normalized
 }
 
 ensure_path() {
@@ -201,9 +217,8 @@ install_transactional() {
 }
 
 install_agent_assets() {
-  tag_base=${DOWNLOAD_BASE_URL:-"https://github.com/${REPO}/releases/download"}
-  skill_url="${tag_base%/}/${encoded_tag}/guiho-s-runx.md"
-  prompt_url="${tag_base%/}/${encoded_tag}/guiho-i-runx.md"
+  skill_url=$(build_asset_url guiho-s-runx.md)
+  prompt_url=$(build_asset_url guiho-i-runx.md)
   printf 'Downloading skill asset: %s\n' "$skill_url"
   download_asset "$skill_url" "$TMP/guiho-s-runx.md" || fail 'could not download guiho-s-runx.md'
   verify_markdown_asset "$TMP/guiho-s-runx.md" 'guiho-s-runx'
@@ -248,15 +263,14 @@ main() {
   TMP=$(mktemp -d "${TMPDIR:-/tmp}/runx-install.XXXXXX")
   mkdir -p -- "$INSTALL_DIR"
   destination="$INSTALL_DIR/runx"
-  encoded_tag="%40guiho%2Frunx%40${TARGET_VERSION}"
   downloaded=""
   first_asset=$(build_candidates | head -n 1)
-  source_url="${DOWNLOAD_BASE_URL:-https://github.com/${REPO}/releases/download}/${encoded_tag}/${first_asset}"
+  source_url=$(build_asset_url "$first_asset")
   printf 'Initiating GUIHO CLI Upgrade / Installation Sequence...\n'
   printf 'Target Version: v%s\nArchitecture:   %s\nVariant:        %s\nSource URL:     %s\n' "$TARGET_VERSION" "$ARCH" "${VARIANT_OVERRIDE:-baseline}" "$source_url"
   build_candidates | while IFS= read -r asset; do printf '%s\n' "$asset"; done >"$TMP/candidates"
   while IFS= read -r asset; do
-    if [ -n "$DOWNLOAD_BASE_URL" ]; then url="${DOWNLOAD_BASE_URL%/}/${encoded_tag}/${asset}"; else url="https://github.com/${REPO}/releases/download/${encoded_tag}/${asset}"; fi
+    url=$(build_asset_url "$asset")
     candidate="$TMP/$asset"
     printf 'Downloading %s\n' "$url"
     if download_asset "$url" "$candidate"; then :; else
@@ -274,7 +288,7 @@ main() {
   install_agent_assets
   [ "${RUNX_SKIP_PATH_UPDATE:-0}" = 1 ] || ensure_path
   printf 'Final verification: %s --version\n' "$destination"
-  printf 'Installed and verified RunX %s at %s\n' "$TARGET_VERSION" "$destination"
+  printf 'Installed and verified RunX %s at %s\n' "$INSTALLED_VERSION" "$destination"
 }
 
 if [ "${RUNX_INSTALLER_SOURCE_ONLY:-0}" = 1 ]; then
