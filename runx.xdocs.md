@@ -1,6 +1,6 @@
 ---
 subject: runx
-description: Open-source Bun CLI package for documented, language-agnostic local command catalogs with interactive initialization.
+description: Open-source Bun CLI package for documented, language-agnostic local command catalogs with platform-aware startup and direct native installation.
 parent: null
 children:
   - runx-source
@@ -43,5 +43,6 @@ status: stable
 ---
 
 RunX is a standalone RFC 0034 command-catalog CLI with one Citty tree, TypeBox
-boundaries, Bun-only core source, complete agent integration, transactional
-native upgrades, a Node-compatible npm bootstrap, and fourteen release assets.
+boundaries, Bun-only core source, platform-aware startup, complete agent
+integration, transactional native installation and upgrades, a Node-compatible
+npm bootstrap, and fourteen release assets.
