@@ -1,4 +1,10 @@
 ---
+name: Use The Runtime Platform In The RunX Greeting
+purpose: Track the platform-aware no-argument greeting requested by GitHub issue 21.
+description: Defines Windows, Linux, and macOS greeting labels, output ordering, regression coverage, and public verification.
+created: 2026-07-20
+flags:
+  - testing
 owner: runx-todo
 tags:
   - cli
