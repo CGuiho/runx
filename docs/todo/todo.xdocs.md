@@ -5,6 +5,7 @@ parent: runx-docs
 children: []
 files:
   bash-installer.md: Completes the GitHub issue 15 Bash shebang, invocation, strict-mode, and executable test contract.
+  linux-installer-latest-release.md: Defines GitHub issue 20 latest-release alias resolution and public Bash installer acceptance.
   automatic-agent-maintenance.md: Defines issue 11 automatic agent-resource maintenance outcomes and acceptance signals.
   automatic-agent-maintenance-implementation.md: Records the delivered issue 11 reconciler, hidden worker, command boundaries, tests, and release handoff.
   protect-branches-and-tag-creation.md: Records the verified active GitHub branch and release-tag rulesets for RunX.
@@ -12,8 +13,10 @@ files:
   rfc-0034-cli-compliance-migration-implementation.md: Records the delivered RX units, implementation map, test-hang diagnosis, and independent audit corrections.
   upgrade-reliability.md: Completes GitHub issues 12 and 13 for verified replacement, complete listing, exact recovery, and direct installers.
   unicode-help-tree.md: Completes GitHub issue 17 with Unicode branches, nested guides, aligned descriptions, and legacy ASCII rejection.
+  platform-aware-startup-greeting.md: Defines GitHub issue 21 Windows, Linux, and macOS no-argument greeting behavior.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
+  linux-installer-latest-release.md: Task specification for reliable latest RunX Bash installation.
   automatic-agent-maintenance.md: Task specification for automatic RunX skill and AGENTS.md maintenance.
   automatic-agent-maintenance-implementation.md: Completed implementation record for automatic RunX agent maintenance.
   protect-branches-and-tag-creation.md: Completed task specification with active RunX ruleset IDs, protected patterns, and verification evidence.
@@ -21,6 +24,7 @@ documents:
   rfc-0034-cli-compliance-migration-implementation.md: Completed implementation, independent correction, and validation handoff for TODO task 1.
   upgrade-reliability.md: Completed task specification for RunX upgrade reliability.
   unicode-help-tree.md: Completed task specification for the RunX Unicode help tree.
+  platform-aware-startup-greeting.md: Task specification for the platform-aware RunX greeting.
 tags:
   - todo
 keywords:
