@@ -4,7 +4,7 @@ description: CI and release workflows that validate RunX and publish native asse
 parent: runx-github
 children: []
 files:
-  ci.yml: Validates tests, builds, npm bootstrap syntax, and the exact release matrix on Linux and Windows.
+  ci.yml: Validates tests, builds, npm bootstrap syntax, the exact release matrix, and the public one-line Linux installer on Linux and Windows.
   publish.yml: Creates or updates exact-version GitHub Release notes, publishes exactly fourteen assets, and publishes the public npm package through OIDC trusted publishing on version tags.
 documents: {}
 tags:
@@ -20,7 +20,10 @@ status: stable
 ---
 
 The CI workflow verifies RunX on Linux and Windows for every main-branch push
-and pull request. The Publish workflow runs only for `@guiho/runx@*` tags, retains the `production`
+and pull request. Its Ubuntu job also executes the public `curl -fsSL ... | bash`
+installer in an isolated home and project, then checks the published version,
+Linux greeting, and both global skill files. The Publish workflow runs only for
+`@guiho/runx@*` tags, retains the `production`
 environment, publishes twelve native binaries plus two `.md` agent assets,
 creates or refreshes notes from only the matching changelog section, and
 publishes the public npm package through short-lived OIDC credentials without
