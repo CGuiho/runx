@@ -47,8 +47,9 @@ Stop if you can not find it.
   `source/guiho-runx-native-bin.ts`. The npm entrypoint is the isolated
   Node-compatible `scripts/runx-bin.mjs` bootstrap.
 - Use Bun for installs, tests, typechecking, builds, and executable compilation.
-- `runx` without arguments prints the exact RFC banner. `runx list` lists a
-  configuration; only `runx run <selector>` executes a catalog command.
+- `runx` without arguments prints a platform-aware Windows, Linux, or macOS
+  greeting. `runx list` lists a configuration; only
+  `runx run <selector>` executes a catalog command.
 - Citty owns argument parsing and command routing. Only `-h`/`--help` and root
   `-v`/`--version` have short aliases.
 - Configuration resolves by `--config`, effective cwd `runx.yaml`, then
