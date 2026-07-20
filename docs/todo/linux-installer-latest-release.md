@@ -1,4 +1,10 @@
 ---
+name: Resolve The Latest RunX Bash Install
+purpose: Track the Linux and macOS latest-release installer correction requested by GitHub issue 20.
+description: Defines stable latest-download resolution, exact version behavior, installer safeguards, regression coverage, and public verification.
+created: 2026-07-20
+flags:
+  - testing
 owner: runx-todo
 tags:
   - installer
