@@ -6,7 +6,7 @@ import { afterEach, describe, expect, spyOn, test } from 'bun:test'
 import { mkdtemp, rm } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { runCliWithErrorHandling } from './cli.js'
+import { renderStartupBanner, runCliWithErrorHandling } from './cli.js'
 import { readVersion } from './help.js'
 
 type CliResult = { exitCode: number, stdout: string, stderr: string }
@@ -21,9 +21,15 @@ afterEach(async () => {
 describe('RunX RFC 0034 CLI', () => {
   test('prints exact banner and manifest-free help/version', async () => {
     const cwd = await temporaryDirectory()
-    expect((await cli([], cwd)).stdout).toBe(`Hello Windows - runx v${readVersion()}\n`)
+    expect((await cli([], cwd)).stdout).toBe(renderStartupBanner(process.platform, readVersion()))
     for (const flag of ['-v', '--version']) expect((await cli([flag], cwd)).stdout.trim()).toBe(readVersion())
     for (const flag of ['-h', '--help']) expect((await cli([flag], cwd)).stdout).toContain('USAGE')
+  })
+
+  test('renders the no-argument greeting for the actual operating system', () => {
+    expect(renderStartupBanner('win32', '1.2.3')).toBe('Hello Windows - runx v1.2.3\n')
+    expect(renderStartupBanner('linux', '1.2.3')).toBe('Hello Linux - runx v1.2.3\n')
+    expect(renderStartupBanner('darwin', '1.2.3')).toBe('Hello macOS - runx v1.2.3\n')
   })
 
   test('prints the cached update notice before the no-argument banner without network work', async () => {
@@ -39,7 +45,7 @@ describe('RunX RFC 0034 CLI', () => {
     const result = await cli([], cwd, home)
 
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toBe(`New version available. Run this command to upgrade: runx upgrade\nHello Windows - runx v${readVersion()}\n`)
+    expect(result.stdout).toBe(`New version available. Run this command to upgrade: runx upgrade\n${renderStartupBanner(process.platform, readVersion())}`)
     expect(result.stderr).toBe('')
   })
 
@@ -143,7 +149,7 @@ describe('RunX RFC 0034 CLI', () => {
     const plain = await cli([], project, home, true)
     expect(plain).toEqual({
       exitCode: 0,
-      stdout: `Hello Windows - runx v${readVersion()}\n`,
+      stdout: renderStartupBanner(process.platform, readVersion()),
       stderr: '',
     })
     await waitFor(async () => (
@@ -167,7 +173,7 @@ describe('RunX RFC 0034 CLI', () => {
 
     const blockedHome = join(await temporaryDirectory(), 'not-a-directory')
     await Bun.write(blockedHome, 'file')
-    expect((await cli([], project, blockedHome, true)).stdout).toBe(`Hello Windows - runx v${readVersion()}\n`)
+    expect((await cli([], project, blockedHome, true)).stdout).toBe(renderStartupBanner(process.platform, readVersion()))
 
     expect((await cli(['agent', 'skill', 'uninstall', '--format', 'json'], project, home, true)).exitCode).toBe(0)
     expect((await cli(['agent', 'instruction', 'remove', '--cwd', project, '--format', 'json'], project, home, true)).exitCode).toBe(0)
