@@ -5,6 +5,7 @@ parent: runx-docs
 children: []
 files:
   bash-installer.md: Records Bash syntax, piped startup, exact versions, executable verification, native assets, XDocs, and Git evidence for issue 15.
+  bounded-update-worker.md: Records process-count stress, ownership races, timeouts, full tests, builds, assets, XDocs, CI, and public release evidence.
   alpha-implementation-summary.md: Records the completed alpha implementation, checks, and release boundaries.
   citty-cli-migration.md: Records the complete local validation gate for the Citty command-tree migration.
   interactive-init-manifest.md: Records validation evidence for the interactive initializer and strict manifest contract.
@@ -19,6 +20,7 @@ files:
   unicode-help-tree.md: Records focused/full tests, explicit glyph/alignment assertions, native smoke, assets, XDocs, and Git evidence for issue 17.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
+  bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
   alpha-implementation-summary.md: Validation summary for the first RunX implementation.
   citty-cli-migration.md: Validation evidence for TypeScript, tests, native assets, npm packaging, CLI behavior, and XDocs.
   interactive-init-manifest.md: Validation evidence for the RunX interactive init manifest feature.
