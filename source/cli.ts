@@ -302,7 +302,7 @@ const { command: runxCommand } = createCommandTree()
 
 async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> {
   if (rawArgs.length === 1 && rawArgs[0] === '--check-updates-worker') {
-    await runUpdateWorker()
+    await runUpdateWorker({ leaseToken: Bun.env.RUNX_UPDATE_WORKER_LEASE_TOKEN })
     return
   }
   const maintenanceWorkerCwd = agentMaintenanceWorkerCwd(rawArgs)
@@ -319,7 +319,7 @@ async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> 
       else process.stderr.write(`${notice}\n`)
     }
   }
-  spawnUpdateWorker()
+  await spawnUpdateWorker()
   try {
     await runCittyCommand(command, { rawArgs })
   } catch (error) {
