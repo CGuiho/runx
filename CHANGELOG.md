@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.5.3 - 2026-07-21
+
+### Fixed
+
+- Coalesced automatic update checks behind a per-user lease so concurrent RunX
+  invocations launch at most one detached update worker.
+- Bounded the detached update worker with stale-lease recovery and a hard
+  network deadline, preventing orphaned workers from accumulating CPU or
+  blocking foreground CLI commands.
+
 ## 0.5.2 - 2026-07-20
 
 ### Fixed
