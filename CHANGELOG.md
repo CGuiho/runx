@@ -15,6 +15,15 @@ owner: runx
 
 # Changelog
 
+## 0.5.4 - 2026-07-21
+
+### Fixed
+
+- Preserved existing UTF-8 project instructions during Windows installation
+  and emitted deterministic UTF-8 without a byte-order mark.
+- Prevented installer verification from racing background reconciliation and
+  recovered damaged, legacy, or duplicate RunX managed blocks idempotently.
+
 ## 0.5.3 - 2026-07-21
 
 ### Fixed
