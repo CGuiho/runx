@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 2 |
+| testing | 3 |
 | stopped | 0 |
 | completed | 6 |
 
@@ -121,3 +121,15 @@ owner: runx
 - Spec: [docs/todo/platform-aware-startup-greeting.md](docs/todo/platform-aware-startup-greeting.md)
 - Plan: [docs/plans/platform-aware-startup-greeting.md](docs/plans/platform-aware-startup-greeting.md)
 - External: GitHub issue [CGuiho/runx#21](https://github.com/CGuiho/runx/issues/21)
+
+### 8. Bound The RunX Update Worker
+
+- Status: testing
+- Created: `2026-07-21`
+- Updated: `2026-07-21`
+- Outcome: RunX schedules at most one finite background update check per cache directory without foreground failures or persistent process accumulation.
+- Spec: [docs/todo/bounded-update-worker.md](docs/todo/bounded-update-worker.md)
+- Related files:
+  - [docs/reviews/implementation/bounded-update-worker-review.md](docs/reviews/implementation/bounded-update-worker-review.md) - Delivery-readiness review of worker coalescing, deadlines, lease ownership, and recovery.
+  - [docs/validation/bounded-update-worker.md](docs/validation/bounded-update-worker.md) - Stress, suite, build, asset, XDocs, and release evidence.
+- External: Cross-repository incident [CGuiho/xdocs#14](https://github.com/CGuiho/xdocs/issues/14)
