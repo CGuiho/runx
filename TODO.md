@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 3 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 6 |
+| completed | 7 |
 
 ## Tasks
 
@@ -124,7 +124,7 @@ owner: runx
 
 ### 8. Bound The RunX Update Worker
 
-- Status: testing
+- Status: completed
 - Created: `2026-07-21`
 - Updated: `2026-07-21`
 - Outcome: RunX schedules at most one finite background update check per cache directory without foreground failures or persistent process accumulation.
