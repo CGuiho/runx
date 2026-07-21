@@ -5,6 +5,7 @@ parent: runx-docs
 children: []
 files:
   bash-installer.md: Completes the GitHub issue 15 Bash shebang, invocation, strict-mode, and executable test contract.
+  bounded-update-worker.md: Defines CPU-safe hidden update checks, process coalescing, deadlines, lease ownership, and stale recovery.
   linux-installer-latest-release.md: Defines GitHub issue 20 latest-release alias resolution and public Bash installer acceptance.
   automatic-agent-maintenance.md: Defines issue 11 automatic agent-resource maintenance outcomes and acceptance signals.
   automatic-agent-maintenance-implementation.md: Records the delivered issue 11 reconciler, hidden worker, command boundaries, tests, and release handoff.
@@ -16,6 +17,7 @@ files:
   platform-aware-startup-greeting.md: Defines GitHub issue 21 Windows, Linux, and macOS no-argument greeting behavior.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
+  bounded-update-worker.md: Task specification for the bounded RunX update worker audit prompted by XDocs issue 14.
   linux-installer-latest-release.md: Task specification for reliable latest RunX Bash installation.
   automatic-agent-maintenance.md: Task specification for automatic RunX skill and AGENTS.md maintenance.
   automatic-agent-maintenance-implementation.md: Completed implementation record for automatic RunX agent maintenance.
