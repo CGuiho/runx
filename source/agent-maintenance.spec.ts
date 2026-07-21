@@ -78,6 +78,32 @@ User-authored ending.
     })
   })
 
+  test.serial('repairs mojibake and duplicate managed markers without changing Unicode guidance', async () => {
+    const home = await temporaryDirectory()
+    const project = await temporaryDirectory()
+    await Bun.write(join(project, 'AGENTS.md'), `# Café guidance — preserve exactly
+
+<!-- BEGIN RUNX \u00e2\u20ac\u201d DO NOT EDIT THIS SECTION -->
+corrupted block
+<!-- END RUNX -->
+
+<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->
+duplicate block
+<!-- END RUNX -->
+`)
+
+    await withHome(home, async () => {
+      await maintainAgentIntegration(project)
+      const once = await Bun.file(join(project, 'AGENTS.md')).text()
+      expect(once).toContain('# Café guidance — preserve exactly')
+      expect(once).not.toContain('\u00e2\u20ac\u201d')
+      expect(once.match(/BEGIN RUNX — DO NOT EDIT THIS SECTION/g)).toHaveLength(1)
+
+      expect(await maintainAgentIntegration(project)).toEqual({ skills: [], instructions: [] })
+      expect(await Bun.file(join(project, 'AGENTS.md')).text()).toBe(once)
+    })
+  })
+
   test('validates hidden worker input and isolates spawn failures', async () => {
     const cwd = await temporaryDirectory()
     expect(agentMaintenanceWorkerCwd(['list'])).toBeNull()
