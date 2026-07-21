@@ -142,6 +142,12 @@ Both direct installers show target metadata and download progress, configure
 PATH, install both global skill copies, reconcile project instructions, and
 verify the final version.
 
+The PowerShell installer reads and writes instruction files as strict UTF-8
+without a byte-order mark. Reconciliation preserves the file's newline style,
+removes canonical, legacy, damaged, or duplicate RunX managed blocks, and then
+writes exactly one canonical block. Its verification probe disables both
+background workers so installation cannot race a second instruction write.
+
 ## Npm Bootstrap
 
 `scripts/runx-bin.mjs` detects platform and architecture, chooses the exact
