@@ -4,7 +4,7 @@ purpose: Define the CPU-safety outcome and completion signals for task 8 in TODO
 description: Requires RunX update checks to remain nonblocking, coalesced, time-bounded, ownership-safe, and self-recovering after interrupted workers.
 created: 2026-07-21
 flags:
-  - testing
+  - completed
 tags:
   - cli
   - reliability
@@ -30,7 +30,7 @@ suspended workers to create an unbounded process population.
 ## Todo Index
 
 - Task: `8. Bound The RunX Update Worker`
-- Status: testing
+- Status: completed
 - Index: [TODO.md](../../TODO.md)
 
 ## Outcome
