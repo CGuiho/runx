@@ -37,6 +37,7 @@ const skillId = 'guiho-s-runx'
 const promptId = 'guiho-i-runx'
 const managedStart = '<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->'
 const managedEnd = '<!-- END RUNX -->'
+const mojibakeManagedStart = '<!-- BEGIN RUNX \u00e2\u20ac\u201d DO NOT EDIT THIS SECTION -->'
 const legacyManagedStart = '<!-- BEGIN RUNX AGENT INSTRUCTIONS -->'
 const legacyManagedEnd = '<!-- END RUNX AGENT INSTRUCTIONS -->'
 
@@ -203,6 +204,7 @@ function removeKnownManagedBlocks(existing: string, includeLeadingWhitespace = f
   let output = existing
   for (const [start, end] of [
     [managedStart, managedEnd],
+    [mojibakeManagedStart, managedEnd],
     [legacyManagedStart, legacyManagedEnd],
   ]) {
     const prefix = includeLeadingWhitespace ? '\\s*' : ''
