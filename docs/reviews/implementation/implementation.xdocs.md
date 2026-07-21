@@ -5,6 +5,7 @@ parent: runx-reviews
 children: []
 files:
   bash-installer-review.md: Accepts the canonical Bash shebang, strict mode, recovery invocation, and executable shell tests for GitHub issue 15.
+  bounded-update-worker-review.md: Accepts cache TTL, pre-spawn coalescing, hard deadlines, ownership-safe recovery, and concurrency stress coverage.
   citty-cli-migration-review.md: Reviews the implemented Citty command tree, compatibility adapter, tests, documentation, packaging, and release readiness.
   interactive-init-manifest-review.md: Reviews the implemented RunX initializer, strict manifest contract, tests, documentation, and delivery readiness.
   linux-installer-latest-release-review.md: Accepts latest-download alias resolution, exact-version preservation, transactional safeguards, tests, and GitHub issue 20 release readiness.
@@ -17,6 +18,7 @@ files:
   unicode-help-tree-review.md: Accepts the Unicode nested and aligned help tree plus explicit legacy ASCII regression coverage for GitHub issue 17.
 documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
+  bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
   citty-cli-migration-review.md: Accepted implementation review for the full Citty CLI migration.
   interactive-init-manifest-review.md: Accepted implementation review for the RunX interactive init manifest feature.
   linux-installer-latest-release-review.md: Accepted implementation review for GitHub issue 20.
