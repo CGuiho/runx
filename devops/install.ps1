@@ -97,6 +97,35 @@ function Test-MarkdownAsset {
   }
 }
 
+function Read-Utf8Text {
+  param([string]$Path)
+  $bytes = [System.IO.File]::ReadAllBytes($Path)
+  try {
+    $text = ([System.Text.UTF8Encoding]::new($false, $true)).GetString($bytes)
+  } catch {
+    throw "File is not valid UTF-8 text: $Path"
+  }
+  if ($text.Length -gt 0 -and $text[0] -eq [char]0xFEFF) { return $text.Substring(1) }
+  return $text
+}
+
+function Write-Utf8Text {
+  param([string]$Path, [string]$Text)
+  [System.IO.File]::WriteAllText($Path, $Text, [System.Text.UTF8Encoding]::new($false))
+}
+
+function Reconcile-InstructionFile {
+  param([string]$Path, [string]$Prompt)
+  $existing = if (Test-Path -LiteralPath $Path) { Read-Utf8Text -Path $Path } else { '' }
+  $newline = if ($existing.Contains("`r`n")) { "`r`n" } else { "`n" }
+  $pattern = '<!-- BEGIN RUNX(?:\s+AGENT INSTRUCTIONS|\s+[^>]*?DO NOT EDIT THIS SECTION)\s*-->[\s\S]*?<!-- END RUNX -->\s*'
+  $clean = ([Regex]::Replace($existing, $pattern, '')).TrimEnd()
+  $prefix = if ($clean) { "$clean$newline$newline" } else { '' }
+  $startMarker = "<!-- BEGIN RUNX $([char]0x2014) DO NOT EDIT THIS SECTION -->"
+  $next = "$prefix$startMarker$newline$($Prompt.Trim())$newline<!-- END RUNX -->$newline"
+  if ($next -cne $existing) { Write-Utf8Text -Path $Path -Text $next }
+}
+
 function Test-InstalledVersion {
   param([string]$Path, [string]$ExpectedVersion)
   $startInfo = New-Object System.Diagnostics.ProcessStartInfo
@@ -106,6 +135,8 @@ function Test-InstalledVersion {
   $startInfo.CreateNoWindow = $true
   $startInfo.RedirectStandardOutput = $true
   $startInfo.RedirectStandardError = $true
+  $startInfo.EnvironmentVariables['RUNX_DISABLE_UPDATE_WORKER'] = '1'
+  $startInfo.EnvironmentVariables['RUNX_DISABLE_AGENT_MAINTENANCE_WORKER'] = '1'
   $process = New-Object System.Diagnostics.Process
   $process.StartInfo = $startInfo
   try {
@@ -247,16 +278,10 @@ try {
   if (Test-Path -LiteralPath (Join-Path (Get-Location) 'AGENTS.md')) { $instructionTargets += (Join-Path (Get-Location) 'AGENTS.md') }
   if (Test-Path -LiteralPath (Join-Path (Get-Location) 'CLAUDE.md')) { $instructionTargets += (Join-Path (Get-Location) 'CLAUDE.md') }
   if ($instructionTargets.Count -eq 0) { $instructionTargets += (Join-Path (Get-Location) 'AGENTS.md') }
-  $startMarker = '<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->'
-  $endMarker = '<!-- END RUNX -->'
-  $prompt = Get-Content -Raw -LiteralPath $promptAsset
+  $prompt = Read-Utf8Text -Path $promptAsset
   foreach ($instructionPath in $instructionTargets) {
     Write-Host "Reconciling instruction file: $instructionPath"
-    $existing = if (Test-Path -LiteralPath $instructionPath) { Get-Content -Raw -LiteralPath $instructionPath } else { '' }
-    $pattern = [Regex]::Escape($startMarker) + '[\s\S]*?' + [Regex]::Escape($endMarker) + '\s*'
-    $clean = ([Regex]::Replace($existing, $pattern, '')).TrimEnd()
-    $prefix = if ($clean) { "$clean`r`n`r`n" } else { '' }
-    Set-Content -LiteralPath $instructionPath -Value "$prefix$startMarker`r`n$($prompt.Trim())`r`n$endMarker`r`n" -Encoding utf8
+    Reconcile-InstructionFile -Path $instructionPath -Prompt $prompt
   }
   if ($env:RUNX_SKIP_PATH_UPDATE -ne '1') {
     Add-InstallDirToPath -Directory $InstallDir
