@@ -14,6 +14,7 @@ files:
   rfc-0034-cli-compliance-migration-implementation.md: Records the delivered RX units, implementation map, test-hang diagnosis, and independent audit corrections.
   upgrade-reliability.md: Completes GitHub issues 12 and 13 for verified replacement, complete listing, exact recovery, and direct installers.
   unicode-help-tree.md: Completes GitHub issue 17 with Unicode branches, nested guides, aligned descriptions, and legacy ASCII rejection.
+  windows-installer-utf8.md: Defines strict UTF-8 and idempotent managed-instruction behavior for the Windows installer.
   platform-aware-startup-greeting.md: Defines GitHub issue 21 Windows, Linux, and macOS no-argument greeting behavior.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
@@ -27,6 +28,7 @@ documents:
   upgrade-reliability.md: Completed task specification for RunX upgrade reliability.
   unicode-help-tree.md: Completed task specification for the RunX Unicode help tree.
   platform-aware-startup-greeting.md: Task specification for the platform-aware RunX greeting.
+  windows-installer-utf8.md: Task specification for Windows installer encoding and instruction idempotence.
 tags:
   - todo
 keywords:
