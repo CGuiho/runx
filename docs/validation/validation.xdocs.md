@@ -18,6 +18,7 @@ files:
   upgrade-reliability-issue-12.md: Records transaction, complete catalog, Citty routing, native matrix, live GitHub, XDocs, and Git evidence for issue 12.
   upgrade-reliability-issue-13.md: Records all-outcome recovery, exact target, executable installer, native text/JSON, XDocs, and Git evidence for issue 13.
   unicode-help-tree.md: Records focused/full tests, explicit glyph/alignment assertions, native smoke, assets, XDocs, and Git evidence for issue 17.
+  windows-installer-utf8.md: Records UTF-8 preservation, duplicate-marker recovery, worker isolation, full tests, and release evidence.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -34,6 +35,7 @@ documents:
   upgrade-reliability-issue-12.md: Current-main validation report for GitHub issue 12.
   upgrade-reliability-issue-13.md: Current-main validation report for GitHub issue 13.
   unicode-help-tree.md: Current-main validation report for the RunX Unicode help tree.
+  windows-installer-utf8.md: Validation report for strict UTF-8 Windows installation and idempotent instruction reconciliation.
 tags:
   - validation
 keywords:
