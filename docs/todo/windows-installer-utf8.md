@@ -4,7 +4,7 @@ purpose: Define the completion contract for TODO task 9.
 description: Requires the PowerShell installer and native maintenance path to preserve Unicode and converge damaged or duplicate RunX instruction blocks.
 created: 2026-07-21
 flags:
-  - testing
+  - completed
 tags:
   - installer
   - windows
