@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 2 |
+| testing | 3 |
 | stopped | 0 |
 | completed | 7 |
 
@@ -133,3 +133,12 @@ owner: runx
   - [docs/reviews/implementation/bounded-update-worker-review.md](docs/reviews/implementation/bounded-update-worker-review.md) - Delivery-readiness review of worker coalescing, deadlines, lease ownership, and recovery.
   - [docs/validation/bounded-update-worker.md](docs/validation/bounded-update-worker.md) - Stress, suite, build, asset, XDocs, and release evidence.
 - External: Cross-repository incident [CGuiho/xdocs#14](https://github.com/CGuiho/xdocs/issues/14)
+
+### 9. Preserve UTF-8 During Windows Installation
+
+- Status: testing
+- Created: `2026-07-21`
+- Updated: `2026-07-21`
+- Outcome: The PowerShell installer preserves existing UTF-8 project instructions, converges damaged or duplicate RunX blocks, and does not race background reconciliation during version verification.
+- Spec: [docs/todo/windows-installer-utf8.md](docs/todo/windows-installer-utf8.md)
+- Validation: [docs/validation/windows-installer-utf8.md](docs/validation/windows-installer-utf8.md)
