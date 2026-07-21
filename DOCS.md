@@ -33,8 +33,13 @@ Hello <Windows|Linux|macOS> - runx v<version>
 The platform label matches the runtime operating system.
 
 The foreground reads `~/.guiho/runx/cache.json` and never waits for network
-work. A detached worker validates GitHub release data and atomically refreshes
-that cache. When a decoded cache announces an update, RunX prints:
+work. A valid cache remains fresh for four hours. When another check is needed,
+RunX atomically acquires an ownership-safe lease before it detaches exactly one
+worker for the global cache directory. The worker validates GitHub release data,
+atomically refreshes the cache, stops remote work after 15 seconds, and releases
+its lease on every outcome. A 30-second stale lease can be reclaimed; malformed
+or missing lease metadata uses the same delayed recovery. When a decoded cache
+announces an update, RunX prints:
 
 ```text
 New version available. Run this command to upgrade: runx upgrade
