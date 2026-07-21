@@ -13,7 +13,7 @@ describe('RunX direct installers', () => {
     expect(script).toContain('guiho-i-runx.md')
     expect(script).toContain('.agents\\skills\\guiho-s-runx')
     expect(script).toContain('.claude\\skills\\guiho-s-runx')
-    expect(script).toContain('BEGIN RUNX — DO NOT EDIT THIS SECTION')
+    expect(script).toContain('[char]0x2014')
     expect(script).toContain('Test-NativeBinary')
     expect(script).toContain('Install-Transactional')
     expect(script).toContain('function Test-MarkdownAsset')
@@ -22,6 +22,10 @@ describe('RunX direct installers', () => {
     expect(script).toContain('Windows executable header')
     expect(script).toContain('binary NUL bytes')
     expect(script).toContain('not valid UTF-8 text')
+    expect(script).toContain('function Read-Utf8Text')
+    expect(script).toContain('[System.IO.File]::WriteAllText')
+    expect(script).toContain("RUNX_DISABLE_UPDATE_WORKER'] = '1'")
+    expect(script).toContain("RUNX_DISABLE_AGENT_MAINTENANCE_WORKER'] = '1'")
   })
 
   test('Bash installer selects Darwin assets and resolves latest assets without parsing redirect tags', async () => {
@@ -150,6 +154,59 @@ describe('RunX direct installers', () => {
   })
 
   if (process.platform === 'win32') {
+    test('PowerShell reconciliation preserves UTF-8 and converges duplicate markers idempotently', async () => {
+      const directory = `${Bun.env.TEMP ?? 'C:/tmp'}/runx-instructions-${crypto.randomUUID()}`
+      const instruction = `${directory}/AGENTS.md`
+      const prompt = `${directory}/prompt.md`
+      await $`mkdir -p ${directory}`
+      try {
+        await Bun.write(instruction, `# Café guidance — preserve exactly
+
+<!-- BEGIN RUNX \u00e2\u20ac\u201d DO NOT EDIT THIS SECTION -->
+corrupted block
+<!-- END RUNX -->
+
+<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->
+duplicate block
+<!-- END RUNX -->
+`)
+        await Bun.write(prompt, '## RunX instructions\n\nPreserve naïve Unicode — exactly.\n')
+        const script = Bun.fileURLToPath(new URL('./install.ps1', import.meta.url)).replaceAll("'", "''")
+        const command = [
+          "$env:RUNX_INSTALLER_SOURCE_ONLY='1'",
+          `. '${script}'`,
+          `$instruction = '${instruction.replaceAll("'", "''")}'`,
+          `$prompt = Read-Utf8Text -Path '${prompt.replaceAll("'", "''")}'`,
+          'Reconcile-InstructionFile -Path $instruction -Prompt $prompt',
+          '$first = [Convert]::ToBase64String([IO.File]::ReadAllBytes($instruction))',
+          'Reconcile-InstructionFile -Path $instruction -Prompt $prompt',
+          '$second = [Convert]::ToBase64String([IO.File]::ReadAllBytes($instruction))',
+          "if ($first -cne $second) { throw 'second reconciliation changed bytes' }",
+          '$text = Read-Utf8Text -Path $instruction',
+          "if (-not $text.Contains('# Café guidance — preserve exactly')) { throw 'Unicode guidance changed' }",
+          "if (-not $text.Contains('Preserve naïve Unicode — exactly.')) { throw 'Unicode prompt changed' }",
+          "if (([regex]::Matches($text, '<!-- BEGIN RUNX')).Count -ne 1) { throw 'managed marker did not converge' }",
+          "if ($text.Contains('corrupted block') -or $text.Contains('duplicate block')) { throw 'stale managed content remained' }",
+          '$bytes = [IO.File]::ReadAllBytes($instruction)',
+          "if ($bytes.Length -ge 3 -and $bytes[0] -eq 0xEF -and $bytes[1] -eq 0xBB -and $bytes[2] -eq 0xBF) { throw 'unexpected UTF-8 BOM' }",
+        ].join('; ')
+        const result = Bun.spawnSync([
+          'powershell',
+          '-NoLogo',
+          '-NoProfile',
+          '-NonInteractive',
+          '-ExecutionPolicy',
+          'Bypass',
+          '-Command',
+          command,
+        ])
+        expect(result.exitCode).toBe(0)
+        expect(result.stderr.toString()).toBe('')
+      } finally {
+        await $`rm -rf ${directory}`
+      }
+    })
+
     test('PowerShell installer accepts exact stable and prerelease versions and verifies the executable', () => {
       const script = Bun.fileURLToPath(new URL('./install.ps1', import.meta.url)).replaceAll("'", "''")
       const bun = process.execPath.replaceAll("'", "''")
