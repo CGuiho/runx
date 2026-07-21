@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 3 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 7 |
+| completed | 8 |
 
 ## Tasks
 
@@ -136,7 +136,7 @@ owner: runx
 
 ### 9. Preserve UTF-8 During Windows Installation
 
-- Status: testing
+- Status: completed
 - Created: `2026-07-21`
 - Updated: `2026-07-21`
 - Outcome: The PowerShell installer preserves existing UTF-8 project instructions, converges damaged or duplicate RunX blocks, and does not race background reconciliation during version verification.
