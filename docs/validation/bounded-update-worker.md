@@ -4,7 +4,7 @@ purpose: Record reproducible evidence that RunX cannot accumulate hidden update-
 description: Captures focused concurrency stress, full tests, typecheck, native smoke, release assets, source audit, XDocs validation, CI, and public release checks.
 created: 2026-07-21
 flags:
-  - testing
+  - validated
 tags:
   - validation
   - cli
@@ -41,7 +41,7 @@ or orphaned leases without allowing an old owner to delete a successor lease.
 | `bun test source/update-cache.spec.ts --timeout 30000` | Passed: 6 tests, 35 expectations. |
 | `bun test --timeout 30000` | Passed: 58 tests, 402 expectations. |
 | `bun run typecheck` | Passed. |
-| `bun run binary` then `bin/runx.exe --version` | Passed: native Windows executable reported `0.5.2` before the release bump. |
+| `bun run binary` then `bin/runx.exe --version` | Passed before the release bump. The public Windows baseline binary later reported `0.5.3`. |
 | `bun run verify-assets` | Passed after removing only the ignored local smoke binary: exactly 14 assets. |
 | Prohibited Node-import search in non-test core source | Passed: no matches. |
 | `Get-Process -Name runx` | Passed: zero resident RunX processes at the audit snapshot. |
@@ -67,14 +67,35 @@ The first asset verification correctly failed because the local native smoke
 binary added a fifteenth ignored file. That generated file was removed, and the
 unchanged verifier then passed with the exact fourteen release assets.
 
+A post-release local full-suite rerun encountered two timing-only failures in
+the pre-existing help and agent-maintenance tests while the shared Windows host
+was heavily loaded. The update-worker suite still passed all 35 expectations.
+GitHub CI attempt 2 then passed both Linux and Windows jobs on clean runners.
+
 ## Release Evidence
 
-Patch version, CI, tag workflow, public asset, and public binary evidence will
-be appended during the authorized release stage.
+- Mirror applied patch version `0.5.3` and pushed commit
+  `c7dfdbf75fbbdb5d4b9c317f386c7f48ac87d151` plus tag
+  `@guiho/runx@0.5.3`.
+- [GitHub CI run 29859187581](https://github.com/CGuiho/runx/actions/runs/29859187581)
+  passed on attempt 2 for Linux and Windows. The first Linux public-installer
+  probe ran before the concurrently triggered release existed; rerunning after
+  publication passed without a code change.
+- [Publish run 29859191198](https://github.com/CGuiho/runx/actions/runs/29859191198)
+  completed successfully.
+- The public release contains exactly fourteen assets: twelve native binaries
+  plus `guiho-i-runx.md` and `guiho-s-runx.md`.
+- The public release body contains only the `0.5.3` changelog section.
+- The downloaded 97,947,648-byte Windows x64 baseline asset matched published
+  SHA-256 `edc3f15fc66d5785dd9fdbfa1767f5d108e2a9f8836154d8c293f117d1a6fe86`
+  and reported version `0.5.3`.
+- The public-binary probe's finite detached maintenance process exited, leaving
+  zero RunX processes and allowing deterministic cleanup of the downloaded
+  executable.
 
 ## Readiness
 
-Ready for the Mirror patch plan and release stage.
+Validated and publicly released as RunX `0.5.3`.
 
 ## References
 
