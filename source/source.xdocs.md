@@ -33,8 +33,8 @@ files:
   upgrade-reporting.ts: Renders streamed human upgrade phases, complete release tables, final outcomes, and recovery instructions.
   upgrade-reporting.spec.ts: Verifies output ordering, aligned catalog metadata, and exact recovery after every terminal outcome.
   types.ts: Defines shared CLI, manifest, command, agent, and self-upgrade result types.
-  update-cache.spec.ts: Covers foreground cache decoding and worker update/up-to-date writes.
-  update-cache.ts: Reads cached notices, detaches update workers, validates releases, and atomically refreshes cache data.
+  update-cache.spec.ts: Covers foreground cache decoding, 64-way process coalescing, cache freshness, ownership-safe stale recovery, hard deadlines, malformed leases, and cache writes.
+  update-cache.ts: Reads cached notices and schedules one ownership-leased, time-bounded detached update worker per global cache directory.
   upgrade-types.ts: Defines the exact release catalog plus nullable-plan, result, stable error, rolled-back outcome, and target-sourced recovery contracts.
 documents: {}
 tags:
