@@ -1,11 +1,12 @@
 ---
 name: RunX Interactive Init Manifest
-purpose: Preserve the accepted manifest structure and initialization behavior for runx init.
-description: Defines the Semantic Versioning manifest field, mandatory public group, configurable scripts directory, and empty interactive initialization contract.
+purpose: Preserve the historical v1 initializer decision after its manifest shape was superseded.
+description: Historical evidence for the former v1 project and public-group initializer; current behavior is defined by manifest-v2-composition.md.
 created: 2026-07-14
 flags:
   - accepted
   - decision
+  - superseded-manifest-shape
 tags:
   - decisions
   - cli
@@ -14,16 +15,22 @@ keywords:
   - runx init
   - runx.yaml
   - semantic versioning
-  - public group
+  - superseded manifest v1
   - scripts directory
 owner: runx-decisions
 ---
 
 # RunX Interactive Init Manifest
 
+> **Manifest-shape status:** Superseded on 2026-07-23 by
+> [RunX Manifest V2 Composition](manifest-v2-composition.md). The historical
+> initializer decision remains evidence, but `project.name`, top-level
+> `groups`, mandatory `public`, and manifest v1 are no longer current guidance.
+
 ## Status
 
-Accepted by the project owner on 2026-07-14.
+Accepted by the project owner on 2026-07-14; manifest-shape portions superseded
+by manifest v2 on 2026-07-23.
 
 ## Context
 
