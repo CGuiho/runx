@@ -5,7 +5,7 @@ description: Tracks schema, composition, CLI, complete tests, builds, assets, XD
 created: 2026-07-23
 flags:
   - validated
-  - release-pending
+  - released
 tags:
   - validation
   - cli
@@ -28,17 +28,24 @@ breaking migration, CLI surfaces, and distribution. Issue 22 is excluded.
 | Check | Result |
 | --- | --- |
 | `bun run typecheck` | Passed. |
-| `bun test` | Passed: 79 tests, 528 assertions. |
-| Focused configuration/init/CLI tests | Passed: local nesting, aliases, direct child, legacy and collisions, GitHub normalization, upstream parent, transport failures, check/list/describe/dry-run. |
+| `bun test` | Passed: 88 tests, 561 assertions. |
+| Focused configuration/init/CLI tests | Passed: 32 tests, 221 assertions, including all eleven independent review blocker categories. |
 | `bun run build` | Passed. |
 | `bun run binaries` | Passed: twelve native targets. |
 | `bun run verify-assets` | Passed: exactly fourteen assets, including both `.md` files. |
 | `xdocs scan --strict` | Passed. |
 | `xdocs doctor` | Passed: zero errors and zero warnings. |
-| Implementation review | Approved with no blocking findings. |
+| Independent implementation review | Cleared exact pushed HEAD `376404c`; all eleven direct adversarial probes passed. |
+| Main correction CI | Passed: [30036051275](https://github.com/CGuiho/runx/actions/runs/30036051275). |
+| Release CI | Passed: [30036242667](https://github.com/CGuiho/runx/actions/runs/30036242667). |
+| Publish | Passed: [30036245968](https://github.com/CGuiho/runx/actions/runs/30036245968); exact fourteen assets, exact-version installer, npm publication, and version-scoped notes. |
+| GitHub issue | [Issue 26](https://github.com/CGuiho/runx/issues/26) closed as completed with evidence. |
 
-## Release Handoff
+## Release Outcome
 
-Mirror minor planning, the `0.7.0` release, npm provenance, exact public assets,
-version-scoped notes, public installers, composed native execution, and issue
-closure remain pending.
+RunX 0.7.0 delivered the accepted manifest-v2 runtime but exposed a parallel
+CI race by comparing an unreleased package version with the mutable latest
+release. RunX 0.7.1 corrected workflow ownership: ordinary CI performs a generic
+latest-release smoke, while publish verifies the immutable tag and exact version
+only after the fourteen assets exist. CI, npm provenance, public installation,
+version-scoped notes, and issue closure are complete.
