@@ -15,6 +15,7 @@ export {
   manifestSchema,
   readManifest,
   resolveCommand,
+  validateManifestText,
 }
 export type {
   CatalogChild,
@@ -80,6 +81,7 @@ type CatalogChild = {
   path: string
   source: CatalogSource
   parent: string
+  declaredParent: string
 }
 
 type RunXManifest = {
@@ -111,8 +113,8 @@ type LoadState = {
   commands: RunXCommand[]
   groups: RunXManifest['groups']
   children: CatalogChild[]
-  uids: Set<string>
-  selectors: Set<string>
+  identities: Map<string, string>
+  idOwners: Map<string, Set<string>>
 }
 
 async function findConfiguration(cwd: string, explicitConfig?: string): Promise<string> {
@@ -131,9 +133,7 @@ async function findConfiguration(cwd: string, explicitConfig?: string): Promise<
 async function readManifest(cwd: string, explicitConfig?: string): Promise<{ manifest: RunXManifest, path: string }> {
   const path = await findConfiguration(cwd, explicitConfig)
   const root = await loadLocalCatalog(path)
-  const state: LoadState = {
-    active: new Set(), commands: [], groups: {}, children: [], uids: new Set(), selectors: new Set(),
-  }
+  const state = createLoadState()
   validateSourceManifest(root)
   if (root.manifest.parent) await validateDeclaredParent(root)
   await expandCatalog(root, [], state, 0)
@@ -189,18 +189,16 @@ async function expandEntries(catalog: LoadedCatalog, entries: Array<SourceComman
     const name = 'group' in entry ? entry.group : entry.id
     if (siblingNames.has(name)) throw new RunXError(`Duplicate command or group name "${name}" at ${catalog.path}:${prefix.join('/') || catalog.manifest.namespace}.`, 3)
     siblingNames.add(name)
-    if (prefix.length === 0 && name === catalog.manifest.namespace) {
-      throw new RunXError(`Namespace "${catalog.manifest.namespace}" conflicts with a top-level command or group in ${catalog.path}.`, 3)
-    }
   }
 
   for (const entry of entries) {
     if (!('group' in entry)) {
       const selector = [...prefix, entry.id].join('/')
-      if (state.uids.has(entry.uid)) throw new RunXError(`Duplicate command UID "${entry.uid}" in composed catalog.`, 3)
-      if (state.selectors.has(selector)) throw new RunXError(`Duplicate command selector "${selector}" in composed catalog.`, 3)
-      state.uids.add(entry.uid)
-      state.selectors.add(selector)
+      const owner = `${catalog.path}#${selector}`
+      registerPrimaryIdentity(state, entry.uid, owner, 'UID')
+      registerPrimaryIdentity(state, selector, owner, 'selector')
+      registerIdIdentity(state, entry.id, owner)
+      validateCommandCwd(entry, catalog)
       state.commands.push({
         ...entry,
         group: prefix.join('/'),
@@ -213,13 +211,14 @@ async function expandEntries(catalog: LoadedCatalog, entries: Array<SourceComman
     }
 
     const groupPath = [...prefix, entry.group]
+    if (groupPath.length > maximumCatalogDepth) throw new RunXError(`RunX catalog depth exceeds ${maximumCatalogDepth} at ${catalog.path}:${groupPath.join('/')}.`, 3)
     const groupSelector = groupPath.join('/')
     state.groups[groupSelector] = { summary: entry.summary, catalogPath: catalog.path, catalogSource: catalog.source }
     const hasCommands = entry.commands !== undefined
     const hasRunX = entry.runx !== undefined
     if (hasCommands === hasRunX) throw new RunXError(`Group "${groupSelector}" must define exactly one of commands or runx.`, 3)
     if (entry.commands) {
-      await expandEntries(catalog, entry.commands, groupPath, state, depth)
+      await expandEntries(catalog, entry.commands, groupPath, state, depth + 1)
       continue
     }
 
@@ -240,6 +239,7 @@ async function expandEntries(catalog: LoadedCatalog, entries: Array<SourceComman
       path: child.path,
       source: child.source,
       parent: catalog.path,
+      declaredParent: declaredParent.path,
     })
     await expandCatalog(child, groupPath, state, depth + 1)
   }
@@ -249,7 +249,13 @@ function validateSourceManifest(catalog: LoadedCatalog): void {
   if (catalog.manifest.version.split('.', 1)[0] !== '2') {
     throw new RunXError(`Unsupported RunX manifest version "${catalog.manifest.version}" in ${catalog.path}; version 2 is required.`, 3)
   }
-  if (catalog.source === 'local') validateScriptsDirectory(catalog)
+  validateScriptsDirectory(catalog)
+  for (const entry of catalog.manifest.commands) {
+    const name = 'group' in entry ? entry.group : entry.id
+    if (name === catalog.manifest.namespace) {
+      throw new RunXError(`Namespace "${catalog.manifest.namespace}" conflicts with a top-level command or group in ${catalog.path}.`, 3)
+    }
+  }
 }
 
 function validateScriptsDirectory(catalog: LoadedCatalog): void {
@@ -264,10 +270,17 @@ async function validateDeclaredParent(catalog: LoadedCatalog): Promise<void> {
   const reference = resolveReference(catalog, catalog.manifest.parent!)
   const parent = await loadResolvedCatalog(reference, catalog.basePath)
   validateSourceManifest(parent)
+  await expandCatalog(parent, [], createLoadState(), 0)
   const references = collectRunXReferences(parent.manifest.commands)
     .map(value => resolveReference(parent, value).path)
   if (!references.includes(catalog.path)) {
     throw new RunXError(`Parent catalog ${parent.path} does not declare child ${catalog.path}.`, 3)
+  }
+}
+
+function createLoadState(): LoadState {
+  return {
+    active: new Set(), commands: [], groups: {}, children: [], identities: new Map(), idOwners: new Map(),
   }
 }
 
@@ -305,8 +318,27 @@ async function loadResolvedCatalog(reference: { path: string, source: CatalogSou
   if (!response.ok) throw new RunXError(`Could not load foreign RunX catalog ${reference.path}: HTTP ${response.status}.`, 3)
   const declaredLength = Number(response.headers.get('content-length') ?? '0')
   if (declaredLength > maximumCatalogBytes) throw new RunXError(`Foreign RunX catalog exceeds ${maximumCatalogBytes} bytes: ${reference.path}`, 3)
-  const text = await response.text()
-  if (new TextEncoder().encode(text).byteLength > maximumCatalogBytes) throw new RunXError(`Foreign RunX catalog exceeds ${maximumCatalogBytes} bytes: ${reference.path}`, 3)
+  if (!response.body) throw new RunXError(`Foreign RunX catalog has no response body: ${reference.path}`, 3)
+  const reader = response.body.getReader()
+  const decoder = new TextDecoder('utf-8', { fatal: true })
+  let received = 0
+  let text = ''
+  try {
+    while (true) {
+      const { done, value } = await reader.read()
+      if (done) break
+      received += value.byteLength
+      if (received > maximumCatalogBytes) {
+        await reader.cancel('RunX catalog size limit exceeded')
+        throw new RunXError(`Foreign RunX catalog exceeds ${maximumCatalogBytes} bytes: ${reference.path}`, 3)
+      }
+      text += decoder.decode(value, { stream: true })
+    }
+    text += decoder.decode()
+  } catch (error) {
+    if (error instanceof RunXError) throw error
+    throw new RunXError(`Could not read foreign RunX catalog ${reference.path}: ${error instanceof Error ? error.message : String(error)}.`, 3)
+  }
   return decodeCatalog(text, reference.path, 'foreign', localBase)
 }
 
@@ -324,11 +356,19 @@ function decodeCatalog(text: string, path: string, source: CatalogSource, basePa
   }
 }
 
+function validateManifestText(text: string, path: string): void {
+  validateSourceManifest(decodeCatalog(text, path, 'local', directoryName(path)))
+}
+
 function resolveReference(owner: LoadedCatalog, reference: string): { path: string, source: CatalogSource } {
   if (/^https:\/\//i.test(reference)) return { path: normalizeGitHubUrl(reference), source: 'foreign' }
   if (isAbsolutePath(reference)) throw new RunXError(`RunX catalog references must be relative paths or full GitHub URLs: ${reference}`, 3)
   if (owner.source === 'foreign') {
-    return { path: normalizeGitHubUrl(new URL(reference, owner.path).toString()), source: 'foreign' }
+    const resolved = normalizeGitHubUrl(new URL(reference, owner.path).toString())
+    if (githubSourceRoot(resolved) !== githubSourceRoot(owner.path)) {
+      throw new RunXError(`Relative foreign RunX catalog reference escapes its GitHub owner/repository/ref root: ${reference}`, 3)
+    }
+    return { path: resolved, source: 'foreign' }
   }
   return { path: resolvePath(directoryName(owner.path), reference), source: 'local' }
 }
@@ -354,4 +394,37 @@ function normalizeGitHubUrl(value: string): string {
 
 function commandSelector(command: RunXCommand): string {
   return command.selector ?? [command.group, command.id].filter(Boolean).join('/')
+}
+
+function githubSourceRoot(value: string): string {
+  const url = new URL(normalizeGitHubUrl(value))
+  const segments = url.pathname.split('/').filter(Boolean)
+  return `${url.origin}/${segments.slice(0, 3).join('/')}`
+}
+
+function validateCommandCwd(command: SourceCommand, catalog: LoadedCatalog): void {
+  const commandCwd = resolvePath(catalog.basePath, command.cwd ?? '.')
+  const relative = relativePath(catalog.basePath, commandCwd)
+  if (isAbsolutePath(relative) || relative.startsWith('..')) {
+    throw new RunXError(`Command ${command.uid} has a cwd outside its catalog directory.`, 3)
+  }
+}
+
+function registerPrimaryIdentity(state: LoadState, identity: string, owner: string, kind: 'UID' | 'selector'): void {
+  const primaryOwner = state.identities.get(identity)
+  const shorthandOwners = state.idOwners.get(identity)
+  if ((primaryOwner && primaryOwner !== owner) || (shorthandOwners && [...shorthandOwners].some(value => value !== owner))) {
+    throw new RunXError(`Command ${kind} "${identity}" conflicts with another command UID, selector, or ID shorthand.`, 3)
+  }
+  state.identities.set(identity, owner)
+}
+
+function registerIdIdentity(state: LoadState, identity: string, owner: string): void {
+  const primaryOwner = state.identities.get(identity)
+  if (primaryOwner && primaryOwner !== owner) {
+    throw new RunXError(`Command ID shorthand "${identity}" conflicts with another command UID or selector.`, 3)
+  }
+  const owners = state.idOwners.get(identity) ?? new Set<string>()
+  owners.add(owner)
+  state.idOwners.set(identity, owners)
 }
