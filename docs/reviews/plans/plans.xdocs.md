@@ -6,7 +6,7 @@ children: []
 files:
   automatic-agent-maintenance-review.md: Reviews the issue 11 automatic agent-maintenance plan for safe execution.
   citty-cli-migration-review.md: Reviews completeness, compatibility, safety invariants, native packaging, and release sequencing for the Citty migration.
-  interactive-init-manifest-review.md: Reviews the RunX init manifest schema, terminal workflow, tests, XDocs, and pull-request delivery.
+  interactive-init-manifest-review.md: Historical review of the superseded v1 initializer plan.
   mirror-automatic-push-review.md: Reviews synchronized-main safeguards, read-only validation, protected delivery, and release side effects.
   npm-trusted-publishing-release-review.md: Reviews sequencing, acceptance criteria, safety gates, and validation for the RunX 0.2.1 trusted-publishing plan.
   rfc-0034-cli-compliance-migration-review.md: Reviews the full breaking RunX RFC 0034 migration for sequencing, command/agent coverage, distribution, validation, and approval gates.
@@ -15,7 +15,7 @@ files:
 documents:
   automatic-agent-maintenance-review.md: Ready-for-execution review for automatic agent maintenance.
   citty-cli-migration-review.md: Ready-for-execution review of the full Citty CLI migration plan.
-  interactive-init-manifest-review.md: Ready-for-execution review of the RunX interactive init manifest plan.
+  interactive-init-manifest-review.md: Historical v1 plan review; current manifest guidance lives in manifest-v2-composition.md.
   mirror-automatic-push-review.md: Ready-for-execution review of the Mirror automatic-push configuration plan.
   npm-trusted-publishing-release-review.md: Ready-for-execution review of the npm trusted-publishing release plan.
   rfc-0034-cli-compliance-migration-review.md: Ready-for-execution review of the complete RFC 0034 migration plan.
