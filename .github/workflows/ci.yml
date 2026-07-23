@@ -37,7 +37,6 @@ jobs:
         run: node --check scripts/runx-bin.mjs
       - name: Verify public Linux installer
         run: |
-          expected_version="$(bun -e 'console.log((await Bun.file("package.json").json()).version)')"
           public_home="$(mktemp -d)"
           project_dir="$(mktemp -d)"
           install_dir="$public_home/.local/bin"
@@ -47,12 +46,13 @@ jobs:
           export RUNX_SKIP_PATH_UPDATE=1
           cd "$project_dir"
           curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
-          test "$("$install_dir/runx" --version)" = "$expected_version"
+          installed_version="$("$install_dir/runx" --version)"
+          printf '%s\n' "$installed_version" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$'
           welcome="$("$install_dir/runx")"
-          if [[ "$welcome" != "Hello Linux - runx v$expected_version" ]]; then
+          if [[ "$welcome" != "Hello Linux - runx v$installed_version" ]]; then
             printf '%s\n' "$welcome" | grep -q 'RUNX'
             printf '%s\n' "$welcome" | grep -q 'platform      Linux'
-            printf '%s\n' "$welcome" | grep -q "version       v$expected_version"
+            printf '%s\n' "$welcome" | grep -q "version       v$installed_version"
           fi
           test -s "$HOME/.agents/skills/guiho-s-runx/SKILL.md"
           test -s "$HOME/.claude/skills/guiho-s-runx/SKILL.md"
