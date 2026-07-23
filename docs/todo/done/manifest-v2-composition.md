@@ -35,8 +35,9 @@ ambiguous, cyclic, non-reciprocal, legacy, or unsafe graphs before execution.
 - Init and every inspection/execution surface use the composed v2 model.
 - Full suite, native builds, exact assets, XDocs, npm, and public installers pass.
 - Independent adversarial review cleared all eleven release blockers.
-- RunX 0.7.1 publicly verified the immutable exact-version installer after its
-  fourteen assets were published.
+- RunX 0.7.2 publicly verified the immutable exact-version installer after its
+  fourteen assets were published and retained stable Windows CI with explicit
+  process-test budgets.
 - GitHub issue 26 received evidence and closed as completed.
 
 ## Related Records
