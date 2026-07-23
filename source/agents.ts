@@ -185,7 +185,8 @@ updating catalog entries, validating \`runx.yaml\`, inspecting command details,
 or executing RunX commands.
 Start with \`runx check --format json\` and \`runx list --format json\`, select
 stable UIDs, use \`runx describe <uid>\`, and run
-\`runx run <uid> --dry-run\` before unfamiliar or side-effecting work.
+\`runx run --dry-run <uid>\` before unfamiliar or side-effecting work.
+RunX options precede the selector; post-selector tokens belong to the child.
 ${managedEnd}
 `
 }
