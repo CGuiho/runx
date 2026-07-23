@@ -32,7 +32,7 @@ irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
 POSIX:
 
 ```sh
-curl --proto '=https' --tlsv1.2 -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
 ```
 
 The direct installers select and verify a native asset, install `runx` on PATH,
@@ -55,9 +55,23 @@ runx init
 runx check
 runx list
 runx describe app-dev
-runx run app-dev --dry-run
+runx run --dry-run app-dev
 runx run app-dev
+runx run cli-ts -v
 ```
+
+RunX options belong before the selector. Every token after the selector belongs
+to the selected child command; use one optional `--` after the selector when an
+explicit boundary improves readability:
+
+```text
+runx run --dry-run cli-ts -v
+runx run cli-ts -- build --watch
+```
+
+The shorter public curl bootstrap is intentional. The fetched installer still
+uses HTTPS, validates downloaded native and Markdown assets, replaces the
+binary transactionally, and verifies the installed version.
 
 Configuration resolves in this exact order:
 
