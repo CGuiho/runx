@@ -14,6 +14,7 @@ files:
   platform-aware-startup-greeting.md: Centralizes Windows, Linux, and macOS greeting rendering, deterministic tests, documentation, release, and issue closure.
   rfc-0034-cli-compliance-migration.md: Executes the breaking full RFC 0034 migration across runtime, configuration, help, agents, upgrades, distribution, release assets, documentation, and validation.
   runx-0.6.0-cli-experience.md: Sequences issues 23 through 25 from implementation through validation, versioning, public acceptance, and closure.
+  manifest-v2-composition.md: Sequences issue 26 recursive catalogs from schema through migration, release, public acceptance, and closure.
   windows-self-upgrade.md: Sequences synchronous Windows replacement, rollback coverage, validation, issue closure, and patch delivery.
   upgrade-reliability-implementation.md: Sequences release discovery, streamed progress, transactional replacement, recovery, installers, and validation.
 documents:
@@ -27,6 +28,7 @@ documents:
   platform-aware-startup-greeting.md: Approved implementation plan for GitHub issue 21.
   rfc-0034-cli-compliance-migration.md: Approved step-by-step plan for making RunX fully compliant with the GUIHO CLI engineer contract.
   runx-0.6.0-cli-experience.md: Approved executable plan for RunX 0.6.0 CLI experience work.
+  manifest-v2-composition.md: Executing plan for RunX manifest v2 composition.
   windows-self-upgrade.md: Approved executable plan for fixing Windows native self-upgrade and delivering its patch.
   upgrade-reliability-implementation.md: Approved executable plan for GitHub issues 12 and 13.
 tags:
