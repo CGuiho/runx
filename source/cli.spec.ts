@@ -26,10 +26,10 @@ describe('RunX RFC 0034 CLI', () => {
     for (const flag of ['-h', '--help']) expect((await cli([flag], cwd)).stdout).toContain('USAGE')
   })
 
-  test('renders the no-argument greeting for the actual operating system', () => {
-    expect(renderStartupBanner('win32', '1.2.3')).toBe('Hello Windows - runx v1.2.3\n')
-    expect(renderStartupBanner('linux', '1.2.3')).toBe('Hello Linux - runx v1.2.3\n')
-    expect(renderStartupBanner('darwin', '1.2.3')).toBe('Hello macOS - runx v1.2.3\n')
+  test('renders the no-argument welcome for the actual operating system', () => {
+    expect(renderStartupBanner('win32', '1.2.3', 'arm64')).toContain('platform      Windows arm64')
+    expect(renderStartupBanner('linux', '1.2.3', 'x64')).toContain('platform      Linux x64')
+    expect(renderStartupBanner('darwin', '1.2.3', 'x64')).toContain('platform      macOS x64')
   })
 
   test('prints the cached update notice before the no-argument banner without network work', async () => {
@@ -45,7 +45,12 @@ describe('RunX RFC 0034 CLI', () => {
     const result = await cli([], cwd, home)
 
     expect(result.exitCode).toBe(0)
-    expect(result.stdout).toBe(`New version available. Run this command to upgrade: runx upgrade\n${renderStartupBanner(process.platform, readVersion())}`)
+    expect(result.stdout).toBe(renderStartupBanner(
+      process.platform,
+      readVersion(),
+      process.arch,
+      '  ⚠ New version available: v99.0.0\n    Run `runx upgrade` to update.',
+    ))
     expect(result.stderr).toBe('')
   })
 
@@ -108,8 +113,48 @@ describe('RunX RFC 0034 CLI', () => {
     const cwd = await temporaryDirectory()
     await Bun.write(join(cwd, 'runx.yaml'), manifest('selected', 'exit 7'))
     expect((await cli(['list'], cwd)).stdout).not.toContain('Running selected')
-    expect((await cli(['run', 'selected', '--dry-run'], cwd)).exitCode).toBe(0)
+    expect((await cli(['run', '--dry-run', 'selected'], cwd)).exitCode).toBe(0)
     expect((await cli(['run', 'selected'], cwd)).exitCode).toBe(7)
+  })
+
+  test('forwards child flags, subcommands, empty values, Unicode, and shell metacharacters after the selector', async () => {
+    const cwd = await temporaryDirectory()
+    const values = ['-v', 'build', '--watch', '', 'space value', 'Olá 世界', '; exit 99', '&& injected', '$(whoami)', '%PATH%', '!ERRORLEVEL!']
+    await Bun.write(join(cwd, 'capture.ts'), 'console.log(JSON.stringify(process.argv.slice(2)))\n')
+    await Bun.write(join(cwd, 'runx.yaml'), manifest('forwarded', 'bun capture.ts'))
+
+    const result = await cli(['run', 'forwarded', '--', ...values], cwd)
+
+    expect(result.exitCode).toBe(0)
+    expect(result.stderr).toBe('')
+    expect(JSON.parse(result.stdout.trim().split('\n').at(-1) ?? 'null')).toEqual(values)
+  })
+
+  test('forwards arguments through every shell supported on the host', async () => {
+    const shells = process.platform === 'win32' ? ['cmd', 'powershell'] : ['sh', 'bash']
+    for (const shell of shells) {
+      const cwd = await temporaryDirectory()
+      const values = ['-v', '', 'space value', 'Olá 世界', '; literal', '%PATH%', '!ERRORLEVEL!']
+      await Bun.write(join(cwd, 'capture.ts'), 'console.log(JSON.stringify(process.argv.slice(2)))\n')
+      await Bun.write(join(cwd, 'runx.yaml'), manifest(`forwarded-${shell}`, 'bun capture.ts', shell))
+
+      const result = await cli(['run', `forwarded-${shell}`, ...values], cwd)
+      expect(result.stderr).toBe('')
+      expect(result.exitCode).toBe(0)
+      expect(JSON.parse(result.stdout.trim().split('\n').at(-1) ?? 'null')).toEqual(values)
+    }
+  })
+
+  test('keeps RunX dry-run and confirmation options before the selector', async () => {
+    const cwd = await temporaryDirectory()
+    await Bun.write(join(cwd, 'runx.yaml'), manifest('forwarded'))
+
+    const result = await cli(['run', '--dry-run', 'forwarded', '-v', '--yes'], cwd)
+    expect(result.exitCode).toBe(0)
+    expect(result.stdout).toContain('arguments:\n  [0] "-v"\n  [1] "--yes"')
+
+    const json = await cli(['run', '--dry-run', '--format', 'json', 'forwarded', '-v'], cwd)
+    expect(JSON.parse(json.stdout).arguments).toEqual(['-v'])
   })
 
   test('rejects removed aliases, arbitrary short flags, unknown commands, and invalid enums', async () => {
@@ -316,7 +361,7 @@ async function temporaryDirectory(): Promise<string> {
   return directory
 }
 
-function manifest(uid: string, command = 'echo safe'): string {
+function manifest(uid: string, command = 'echo safe', shell?: string): string {
   return `version: "1.0.0"
 scripts:
   directory: scripts
@@ -330,6 +375,7 @@ commands:
     summary: Selected command.
     description: Selected command for tests.
     command: ${command}
+${shell ? `    shell: ${shell}\n` : ''}
 `
 }
 
