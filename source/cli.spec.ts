@@ -362,20 +362,20 @@ async function temporaryDirectory(): Promise<string> {
 }
 
 function manifest(uid: string, command = 'echo safe', shell?: string): string {
-  return `version: "1.0.0"
+  return `version: "2.0.0"
+namespace: test-catalog
 scripts:
   directory: scripts
-groups:
-  public:
-    summary: Public commands.
 commands:
-  - uid: ${uid}
-    id: selected
-    group: public
-    summary: Selected command.
-    description: Selected command for tests.
-    command: ${command}
-${shell ? `    shell: ${shell}\n` : ''}
+  - group: public
+    summary: Public commands.
+    commands:
+      - uid: ${uid}
+        id: selected
+        summary: Selected command.
+        description: Selected command for tests.
+        command: ${command}
+${shell ? `        shell: ${shell}\n` : ''}
 `
 }
 
