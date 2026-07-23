@@ -26,7 +26,7 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 0 |
+| in progress | 1 |
 | testing | 2 |
 | stopped | 0 |
 | completed | 11 |
@@ -177,3 +177,16 @@ owner: runx
   - [docs/decisions/run-argument-ownership.md](docs/decisions/run-argument-ownership.md) - Approved ownership and shell-safety decision.
   - [docs/plans/runx-0.6.0-cli-experience.md](docs/plans/runx-0.6.0-cli-experience.md) - Approved executable plan.
 - External: GitHub issue [CGuiho/runx#25](https://github.com/CGuiho/runx/issues/25)
+
+### 13. Implement RunX Manifest V2 Composition
+
+- Status: in progress
+- Created: `2026-07-23`
+- Updated: `2026-07-23`
+- Outcome: RunX colocates recursive commands and groups and composes explicit,
+  reciprocal local or GitHub child catalogs under renameable namespace aliases.
+- Spec: [docs/todo/manifest-v2-composition.md](docs/todo/manifest-v2-composition.md)
+- Requirements: [docs/requirements/manifest-v2-composition.md](docs/requirements/manifest-v2-composition.md)
+- Decision: [docs/decisions/manifest-v2-composition.md](docs/decisions/manifest-v2-composition.md)
+- Plan: [docs/plans/manifest-v2-composition.md](docs/plans/manifest-v2-composition.md)
+- External: GitHub issue [CGuiho/runx#26](https://github.com/CGuiho/runx/issues/26)
