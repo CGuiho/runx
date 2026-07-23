@@ -22,7 +22,9 @@ status: stable
 The CI workflow verifies RunX on Linux and Windows for every main-branch push
 and pull request. Its Ubuntu job also executes the public `curl -fsSL ... | bash`
 installer in an isolated home and project, then checks the published version,
-Linux welcome, and both global skill files. The Publish workflow runs only for
+compatible released startup output, and both global skill files. The source and
+native tests own the strict current welcome contract while the unreleased main
+branch may still install the previous public greeting. The Publish workflow runs only for
 `@guiho/runx@*` tags without an environment approval gate, publishes twelve
 native binaries plus two `.md` agent assets,
 creates or refreshes notes from only the matching changelog section, and
