@@ -53,6 +53,7 @@ commands:
       path: join(child, 'runx.yaml'),
       source: 'local',
       parent: join(root, 'runx.yaml'),
+      declaredParent: join(root, 'runx.yaml'),
     }])
     const resolved = resolveCommand(manifest, path, 'worker-alias/build/compile')
     expect(resolved.uid).toBe('worker-compile')
@@ -143,6 +144,7 @@ commands:
     expect(requests).toEqual([
       'https://raw.githubusercontent.com/example/catalog/main/child/runx.yaml',
       'https://raw.githubusercontent.com/example/catalog/main/runx.yaml',
+      'https://raw.githubusercontent.com/example/catalog/main/child/runx.yaml',
     ])
     expect(manifest.children[0]).toMatchObject({ namespace: 'remote-alias', declaredNamespace: 'remote-child', source: 'foreign' })
     const command = resolveCommand(manifest, path, 'remote-alias/test')
@@ -159,6 +161,173 @@ commands:
     globalThis.fetch = (async () => { throw new Error('network unavailable') }) as typeof fetch
     await expect(readManifest(root)).rejects.toMatchObject({ exitCode: 3 })
     await expect(readManifest(root)).rejects.toThrow('network unavailable')
+  })
+
+  test('uses one collision domain without rejecting aliases owned by the same leaf', async () => {
+    const root = await temporaryDirectory()
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - uid: test
+    id: test
+    summary: Same leaf aliases.
+    description: UID and selector belong to one command.
+    command: echo test`))
+    expect((await readManifest(root)).manifest.commands).toHaveLength(1)
+
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - uid: shared
+    id: first
+    summary: First.
+    description: First command.
+    command: echo first
+  - group: nested
+    summary: Nested.
+    commands:
+      - uid: second
+        id: shared
+        summary: Second.
+        description: Second command.
+        command: echo second`))
+    await expect(readManifest(root)).rejects.toThrow('ID shorthand "shared" conflicts')
+
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: nested
+    summary: Nested.
+    commands:
+      - uid: first
+        id: shared
+        summary: First.
+        description: First command.
+        command: echo first
+  - uid: shared
+    id: second
+    summary: Second.
+    description: Second command.
+    command: echo second`))
+    await expect(readManifest(root)).rejects.toThrow('UID "shared" conflicts')
+  })
+
+  test('validates child namespaces before applying their mount prefixes', async () => {
+    const root = await temporaryDirectory()
+    const child = join(root, 'child')
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: alias
+    summary: Child.
+    runx: child/runx.yaml`))
+    await Bun.write(join(child, 'runx.yaml'), catalog('child-name', `
+parent: ../runx.yaml
+commands:
+  - uid: child-conflict
+    id: child-name
+    summary: Conflict.
+    description: Child namespace conflict.
+    command: echo conflict`))
+    await expect(readManifest(root)).rejects.toThrow('Namespace "child-name" conflicts')
+  })
+
+  test('rejects cross-mount identity shadows and semantically invalid declared parents', async () => {
+    const root = await temporaryDirectory()
+    const child = join(root, 'child')
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - uid: shared
+    id: root-command
+    summary: Root.
+    description: Root command.
+    command: echo root
+  - group: child
+    summary: Child.
+    runx: child/runx.yaml`))
+    await Bun.write(join(child, 'runx.yaml'), catalog('child-catalog', `
+parent: ../runx.yaml
+commands:
+  - uid: child-command
+    id: shared
+    summary: Child.
+    description: Child command.
+    command: echo child`))
+    await expect(readManifest(root)).rejects.toThrow('ID shorthand "shared" conflicts')
+
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: child
+    summary: Invalid child mount.
+    runx: child/runx.yaml
+    commands: []`))
+    await expect(readManifest(child)).rejects.toThrow('must define exactly one of commands or runx')
+  })
+
+  test('accepts 32 nested groups and rejects the 33rd across inline depth', async () => {
+    const root = await temporaryDirectory()
+    await Bun.write(join(root, 'runx.yaml'), nestedCatalog(32))
+    expect((await readManifest(root)).manifest.commands[0]?.selector?.split('/')).toHaveLength(33)
+    await Bun.write(join(root, 'runx.yaml'), nestedCatalog(33))
+    await expect(readManifest(root)).rejects.toThrow('depth exceeds 32')
+  })
+
+  test('rejects escaping cwd during composition for root, local child, and foreign child commands', async () => {
+    const root = await temporaryDirectory()
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - uid: root-escape
+    id: escape
+    summary: Escape.
+    description: Escape root.
+    command: echo escape
+    cwd: ..`))
+    await expect(readManifest(root)).rejects.toThrow('cwd outside its catalog directory')
+
+    const child = join(root, 'child')
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: child
+    summary: Child.
+    runx: child/runx.yaml`))
+    await Bun.write(join(child, 'runx.yaml'), catalog('child-catalog', `
+parent: ../runx.yaml
+commands:
+  - uid: child-escape
+    id: escape
+    summary: Escape.
+    description: Escape child.
+    command: echo escape
+    cwd: ..`))
+    await expect(readManifest(root)).rejects.toThrow('cwd outside its catalog directory')
+
+    globalThis.fetch = foreignGraphFetch({ commandCwd: '..' })
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: foreign
+    summary: Foreign.
+    runx: https://github.com/example/catalog/blob/main/child/runx.yaml`))
+    await expect(readManifest(root)).rejects.toThrow('cwd outside its catalog directory')
+  })
+
+  test('validates scripts.directory for foreign catalogs and streams the one-MiB limit', async () => {
+    const root = await temporaryDirectory()
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: foreign
+    summary: Foreign.
+    runx: https://github.com/example/catalog/blob/main/child/runx.yaml`))
+    for (const scriptsDirectory of ['.', '..', 'C:\\absolute']) {
+      globalThis.fetch = foreignGraphFetch({ scriptsDirectory })
+      await expect(readManifest(root)).rejects.toThrow('Scripts directory must be a relative subdirectory')
+    }
+
+    let pulls = 0
+    globalThis.fetch = (async () => new Response(new ReadableStream({
+      pull(controller) {
+        pulls += 1
+        controller.enqueue(new Uint8Array(600_000))
+        if (pulls === 2) controller.close()
+      },
+    }))) as typeof fetch
+    await expect(readManifest(root)).rejects.toThrow('exceeds 1048576 bytes')
+    expect(pulls).toBe(2)
+  })
+
+  test('rejects foreign-relative references that escape the GitHub owner, repository, or ref root', async () => {
+    const root = await temporaryDirectory()
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: foreign
+    summary: Foreign.
+    runx: https://github.com/example/catalog/blob/main/child/runx.yaml`))
+    globalThis.fetch = foreignGraphFetch({ nestedReference: '../../../../other/repository/main/runx.yaml' })
+    await expect(readManifest(root)).rejects.toThrow('escapes its GitHub owner/repository/ref root')
   })
 })
 
@@ -177,4 +346,36 @@ async function temporaryDirectory(): Promise<string> {
   const directory = await mkdtemp(join(tmpdir(), 'runx-composition-'))
   directories.push(directory)
   return directory
+}
+
+function nestedCatalog(depth: number): string {
+  let commands: unknown[] = [{
+    uid: 'deep-command', id: 'leaf', summary: 'Deep command.', description: 'Deep command.', command: 'echo deep',
+  }]
+  for (let index = depth; index >= 1; index -= 1) {
+    commands = [{ group: `g${index}`, summary: `Group ${index}.`, commands }]
+  }
+  return Bun.YAML.stringify({ version: '2.0.0', namespace: 'root', scripts: { directory: 'scripts' }, commands })
+}
+
+function foreignGraphFetch(options: { scriptsDirectory?: string, commandCwd?: string, nestedReference?: string }): typeof fetch {
+  return (async (input) => {
+    const url = String(input)
+    if (url.endsWith('/child/runx.yaml')) {
+      const nested = options.nestedReference
+        ? [{ group: 'nested', summary: 'Nested.', runx: options.nestedReference }]
+        : [{
+            uid: 'foreign-command', id: 'test', summary: 'Foreign.', description: 'Foreign command.', command: 'echo foreign',
+            ...(options.commandCwd ? { cwd: options.commandCwd } : {}),
+          }]
+      return Response.json({
+        version: '2.0.0', namespace: 'foreign-child', scripts: { directory: options.scriptsDirectory ?? 'scripts' },
+        parent: '../runx.yaml', commands: nested,
+      }, { headers: { 'content-type': 'application/yaml' } })
+    }
+    return Response.json({
+      version: '2.0.0', namespace: 'foreign-root', scripts: { directory: 'scripts' },
+      commands: [{ group: 'child', summary: 'Child.', runx: 'child/runx.yaml' }],
+    }, { headers: { 'content-type': 'application/yaml' } })
+  }) as typeof fetch
 }
