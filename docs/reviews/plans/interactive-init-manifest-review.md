@@ -1,10 +1,11 @@
 ---
 name: RunX Interactive Init Manifest Plan Review
-purpose: Verify that the interactive-init implementation plan is executable, safe, and traceable.
-description: Reviews manifest constraints, terminal workflow boundaries, test coverage, XDocs work, and pull-request delivery for runx init.
+purpose: Preserve review evidence for the historical v1 initializer plan.
+description: Historical v1 plan review; current manifest-v2-composition.md governs initializer shape.
 created: 2026-07-14
 flags:
   - approved
+  - superseded-manifest-shape
 tags:
   - reviews
   - plans
@@ -13,12 +14,16 @@ keywords:
   - runx init
   - runx.yaml
   - semantic versioning
-  - public group
+  - superseded manifest v1
   - scripts directory
 owner: runx-plan-reviews
 ---
 
 # RunX Interactive Init Manifest Plan Review
+
+> **Historical review:** Approval applied to the v1 plan. Manifest-shape
+> guidance is superseded by
+> [RunX Manifest V2 Composition](../../plans/manifest-v2-composition.md).
 
 ## Verdict
 
