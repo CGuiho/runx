@@ -81,6 +81,31 @@ Configuration resolves in this exact order:
 
 RunX never searches parent directories.
 
+RunX manifest v2 colocates groups and commands. `namespace` replaces
+`project.name`; the former top-level `groups` map and command `group` field are
+removed:
+
+```yaml
+version: "2.0.0"
+namespace: example
+scripts:
+  directory: scripts
+commands:
+  - group: cli
+    summary: CLI commands.
+    commands:
+      - uid: cli-test
+        id: test
+        summary: Test the CLI.
+        description: Run the CLI test suite.
+        command: bun test
+```
+
+A group may replace nested `commands` with `runx: relative/path/runx.yaml` or a
+full HTTPS GitHub blob/raw URL. The group name is the mounted child's namespace
+alias. The child declares the reciprocal `parent`; `runx check` rejects legacy,
+ambiguous, cyclic, unsafe, or non-reciprocal catalog graphs.
+
 ## Command Catalog
 
 ```text
