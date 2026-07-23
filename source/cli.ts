@@ -20,6 +20,7 @@ import {
   updateAgentSkill,
 } from './agents.js'
 import { RunXError } from './errors.js'
+import { partitionRunInvocation } from './execution-arguments.js'
 import { runCommand } from './executor.js'
 import { readVersion, renderHelpDocs, renderHelpTree } from './help.js'
 import { initializeRunXManifest } from './init.js'
@@ -30,6 +31,7 @@ import { fetchReleaseCatalog, paginateReleaseCatalog, resolveUpgradePlatform } f
 import { checkForLatestVersion, uninstallSelf, upgradeSelf } from './self-management.js'
 import { readCachedUpdateNotice, runUpdateWorker, spawnUpdateWorker } from './update-cache.js'
 import { renderReleaseCatalog, renderUpgradeEvent, renderUpgradeHeading, renderUpgradePlan, renderUpgradeResult } from './upgrade-reporting.js'
+import { renderWelcome } from './welcome.js'
 
 import type { CommandContext, CommandDef, SubCommandsDef } from 'citty'
 import type { AgentScope, CliOptions, OutputFormat } from './types.js'
@@ -89,14 +91,8 @@ const formatSchema = Type.Union([Type.Literal('text'), Type.Literal('json')])
 const archSchema = Type.Union([Type.Literal('x64'), Type.Literal('arm64')])
 const variantSchema = Type.Union([Type.Literal('baseline'), Type.Literal('default'), Type.Literal('modern')])
 const positiveIntegerSchema = Type.Integer({ minimum: 1 })
-const platformLabels: Readonly<Record<string, string>> = {
-  darwin: 'macOS',
-  linux: 'Linux',
-  win32: 'Windows',
-}
-
-function renderStartupBanner(platform = process.platform, version = readVersion()): string {
-  return `Hello ${platformLabels[platform] ?? platform} - runx v${version}\n`
+function renderStartupBanner(platform = process.platform, version = readVersion(), architecture = process.arch, updateNotice: string | null = null): string {
+  return renderWelcome({ platform, architecture, version, updateNotice })
 }
 
 const helpArgs = {
@@ -114,7 +110,7 @@ const catalogArgs = {
   ...helpArgs,
 } as const
 
-function createCommandTree(): { command: CommandDef<any>, state: CliState } {
+function createCommandTree(forwardedArguments: readonly string[] = [], startupNotice: string | null = null): { command: CommandDef<any>, state: CliState } {
   const state: CliState = { args: { _: [] }, command: {}, commands: new Map() }
   const leaf = (name: string, description: string, args: Record<string, any>, run: (context: CommandContext<any>) => Promise<void> | void): CommandDef<any> => {
     const command = defineCommand({ meta: { name, description }, args: { ...args, ...helpArgs }, setup: helpSetup(state), run })
@@ -137,7 +133,7 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
     yes: { type: 'boolean', description: 'Approve a confirmation-gated command.' },
   }, async ({ args }) => {
     if (!args.selector) throw await usageError(state, 'Missing required positional argument: SELECTOR')
-    await runSelected(String(args.selector), options(state.args), state.args)
+    await runSelected(String(args.selector), options(state.args), state.args, forwardedArguments)
   })
   const check = leaf('runx check', 'Validate a RunX configuration without execution.', catalogArgs, async () => checkManifest(options(state.args)))
   const init = leaf('runx init', 'Create a new YAML RunX configuration.', catalogArgs, async () => {
@@ -243,7 +239,7 @@ function createCommandTree(): { command: CommandDef<any>, state: CliState } {
       await handleHelp(state)
     },
     run: ({ args }) => {
-      if ((args._ as string[]).length === 0) write(renderStartupBanner())
+      if ((args._ as string[]).length === 0) write(renderStartupBanner(process.platform, readVersion(), process.arch, startupNotice))
     },
   })
   state.commands.set('', root)
@@ -310,25 +306,24 @@ async function runCli(rawArgs: string[] = process.argv.slice(2)): Promise<void> 
     await runAgentMaintenanceWorker(maintenanceWorkerCwd)
     return
   }
-  const { command, state } = createCommandTree()
-  const cleanOutput = rawArgs.some((arg) => ['-h', '--help', '-v', '--version', '--help-tree', '--help-docs'].includes(arg) || arg.startsWith('--help-tree-depth'))
+  const invocation = partitionRunInvocation(rawArgs)
+  const routerArguments = invocation.routerArguments
+  const cleanOutput = routerArguments.some((arg) => ['-h', '--help', '-v', '--version', '--help-tree', '--help-docs'].includes(arg) || arg.startsWith('--help-tree-depth'))
+  const notice = cleanOutput ? null : await readCachedUpdateNotice(routerArguments.includes('--verbose'))
+  const { command, state } = createCommandTree(invocation.forwardedArguments, routerArguments.length === 0 ? notice : null)
   if (!cleanOutput) {
-    const notice = await readCachedUpdateNotice(rawArgs.includes('--verbose'))
-    if (notice) {
-      if (rawArgs.length === 0) write(`${notice}\n`)
-      else process.stderr.write(`${notice}\n`)
-    }
+    if (notice && routerArguments.length > 0) process.stderr.write(`${notice}\n`)
   }
   await spawnUpdateWorker()
   try {
-    await runCittyCommand(command, { rawArgs })
+    await runCittyCommand(command, { rawArgs: routerArguments })
   } catch (error) {
     if (error instanceof CliHandled) return
     if (error instanceof CliUsageError) throw error
     if (error instanceof Error && error.name === 'CLIError') throw new CliUsageError(error.message, await renderUsage(state.command))
     throw error
   } finally {
-    if (shouldScheduleAgentMaintenance(rawArgs)) {
+    if (shouldScheduleAgentMaintenance(routerArguments)) {
       spawnAgentMaintenanceWorker(resolvePath(state.args.cwd ?? process.cwd()))
     }
   }
@@ -380,16 +375,18 @@ async function checkManifest(optionsValue: CliOptions): Promise<void> {
   write(optionsValue.format === 'json' ? renderJson(result) : `valid: true\nmanifest: ${path}\ncommands: ${result.commandCount}\n`)
 }
 
-async function runSelected(selector: string, optionsValue: CliOptions, args: GlobalArgs): Promise<void> {
+async function runSelected(selector: string, optionsValue: CliOptions, args: GlobalArgs, forwardedArguments: readonly string[]): Promise<void> {
   const { manifest, path } = await load(optionsValue)
   const command = resolveCommand(manifest, path, selector)
   if (args.dryRun) {
-    write(optionsValue.format === 'json' ? renderJson({ dryRun: true, command }) : renderExecutionPlan(command))
+    write(optionsValue.format === 'json'
+      ? renderJson({ dryRun: true, command, arguments: forwardedArguments })
+      : renderExecutionPlan(command, forwardedArguments))
     return
   }
   if (command.confirm === 'always' && !args.yes) throw new RunXError(`Command ${command.uid} requires confirmation. Rerun with --yes only after authorization.`, 2)
   if (optionsValue.format === 'text') write(`Running ${command.uid} (${command.selector})\n`)
-  process.exitCode = await runCommand(command)
+  process.exitCode = await runCommand(command, forwardedArguments)
 }
 
 async function agentMutation(label: string, action: (scope: AgentScope, cwd: string) => Promise<string[]>, args: GlobalArgs): Promise<void> {
