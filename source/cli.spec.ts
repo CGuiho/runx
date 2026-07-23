@@ -138,6 +138,82 @@ commands:
     expect(dryRun).toMatchObject({ dryRun: true, command: { uid: 'worker-compile', cwd: child } })
   })
 
+  test('check and list reject escaping cwd in root, local-child, and foreign-child catalogs', async () => {
+    const cwd = await temporaryDirectory()
+    await Bun.write(join(cwd, 'runx.yaml'), `version: "2.0.0"
+namespace: root
+scripts:
+  directory: scripts
+commands:
+  - uid: root-escape
+    id: escape
+    summary: Escape.
+    description: Escape root.
+    command: echo escape
+    cwd: ..
+`)
+    for (const name of ['check', 'list']) {
+      const result = await cli([name], cwd)
+      expect(result.exitCode).toBe(3)
+      expect(result.stderr).toContain('cwd outside its catalog directory')
+    }
+
+    const child = join(cwd, 'child')
+    await Bun.write(join(cwd, 'runx.yaml'), `version: "2.0.0"
+namespace: root
+scripts:
+  directory: scripts
+commands:
+  - group: child
+    summary: Child.
+    runx: child/runx.yaml
+`)
+    await Bun.write(join(child, 'runx.yaml'), `version: "2.0.0"
+namespace: child-catalog
+scripts:
+  directory: scripts
+parent: ../runx.yaml
+commands:
+  - uid: child-escape
+    id: escape
+    summary: Escape.
+    description: Escape child.
+    command: echo escape
+    cwd: ..
+`)
+    for (const name of ['check', 'list']) {
+      const result = await cli([name], cwd)
+      expect(result.exitCode).toBe(3)
+      expect(result.stderr).toContain('cwd outside its catalog directory')
+    }
+
+    await Bun.write(join(cwd, 'runx.yaml'), `version: "2.0.0"
+namespace: root
+scripts:
+  directory: scripts
+commands:
+  - group: foreign
+    summary: Foreign.
+    runx: https://github.com/example/catalog/blob/main/child/runx.yaml
+`)
+    const foreignFetch = (async (input: string | URL | Request) => {
+      const url = String(input)
+      if (url.endsWith('/child/runx.yaml')) return Response.json({
+        version: '2.0.0', namespace: 'foreign-child', scripts: { directory: 'scripts' }, parent: '../runx.yaml',
+        commands: [{ uid: 'foreign-escape', id: 'escape', summary: 'Escape.', description: 'Escape foreign.', command: 'echo escape', cwd: '..' }],
+      })
+      return Response.json({
+        version: '2.0.0', namespace: 'foreign-root', scripts: { directory: 'scripts' },
+        commands: [{ group: 'child', summary: 'Child.', runx: 'child/runx.yaml' }],
+      })
+    }) as typeof fetch
+    for (const name of ['check', 'list']) {
+      const result = await directCli([name, '--cwd', cwd], foreignFetch)
+      expect(result.exitCode).toBe(3)
+      expect(result.stderr).toContain('cwd outside its catalog directory')
+    }
+  })
+
   test('does not search parents and maps configuration errors to exit 3', async () => {
     const parent = await temporaryDirectory()
     const child = join(parent, 'child')
@@ -383,6 +459,32 @@ async function cli(args: string[], cwd: string, home = cwd, enableAgentMaintenan
   })
   const [exitCode, stdout, stderr] = await Promise.all([child.exited, new Response(child.stdout).text(), new Response(child.stderr).text()])
   return { exitCode, stdout, stderr }
+}
+
+async function directCli(args: string[], fetchImplementation: typeof fetch): Promise<CliResult> {
+  let stdout = ''
+  let stderr = ''
+  const stdoutSpy = spyOn(process.stdout, 'write').mockImplementation((chunk) => { stdout += String(chunk); return true })
+  const stderrSpy = spyOn(process.stderr, 'write').mockImplementation((chunk) => { stderr += String(chunk); return true })
+  const originalFetch = globalThis.fetch
+  const originalExitCode = process.exitCode
+  const originalUpdateWorker = Bun.env.RUNX_DISABLE_UPDATE_WORKER
+  const originalAgentWorker = Bun.env.RUNX_DISABLE_AGENT_MAINTENANCE_WORKER
+  try {
+    globalThis.fetch = fetchImplementation
+    Bun.env.RUNX_DISABLE_UPDATE_WORKER = '1'
+    Bun.env.RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = '1'
+    process.exitCode = 0
+    await runCliWithErrorHandling(args)
+    return { exitCode: process.exitCode ?? 0, stdout, stderr }
+  } finally {
+    stdoutSpy.mockRestore()
+    stderrSpy.mockRestore()
+    globalThis.fetch = originalFetch
+    restoreEnvironment('RUNX_DISABLE_UPDATE_WORKER', originalUpdateWorker)
+    restoreEnvironment('RUNX_DISABLE_AGENT_MAINTENANCE_WORKER', originalAgentWorker)
+    process.exitCode = originalExitCode ?? 0
+  }
 }
 
 async function waitFor(predicate: () => Promise<boolean>, timeout = 5_000): Promise<void> {
