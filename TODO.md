@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 2 |
+| testing | 5 |
 | stopped | 0 |
 | completed | 8 |
 
@@ -142,3 +142,38 @@ owner: runx
 - Outcome: The PowerShell installer preserves existing UTF-8 project instructions, converges damaged or duplicate RunX blocks, and does not race background reconciliation during version verification.
 - Spec: [docs/todo/windows-installer-utf8.md](docs/todo/windows-installer-utf8.md)
 - Validation: [docs/validation/windows-installer-utf8.md](docs/validation/windows-installer-utf8.md)
+
+### 10. Implement A Beautiful RunX Welcome Window
+
+- Status: testing
+- Created: `2026-07-22`
+- Updated: `2026-07-22`
+- Outcome: Bare RunX invocation presents a deterministic, platform-aware welcome and an optional validated cached update notice without foreground network work.
+- Spec: [docs/todo/beautiful-welcome-window.md](docs/todo/beautiful-welcome-window.md)
+- Related files:
+  - [docs/requirements/runx-0.6.0-cli-experience.md](docs/requirements/runx-0.6.0-cli-experience.md) - Approved combined release requirements.
+  - [docs/plans/runx-0.6.0-cli-experience.md](docs/plans/runx-0.6.0-cli-experience.md) - Approved executable plan.
+- External: GitHub issue [CGuiho/runx#23](https://github.com/CGuiho/runx/issues/23)
+
+### 11. Use The Simplified RunX Installation Command
+
+- Status: testing
+- Created: `2026-07-22`
+- Updated: `2026-07-22`
+- Outcome: The public README uses the exact simplified curl bootstrap while installer integrity and verification remain intact.
+- Spec: [docs/todo/simplified-install-command.md](docs/todo/simplified-install-command.md)
+- Related files:
+  - [docs/plans/runx-0.6.0-cli-experience.md](docs/plans/runx-0.6.0-cli-experience.md) - Approved executable plan.
+- External: GitHub issue [CGuiho/runx#24](https://github.com/CGuiho/runx/issues/24)
+
+### 12. Forward RunX Child Arguments And Subcommands
+
+- Status: testing
+- Created: `2026-07-22`
+- Updated: `2026-07-22`
+- Outcome: RunX forwards every post-selector child argument losslessly and safely without letting child flags alter RunX routing.
+- Spec: [docs/todo/forward-command-arguments.md](docs/todo/forward-command-arguments.md)
+- Related files:
+  - [docs/decisions/run-argument-ownership.md](docs/decisions/run-argument-ownership.md) - Approved ownership and shell-safety decision.
+  - [docs/plans/runx-0.6.0-cli-experience.md](docs/plans/runx-0.6.0-cli-experience.md) - Approved executable plan.
+- External: GitHub issue [CGuiho/runx#25](https://github.com/CGuiho/runx/issues/25)
