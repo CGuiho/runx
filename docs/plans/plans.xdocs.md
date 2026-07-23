@@ -7,7 +7,7 @@ files:
   alpha-implementation.md: Breaks the accepted alpha into implementation and validation units.
   automatic-agent-maintenance.md: Implements non-blocking automatic global skill and nearest AGENTS.md reconciliation for issue 11.
   citty-cli-migration.md: Executes the full Citty command-tree migration, compatibility validation, protected delivery, and patch release.
-  interactive-init-manifest.md: Sequences the SemVer manifest, public group, scripts directory, and interactive initializer delivery.
+  interactive-init-manifest.md: Historical v1 initializer plan whose manifest shape is superseded by manifest-v2-composition.md.
   linux-installer-latest-release.md: Replaces redirect-tag parsing with latest-download aliases, regression tests the URLs, and sequences public issue verification.
   mirror-automatic-push.md: Enables automatic Mirror release pushes with a synchronized protected-main safety gate.
   npm-trusted-publishing-release.md: Sequences workflow implementation, protected delivery, Mirror patching, and public trusted-publishing verification.
@@ -21,7 +21,7 @@ documents:
   alpha-implementation.md: Plan used for the initial RunX implementation.
   automatic-agent-maintenance.md: Approved automatic agent-maintenance implementation plan.
   citty-cli-migration.md: Active plan for replacing handwritten CLI parsing and routing with Citty and delivering its patch release.
-  interactive-init-manifest.md: Approved implementation plan for the RunX interactive init manifest feature.
+  interactive-init-manifest.md: Historical initializer plan; do not use its superseded v1 manifest shape.
   linux-installer-latest-release.md: Approved implementation plan for GitHub issue 20.
   mirror-automatic-push.md: Approved plan for configuring, validating, and merging Mirror push=true without applying another release.
   npm-trusted-publishing-release.md: Approved executable plan for the RunX 0.2.1 trusted-publishing release trial.
