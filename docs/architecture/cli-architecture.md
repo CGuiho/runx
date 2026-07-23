@@ -25,7 +25,10 @@ selector boundary only for `runx run`, then Citty parses the RunX-owned prefix,
 resolves nested commands, and renders usage. The immutable post-selector array
 is passed separately to the executor. Manifest commands use
 `configuration.ts` to resolve `runx.yaml` by explicit path, effective cwd, then
-global fallback; TypeBox validates the complete shape. `render.ts` presents
+global fallback. It TypeBox-decodes manifest v2, recursively expands colocated
+groups, validates reciprocal local/GitHub child mounts, and flattens the graph
+while retaining selectors, source kind, owning catalog, and execution base.
+Bounded foreign fetches never create a persistent cache. `render.ts` presents
 text or JSON. `executor.ts` spawns exactly one configured shell command only for
 a real `runx run`; POSIX positional parameters, PowerShell JSON-backed
 splatting, and a short-lived cmd wrapper keep child values out of shell source.
@@ -47,6 +50,8 @@ excluded so intentional removal is not reversed.
 - RunX options precede the selector; post-selector flags belong to the child.
 - Dry-run text and JSON expose forwarded arguments without spawning.
 - Help, version, and CLI usage failures do not discover a manifest.
+- Manifest composition follows only explicit `runx` and `parent` edges;
+  collisions, cycles, unsafe URLs, and non-reciprocal mounts fail before run.
 - `source/flags.ts` no longer exists; RunX has no second token parser or manual
   execution router behind Citty.
 - `agents.ts` owns explicit dual-tool actions plus idempotent, legacy-aware
