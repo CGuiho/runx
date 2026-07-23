@@ -83,16 +83,31 @@ top-level entry, and composed UIDs/selectors are globally unique.
 
 `runx` and `parent` accept relative paths or full HTTPS GitHub blob/raw URLs.
 The group name aliases the mounted child namespace. A child must point back to
-the exact parent that mounts it. Local children execute relative to their own
+the exact parent identity within the same source kind. A local working copy may
+mount a foreign child only after RunX loads and validates the declared upstream
+foreign parent and confirms it mounts that child. Local children execute relative to their own
 catalog directory; foreign children are marked `foreign` and execute relative
 to the local mount root. GitHub fetches have a ten-second timeout, a one-MiB
 limit, no persistent cache, cycle detection, and a maximum depth of 32.
+Foreign-relative references cannot escape their GitHub owner/repository/ref;
+use a full URL for an intentional cross-root mount.
 
 Canonical selectors join nested group and mount names, for example
 `worker-alias/build/compile`. Unique UIDs remain preferred for automation.
 Loading a child directly validates its declared parent but does not implicitly
 replace the child with the parent. RunX follows only explicit graph edges and
 does not search ancestor directories.
+
+UIDs, canonical selectors, and usable unique-ID shorthands share one collision
+domain. Same-command aliases may coincide, but different leaves cannot shadow
+one another. Scripts directories and every effective command cwd are validated
+during graph composition, before check/list can report a catalog as valid.
+
+`runx init` derives the namespace from the directory that will contain the
+target configuration (including nested `--config` paths), lowercases it,
+collapses invalid runs to hyphens, trims edges, prefixes leading digits with
+`n-`, and falls back to `runx`. It validates the complete rendered v2 document
+before an atomic write.
 
 ## Commands And Help
 
