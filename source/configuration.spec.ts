@@ -149,6 +149,17 @@ commands:
     expect(command.catalogSource).toBe('foreign')
     expect(command.cwd).toBe(root)
   })
+
+  test('maps foreign transport failures to configuration errors', async () => {
+    const root = await temporaryDirectory()
+    await Bun.write(join(root, 'runx.yaml'), catalog('root', `
+  - group: foreign
+    summary: Foreign catalog.
+    runx: https://github.com/example/catalog/blob/main/runx.yaml`))
+    globalThis.fetch = (async () => { throw new Error('network unavailable') }) as typeof fetch
+    await expect(readManifest(root)).rejects.toMatchObject({ exitCode: 3 })
+    await expect(readManifest(root)).rejects.toThrow('network unavailable')
+  })
 })
 
 function catalog(namespace: string, body: string): string {
