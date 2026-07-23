@@ -60,6 +60,16 @@ workflow, exact assets, and public release acceptance. Issue 22 is excluded.
 - Real Linux execution remains a CI/public-release gate even though Linux
   binaries compiled and POSIX adapters passed the complete test suite.
 
+## GitHub CI
+
+The first post-push run, [29968115962](https://github.com/CGuiho/runx/actions/runs/29968115962),
+passed Windows and every Linux source, test, build, matrix, and asset gate. Its
+public-installer step initially required the unreleased welcome from the current
+`0.5.4` public binary. The gate was corrected to accept that exact legacy public
+startup or the new welcome while continuing to require the exact installed
+version and both skill copies. Strict new-welcome behavior remains owned by the
+source and compiled-native tests.
+
 ## Readiness
 
 Implementation validated and ready for Mirror version planning. Public release
