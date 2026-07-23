@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.7.1 - 2026-07-23
+
+### Fixed
+
+- Removed the release race that made ordinary CI compare unreleased source to
+  the concurrently changing latest public release.
+- Moved exact-version public Linux installer acceptance into Publish after the
+  tagged GitHub Release contains exactly fourteen assets and before npm
+  publication.
+
 ## 0.7.0 - 2026-07-23
 
 ### Added
