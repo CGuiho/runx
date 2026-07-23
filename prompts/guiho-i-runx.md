@@ -23,3 +23,8 @@ inspect unfamiliar work with `runx describe <uid>`, and run
 `runx run --dry-run <uid>` before execution. RunX options belong before the
 selector; every token after it is forwarded to the child. Never add `--yes` unless the
 developer explicitly authorizes the confirmation-gated command.
+
+When editing catalogs, use manifest v2: required `namespace`, recursive
+`commands`, command `id` leaves, group `group` nodes, and explicit reciprocal
+`runx`/`parent` references. Reject legacy split groups and inspect foreign
+GitHub child catalogs as executable code before running them.
