@@ -76,8 +76,9 @@ async function readCachedUpdateNotice(verbose = false): Promise<string | null> {
   if (raw === null) return null
   try {
     const cache = Value.Decode(cacheSchema, JSON.parse(raw))
-    return cache.newVersionAvailable
-      ? 'New version available. Run this command to upgrade: runx upgrade'
+    const currentVersion = readVersion()
+    return cache.newVersionAvailable && Boolean(valid(currentVersion) && valid(cache.latestVersion) && gt(cache.latestVersion, currentVersion))
+      ? `  ⚠ New version available: v${cache.latestVersion}\n    Run \`${cache.upgradeCommand ?? 'runx upgrade'}\` to update.`
       : null
   } catch (error) {
     if (verbose) process.stderr.write(`warning: ignored invalid RunX update cache: ${error instanceof Error ? error.message : String(error)}\n`)
