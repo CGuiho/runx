@@ -12,6 +12,7 @@ files:
   npm-trusted-publishing.md: Defines the accepted npm OIDC publishing workflow and protected-branch patch-release trial.
   no-argument-welcome-window.md: Replaces the legacy one-line greeting with a deterministic welcome and validated cached notice.
   run-argument-ownership.md: Defines the selector boundary, child-token ownership, dry-run behavior, and shell-safe transport.
+  manifest-v2-composition.md: Replaces split groups and project.name with recursive commands, namespaces, reciprocal mounts, and bounded GitHub loading.
   windows-self-upgrade.md: Defines synchronous Windows executable replacement, verification, rollback, and cleanup.
 documents:
   alpha-boundaries.md: Decision record for RunX alpha boundaries.
@@ -22,6 +23,7 @@ documents:
   npm-trusted-publishing.md: Decision record for GitHub Actions npm trusted publishing and the first automated patch release.
   no-argument-welcome-window.md: Approved RunX bare-invocation welcome decision.
   run-argument-ownership.md: Approved RunX run argument-boundary decision.
+  manifest-v2-composition.md: Accepted RunX manifest v2 composition decision.
   windows-self-upgrade.md: Accepted design for synchronous and recoverable Windows native self-upgrade.
 tags:
   - decisions
