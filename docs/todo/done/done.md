@@ -24,5 +24,5 @@ keywords:
 - Plan: [manifest-v2-composition.md](../../plans/manifest-v2-composition.md)
 - Review: [manifest-v2-composition-review.md](../../reviews/implementation/manifest-v2-composition-review.md)
 - Validation: [manifest-v2-composition.md](../../validation/manifest-v2-composition.md)
-- Release: [RunX 0.7.1](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%400.7.1)
+- Final acceptance release: [RunX 0.7.2](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%400.7.2)
 - Issue: [CGuiho/runx#26](https://github.com/CGuiho/runx/issues/26), closed.
