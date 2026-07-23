@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 5 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 8 |
+| completed | 11 |
 
 ## Tasks
 
@@ -145,9 +145,9 @@ owner: runx
 
 ### 10. Implement A Beautiful RunX Welcome Window
 
-- Status: testing
+- Status: completed
 - Created: `2026-07-22`
-- Updated: `2026-07-22`
+- Updated: `2026-07-23`
 - Outcome: Bare RunX invocation presents a deterministic, platform-aware welcome and an optional validated cached update notice without foreground network work.
 - Spec: [docs/todo/beautiful-welcome-window.md](docs/todo/beautiful-welcome-window.md)
 - Related files:
@@ -157,9 +157,9 @@ owner: runx
 
 ### 11. Use The Simplified RunX Installation Command
 
-- Status: testing
+- Status: completed
 - Created: `2026-07-22`
-- Updated: `2026-07-22`
+- Updated: `2026-07-23`
 - Outcome: The public README uses the exact simplified curl bootstrap while installer integrity and verification remain intact.
 - Spec: [docs/todo/simplified-install-command.md](docs/todo/simplified-install-command.md)
 - Related files:
@@ -168,9 +168,9 @@ owner: runx
 
 ### 12. Forward RunX Child Arguments And Subcommands
 
-- Status: testing
+- Status: completed
 - Created: `2026-07-22`
-- Updated: `2026-07-22`
+- Updated: `2026-07-23`
 - Outcome: RunX forwards every post-selector child argument losslessly and safely without letting child flags alter RunX routing.
 - Spec: [docs/todo/forward-command-arguments.md](docs/todo/forward-command-arguments.md)
 - Related files:
