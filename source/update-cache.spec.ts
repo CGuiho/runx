@@ -30,7 +30,7 @@ describe('RunX detached update cache', () => {
       upgradeCommand: 'runx upgrade',
       lastCheck: '2026-07-18T00:00:00.000Z',
     }))
-    expect(await readCachedUpdateNotice()).toBe('New version available. Run this command to upgrade: runx upgrade')
+    expect(await readCachedUpdateNotice()).toBe('  ⚠ New version available: v99.0.0\n    Run `runx upgrade` to update.')
     await Bun.write(updateCachePath(), '{')
     expect(await readCachedUpdateNotice()).toBeNull()
   })
