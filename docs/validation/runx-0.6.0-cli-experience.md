@@ -70,6 +70,10 @@ startup or the new welcome while continuing to require the exact installed
 version and both skill copies. Strict new-welcome behavior remains owned by the
 source and compiled-native tests.
 
+The corrected post-push run,
+[30029991055](https://github.com/CGuiho/runx/actions/runs/30029991055), passed
+both Linux and Windows jobs, including the public Linux installer.
+
 ## Readiness
 
 Implementation validated and ready for Mirror version planning. Public release
