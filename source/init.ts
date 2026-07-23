@@ -3,8 +3,9 @@
  */
 
 import { RunXError } from './errors.js'
-import { baseName, resolvePath } from './path-utils.js'
-import { writeTextFile } from './storage.js'
+import { validateManifestText } from './configuration.js'
+import { baseName, directoryName, resolvePath } from './path-utils.js'
+import { writeTextFileAtomic } from './storage.js'
 
 import type { RunXManifest } from './types.js'
 
@@ -23,9 +24,21 @@ async function initializeRunXManifest(options: { cwd: string, config?: string })
   const cwd = resolvePath(options.cwd)
   const path = resolvePath(cwd, options.config ?? 'runx.yaml')
   if (await Bun.file(path).exists()) throw new RunXError(`Configuration already exists: ${path}`, 5)
-  const manifest = createInitialManifest(baseName(cwd) || 'my-project', 'scripts')
-  await writeTextFile(path, renderInitialManifest(manifest))
+  const manifest = createInitialManifest(normalizeNamespace(baseName(directoryName(path))), 'scripts')
+  const rendered = renderInitialManifest(manifest)
+  validateManifestText(rendered, path)
+  await writeTextFileAtomic(path, rendered)
   return { status: 'created', path, manifest }
+}
+
+function normalizeNamespace(value: string): string {
+  const normalized = value.normalize('NFKD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+  if (!normalized) return 'runx'
+  return /^[a-z]/.test(normalized) ? normalized : `n-${normalized}`
 }
 
 function createInitialManifest(namespace: string, scriptsDirectory: string): RunXManifest {
