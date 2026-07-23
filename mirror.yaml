@@ -1,4 +1,4 @@
-# yaml-language-server: $schema=./node_modules/@guiho/mirror/schema/mirror.schema.json
+# yaml-language-server: $schema=https://raw.githubusercontent.com/CGuiho/mirror/main/mirror/schema/mirror.schema.json
 schema: 1
 project:
   name_source: "package.json"
