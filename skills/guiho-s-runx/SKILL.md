@@ -14,7 +14,7 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.3.0"
+  version: "0.4.0"
 ---
 
 # GUIHO RunX
@@ -57,7 +57,15 @@ being interpreted as a RunX flag.
 
 ## Maintain Catalogs
 
-- Keep `uid`, `id`, `group`, `summary`, `description`, and `command`.
+- Use manifest v2 with one top-level `namespace`; never add legacy `project` or
+  top-level `groups`.
+- Keep commands and groups in the recursive `commands` list. Command leaves use
+  `uid` and `id`; groups use `group` and exactly one of nested `commands` or a
+  `runx` child reference.
+- Use only relative paths or full HTTPS GitHub blob/raw URLs for `runx` and
+  `parent`. A mounted child must declare the exact reciprocal parent. The mount
+  group name may rename the child namespace.
+- Keep sibling command/group names, global UIDs, and full selectors unique.
 - Keep UIDs stable and never reuse one for materially different behavior.
 - Use `confirm: always` for destructive, release, deployment, migration, and
   production-impacting operations.
