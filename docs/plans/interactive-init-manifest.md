@@ -1,10 +1,11 @@
 ---
 name: RunX Interactive Init Manifest Plan
-purpose: Sequence implementation of the accepted runx init workflow and manifest contract.
-description: Defines the schema, interactive terminal UI, validation, documentation, and pull-request work for RunX initialization.
+purpose: Preserve the historical implementation plan for the superseded v1 initializer.
+description: Historical v1 initializer plan; current namespace and recursive catalog work is defined by manifest-v2-composition.md.
 created: 2026-07-14
 flags:
   - approved
+  - superseded-manifest-shape
 tags:
   - plans
   - cli
@@ -13,12 +14,16 @@ keywords:
   - runx init
   - runx.yaml
   - semantic versioning
-  - public group
+  - superseded manifest v1
   - scripts directory
 owner: runx-plans
 ---
 
 # RunX Interactive Init Manifest Plan
+
+> **Historical plan:** Its manifest-v1 shape is superseded by
+> [RunX Manifest V2 Composition](manifest-v2-composition.md). Use that plan for
+> current namespace, recursive command, parent-child, and init behavior.
 
 ## Sources
 
