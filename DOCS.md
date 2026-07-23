@@ -24,10 +24,15 @@ RunX uses Bun, strict ESM TypeScript, raw Citty, and TypeBox. Core source is
 Bun-only. The isolated npm bootstrap is Node-compatible because it must work
 before Bun is installed.
 
-No arguments prints exactly:
+No arguments print a deterministic bordered welcome containing RunX, its
+purpose, GUIHO identity, platform, architecture, version, and help guidance:
 
 ```text
-Hello <Windows|Linux|macOS> - runx v<version>
+╔════════════════════════════════════════════════════════╗
+║  RUNX                                                  ║
+║  Documented command catalog                            ║
+║  GUIHO · Cristóvão GUIHO                               ║
+╚════════════════════════════════════════════════════════╝
 ```
 
 The platform label matches the runtime operating system.
@@ -39,10 +44,12 @@ worker for the global cache directory. The worker validates GitHub release data,
 atomically refreshes the cache, stops remote work after 15 seconds, and releases
 its lease on every outcome. A 30-second stale lease can be reclaimed; malformed
 or missing lease metadata uses the same delayed recovery. When a decoded cache
-announces an update, RunX prints:
+announces an update and its validated latest SemVer is newer than the running
+version, RunX appends:
 
 ```text
-New version available. Run this command to upgrade: runx upgrade
+  ⚠ New version available: v<version>
+    Run `runx upgrade` to update.
 ```
 
 ## Configuration
@@ -74,8 +81,17 @@ Every root, group, and leaf supports:
 - `--help-tree-depth <positive-integer>`;
 - redirect-safe Markdown through `--help-docs`.
 
-Only `runx run <selector>` executes catalog code. Listing, describing, checking,
-help, initialization, agent operations, upgrade inspection, and dry runs do not.
+Only `runx run <selector>` executes catalog code. RunX options belong before the
+selector; every token after the selector belongs to the child command. One
+immediate `--` after the selector acts as a delimiter and is removed. Listing,
+describing, checking, help, initialization, agent operations, upgrade
+inspection, and dry runs do not execute catalog code.
+
+Shell adapters keep forwarded values as data. Bash and sh use positional
+parameters, PowerShell uses JSON-backed array splatting, and cmd uses a
+short-lived delayed-expansion-disabled wrapper with environment-backed values.
+Text dry runs show an indexed argument list and JSON dry runs expose a separate
+`arguments` array.
 
 ## Output And Exit Codes
 
@@ -141,6 +157,12 @@ instruction reconciliation, then cleanup.
 Both direct installers show target metadata and download progress, configure
 PATH, install both global skill copies, reconcile project instructions, and
 verify the final version.
+
+The canonical POSIX bootstrap is:
+
+```sh
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
+```
 
 The PowerShell installer reads and writes instruction files as strict UTF-8
 without a byte-order mark. Reconciliation preserves the file's newline style,
