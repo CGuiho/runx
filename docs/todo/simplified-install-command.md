@@ -4,7 +4,7 @@ purpose: Define completion signals for TODO task 11 and GitHub issue 24
 description: Captures the exact public curl command while retaining downstream installer integrity and verification.
 created: 2026-07-22
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - installer
@@ -19,7 +19,7 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `11. Use The Simplified RunX Installation Command`
-- Status: testing
+- Status: completed
 - Index: [TODO.md](../../TODO.md)
 
 ## Outcome
@@ -35,4 +35,4 @@ installer continues to verify the selected binary and agent assets.
 
 ## External Trackers
 
-- GitHub: [CGuiho/runx#24](https://github.com/CGuiho/runx/issues/24) - status: open
+- GitHub: [CGuiho/runx#24](https://github.com/CGuiho/runx/issues/24) - status: closed
