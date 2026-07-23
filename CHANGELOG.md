@@ -15,6 +15,14 @@ owner: runx
 
 # Changelog
 
+## 0.7.2 - 2026-07-23
+
+### Fixed
+
+- Gave the Windows child-process forwarding and PowerShell installer
+  verification tests explicit fifteen-second budgets so normal runner startup
+  variance no longer causes false five-second CI failures.
+
 ## 0.7.1 - 2026-07-23
 
 ### Fixed
