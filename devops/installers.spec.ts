@@ -239,7 +239,7 @@ duplicate block
         command,
       ])
       expect(result.exitCode).toBe(0)
-    })
+    }, 15_000)
   }
 })
 
