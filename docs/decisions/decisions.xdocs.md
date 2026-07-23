@@ -6,7 +6,7 @@ children: []
 files:
   alpha-boundaries.md: Captures accepted alpha scope, safety, distribution, and compatibility decisions.
   citty-cli-migration.md: Defines the accepted full migration from handwritten parsing and routing to Citty.
-  interactive-init-manifest.md: Defines interactive initialization, Semantic Versioning, the public group, and the scripts directory contract.
+  interactive-init-manifest.md: Historical v1 initializer decision whose manifest shape is superseded by manifest-v2-composition.md.
   markdown-release-assets-and-version-scoped-notes.md: Defines .md agent release filenames, downloaded-resource validation, and exact-version idempotent GitHub Release notes.
   mirror-automatic-push.md: Defines automatic Mirror release pushes with a synchronized protected-main gate.
   npm-trusted-publishing.md: Defines the accepted npm OIDC publishing workflow and protected-branch patch-release trial.
@@ -17,7 +17,7 @@ files:
 documents:
   alpha-boundaries.md: Decision record for RunX alpha boundaries.
   citty-cli-migration.md: Decision record for the complete Citty CLI parser and router migration.
-  interactive-init-manifest.md: Accepted manifest and interactive initialization decision for runx init.
+  interactive-init-manifest.md: Historical initializer decision; do not use its superseded v1 manifest shape.
   markdown-release-assets-and-version-scoped-notes.md: Accepted public asset filename, validation, and release-description policy.
   mirror-automatic-push.md: Accepted release-policy decision for Mirror push=true and protected delivery ordering.
   npm-trusted-publishing.md: Decision record for GitHub Actions npm trusted publishing and the first automated patch release.
