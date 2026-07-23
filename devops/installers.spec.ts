@@ -6,6 +6,13 @@ import { describe, expect, test } from 'bun:test'
 import { $ } from 'bun'
 
 describe('RunX direct installers', () => {
+  test('README publishes the exact simplified POSIX bootstrap', async () => {
+    const readme = await Bun.file(new URL('../README.md', import.meta.url)).text()
+    const command = 'curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash'
+    expect(readme).toContain(command)
+    expect(readme).not.toContain("curl --proto '=https' --tlsv1.2")
+  })
+
   test('PowerShell installer exposes the complete RFC sequence', async () => {
     const script = await Bun.file(new URL('./install.ps1', import.meta.url)).text()
     expect(script).toContain('Initiating GUIHO CLI Upgrade / Installation Sequence...')
