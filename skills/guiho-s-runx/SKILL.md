@@ -14,7 +14,7 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.2.0"
+  version: "0.3.0"
 ---
 
 # GUIHO RunX
@@ -25,7 +25,7 @@ metadata:
 2. Run `runx list --format json`.
 3. Prefer a stable UID for automation.
 4. Run `runx describe <uid>` before unfamiliar work.
-5. Run `runx run <uid> --dry-run` before any mutation or high-impact command.
+5. Run `runx run --dry-run <uid>` before any mutation or high-impact command.
 
 RunX manifests are trusted executable code. A group name is not a safety
 boundary. Never add `--yes` unless the developer explicitly authorizes the
@@ -46,11 +46,14 @@ It does not search parent directories.
 Use only:
 
 ```text
-runx run <uid>
+runx run [RunX options] <uid> [--] <child arguments...>
 ```
 
 Listing, describing, checking, help, agent operations, and dry runs must never
 execute a manifest command. Preserve the child command's exact exit code.
+RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
+the selector. Every token after the selector is forwarded to the child without
+being interpreted as a RunX flag.
 
 ## Maintain Catalogs
 
