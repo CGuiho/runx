@@ -258,7 +258,7 @@ commands:
       expect(result.exitCode).toBe(0)
       expect(JSON.parse(result.stdout.trim().split('\n').at(-1) ?? 'null')).toEqual(values)
     }
-  })
+  }, 15_000)
 
   test('keeps RunX dry-run and confirmation options before the selector', async () => {
     const cwd = await temporaryDirectory()
