@@ -7,7 +7,7 @@ files:
   bash-installer-review.md: Accepts the canonical Bash shebang, strict mode, recovery invocation, and executable shell tests for GitHub issue 15.
   bounded-update-worker-review.md: Accepts cache TTL, pre-spawn coalescing, hard deadlines, ownership-safe recovery, and concurrency stress coverage.
   citty-cli-migration-review.md: Reviews the implemented Citty command tree, compatibility adapter, tests, documentation, packaging, and release readiness.
-  interactive-init-manifest-review.md: Reviews the implemented RunX initializer, strict manifest contract, tests, documentation, and delivery readiness.
+  interactive-init-manifest-review.md: Historical review of the superseded v1 initializer implementation.
   linux-installer-latest-release-review.md: Accepts latest-download alias resolution, exact-version preservation, transactional safeguards, tests, and GitHub issue 20 release readiness.
   platform-aware-startup-greeting-review.md: Accepts centralized Windows, Linux, and macOS startup labels, deterministic tests, documentation, and GitHub issue 21 release readiness.
   windows-self-upgrade-review.md: Reviews synchronous Windows replacement, rollback, cleanup, tests, CI coverage, and release readiness.
@@ -22,7 +22,7 @@ documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
   citty-cli-migration-review.md: Accepted implementation review for the full Citty CLI migration.
-  interactive-init-manifest-review.md: Accepted implementation review for the RunX interactive init manifest feature.
+  interactive-init-manifest-review.md: Historical v1 implementation review; current manifest guidance lives in manifest-v2-composition-review.md.
   linux-installer-latest-release-review.md: Accepted implementation review for GitHub issue 20.
   platform-aware-startup-greeting-review.md: Accepted implementation review for GitHub issue 21.
   windows-self-upgrade-review.md: Accepted implementation review for the Windows native self-upgrade fix.
