@@ -13,7 +13,7 @@ package:
 jsr:
   path: "jsr.json"
 git:
-  tag_template: "{name}@{version}"
+  tag_template: "{name}/v{version}"
   commit: true
   push: true
   allow_dirty: false
