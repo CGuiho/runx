@@ -9,7 +9,8 @@ files:
   agents.ts: Implements explicit dual-tool actions plus atomic global skill and nearest AGENTS.md reconciliation.
   cli.spec.ts: Exercises the welcome, argument forwarding, Citty Unicode help/alignment, routing, errors, automatic maintenance, upgrade leaf isolation, output safety, and agent behavior.
   cli.ts: Defines the single RFC Citty tree, welcome lifecycle, argument ownership boundary, hidden workers, automatic maintenance, isolated upgrade leaf routing, and public output.
-  configuration.ts: Resolves YAML by explicit/cwd/global precedence, TypeBox-decodes manifests, and resolves catalog selectors.
+  configuration.spec.ts: Verifies nested groups, namespace aliases, reciprocal parents, local cwd ownership, collision and legacy rejection, and foreign URL policy.
+  configuration.ts: Resolves YAML by explicit/cwd/global precedence, TypeBox-decodes manifest v2, composes bounded local/GitHub catalog graphs, and resolves selectors.
   embedded-resources.ts: Embeds the agent skill and canonical prompt in compiled native executables.
   errors.ts: Defines user-facing RunX errors and assertions.
   execution-arguments.spec.ts: Proves RunX option ownership, delimiter removal, and lossless hostile-looking child token preservation.
@@ -22,7 +23,7 @@ files:
   guiho-runx.ts: Public package exports.
   help.ts: Traverses actual Citty definitions to render Unicode tree help, depth-limited help, Markdown docs, and version output.
   init.spec.ts: Tests initializer creation, cancellation, overwrite safety, and exact manifest output without a terminal.
-  init.ts: Creates a strict initial runx.yaml at the selected effective path.
+  init.ts: Creates a strict manifest-v2 runx.yaml with namespace identity at the selected effective path.
   manifest.ts: Compatibility export surface for the schema-backed configuration module.
   path-utils.ts: Provides narrow Bun-first cross-platform path resolution without prohibited Node path imports.
   render.ts: Renders text and JSON command catalog output.
