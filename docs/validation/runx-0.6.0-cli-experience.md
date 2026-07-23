@@ -5,7 +5,7 @@ description: Tracks focused tests, complete package gates, native smokes, instal
 created: 2026-07-22
 flags:
   - validated
-  - release-pending
+  - public-accepted
 tags:
   - validation
   - cli
@@ -39,26 +39,39 @@ workflow, exact assets, and public release acceptance. Issue 22 is excluded.
 | `xdocs meta . --documents --strict --format json` | Passed. |
 | `xdocs doctor` | Passed: zero errors and zero warnings. |
 | `mirror config check --config C:\GUIHO\runx\mirror.yaml` | Passed with the portable Mirror schema directive. |
-| `mirror version plan 0.6.0 --config C:\GUIHO\runx\mirror.yaml` | Passed: only `package.json`, release commit, tag, and configured pushes are planned. |
+| `mirror version plan patch` from `0.6.0` | Passed: only `package.json`, release commit, tag, and configured pushes were planned for `0.6.1`. |
 | `git diff --check` | Passed before review. |
 
 ## Manual Checks
 
 - Verified the publish workflow retains tag-only triggering, typecheck, tests,
   build, binary matrix, exact-version release-note extraction, exact assets,
-  GitHub Release verification, and npm OIDC publishing after removal of the
-  environment approval declaration.
+  GitHub Release verification, and npm OIDC publishing with the `production`
+  environment identity required by the npm trusted-publisher record.
 - Verified the README contains the exact simplified curl command.
 - Verified issue 22 and Go rewrite work are absent from the diff.
 - Verified the native Windows baseline forwards `-v` and a spaced value to a
   child script without consuming them.
 
-## Residual Risks
+## Public Release Acceptance
 
-- Public installation targets the current public release until `0.6.0` is
-  tagged; live acceptance cannot complete before that release exists.
-- Real Linux execution remains a CI/public-release gate even though Linux
-  binaries compiled and POSIX adapters passed the complete test suite.
+- Mirror created and pushed the immutable `@guiho/runx@0.6.1` patch tag after
+  `0.6.0` exposed the npm environment-identity mismatch.
+- [Publish run 30030768351](https://github.com/CGuiho/runx/actions/runs/30030768351)
+  passed typecheck, all tests, build, twelve native binaries, exact fourteen
+  assets, GitHub Release publication, npm OIDC publication, and provenance.
+- The [0.6.1 GitHub Release](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx%400.6.1)
+  contains exactly twelve native binaries plus `guiho-i-runx.md` and
+  `guiho-s-runx.md`. Its body contains only the `0.6.1` changelog section.
+- The public npm registry reports `@guiho/runx@0.6.1` as latest with npm
+  provenance and the expected tarball integrity metadata.
+- An isolated public PowerShell installation resolved `0.6.1`, verified the
+  bordered Windows welcome, installed both skill copies, and forwarded `-v`,
+  `space value`, and `--help` unchanged to a catalog child command.
+- Attempt 2 of [CI run 30030765505](https://github.com/CGuiho/runx/actions/runs/30030765505)
+  passed the real public Linux installer after `0.6.1` became the latest
+  release. Attempt 1 raced publication and correctly observed the then-latest
+  `0.6.0` release.
 
 ## GitHub CI
 
@@ -76,5 +89,5 @@ both Linux and Windows jobs, including the public Linux installer.
 
 ## Readiness
 
-Implementation validated and ready for Mirror version planning. Public release
-acceptance and issue closure remain pending.
+Implementation and public distribution are accepted in `0.6.1`. GitHub issues
+23, 24, and 25 satisfy their acceptance signals and are ready for closure.
