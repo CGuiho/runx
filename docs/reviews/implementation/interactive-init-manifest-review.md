@@ -1,10 +1,11 @@
 ---
 name: RunX Interactive Init Manifest Implementation Review
-purpose: Assess the delivered RunX initializer and manifest contract against the accepted decision and plan.
-description: Reviews Citty routing, strict SemVer and group validation, terminal safety, tests, documentation, and delivery boundaries.
+purpose: Preserve implementation-review evidence for the historical v1 initializer.
+description: Historical v1 implementation review; manifest-v2-composition-review.md governs current behavior.
 created: 2026-07-14
 flags:
   - accepted
+  - superseded-manifest-shape
 tags:
   - reviews
   - implementation
@@ -13,12 +14,16 @@ keywords:
   - runx init
   - runx.yaml
   - semantic versioning
-  - public group
+  - superseded manifest v1
   - scripts directory
 owner: runx-implementation-reviews
 ---
 
 # RunX Interactive Init Manifest Implementation Review
+
+> **Historical review:** This records the delivered v1 initializer. Current
+> manifest shape and initialization are governed by
+> [RunX Manifest V2 Composition](../../decisions/manifest-v2-composition.md).
 
 ## Verdict
 
