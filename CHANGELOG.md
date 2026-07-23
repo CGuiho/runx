@@ -15,6 +15,27 @@ owner: runx
 
 # Changelog
 
+## 0.7.0 - 2026-07-23
+
+### Added
+
+- Added recursive colocated command groups and explicit local or GitHub child
+  catalog mounts with renameable namespace aliases and reciprocal parents.
+- Added canonical nested selectors plus local/foreign catalog provenance to
+  list, describe, check, dry-run, and execution data.
+
+### Changed
+
+- Replaced manifest v1 `project.name` and split top-level `groups` with required
+  manifest v2 `namespace` and one recursive `commands` tree.
+- Changed `runx init` to create strict manifest v2 catalogs.
+
+### Security
+
+- Restricted foreign catalogs to HTTPS GitHub blob/raw URLs with redirect
+  validation, ten-second timeouts, one-MiB limits, cycle/depth protection, no
+  persistent cache, and configuration-error mapping.
+
 ## 0.6.1 - 2026-07-23
 
 ### Fixed
