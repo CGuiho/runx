@@ -15,6 +15,34 @@ owner: runx
 
 # Changelog
 
+## 0.6.0 - 2026-07-22
+
+### Added
+
+- Added a deterministic bordered RunX welcome with product, GUIHO, platform,
+  architecture, version, help, and validated cached-update information.
+- Added lossless post-selector child argument and subcommand forwarding across
+  Bash, sh, PowerShell, cmd, and automatic shell selection.
+- Added forwarded argument arrays to text and JSON dry-run output.
+
+### Changed
+
+- Simplified the canonical POSIX installation command to
+  `curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash`
+  while retaining installer-internal validation and transactional replacement.
+- Removed the GitHub Environment approval gate from tag publishing while
+  retaining typecheck, test, build, release-note, npm OIDC, and exact
+  fourteen-asset verification gates.
+- Established that RunX-owned options precede the selector and every
+  post-selector token belongs to the child command.
+
+### Fixed
+
+- Prevented child flags such as `-v`, `--help`, `--yes`, and `--dry-run` from
+  being consumed or dropped by RunX routing.
+- Revalidated cached latest versions against the running SemVer before showing
+  an update warning.
+
 ## 0.5.4 - 2026-07-21
 
 ### Fixed
