@@ -62,7 +62,9 @@ RunX does not persist foreign content, so it cannot silently reuse a stale copy.
 
 - Independent focused audit: 32 tests and 221 assertions on exact pushed HEAD
   `376404c`, with all eleven blocker categories cleared.
-- Full suite: 88 tests and 561 assertions.
-- RunX 0.7.1 CI and publish passed, including exact fourteen assets, the
+- Full suite: 90 tests and 571 assertions.
+- RunX 0.7.2 CI and publish passed, including exact fourteen assets, the
   tag-pinned public installer, npm trusted publication, and version-only notes.
+- Both Windows process tests use explicit fifteen-second budgets and pass in the
+  full Windows CI suite without changing runtime behavior.
 - GitHub issue 26 closed as completed; issue 22 remained excluded and untouched.
