@@ -4,7 +4,7 @@ purpose: Define completion signals for TODO task 12 and GitHub issue 25
 description: Captures argument ownership, shell-safe transport, dry-run visibility, exact exits, documentation, and regression requirements.
 created: 2026-07-22
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - execution
@@ -19,7 +19,7 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `12. Forward RunX Child Arguments And Subcommands`
-- Status: testing
+- Status: completed
 - Index: [TODO.md](../../TODO.md)
 
 ## Outcome
@@ -38,4 +38,4 @@ order without letting child flags alter RunX routing or become shell source.
 
 ## External Trackers
 
-- GitHub: [CGuiho/runx#25](https://github.com/CGuiho/runx/issues/25) - status: open
+- GitHub: [CGuiho/runx#25](https://github.com/CGuiho/runx/issues/25) - status: closed
