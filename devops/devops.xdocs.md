@@ -9,6 +9,7 @@ files:
   extract-release-notes.spec.ts: Verifies exact heading boundaries and exclusion of frontmatter and other release sections.
   verify-release-assets.ts: Fails on missing, duplicate, extra, legacy, empty, binary, or misidentified release assets.
   installers.spec.ts: Verifies latest-alias and exact-tag URLs, installer progress, resources, executable version matching, Markdown rejection, and no POSIX Bun dependency.
+  workflows.spec.ts: Verifies that ordinary CI smokes latest without source-version coupling and Publish accepts the exact tag only after release assets exist.
   install.ps1: Resolves an exact Windows release, downloads and validates a compatible asset, transactionally replaces the canonical executable, verifies its version, and rolls back on failure.
   install.sh: Bash installer for Linux or Darwin with stable latest-download resolution, exact tagged releases, progress, validation, PATH, dual skills, instructions, verification, and rollback.
 documents: {}
