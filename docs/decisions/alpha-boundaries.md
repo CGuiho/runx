@@ -16,6 +16,11 @@ owner: runx-decisions
 
 # RunX Alpha Boundaries
 
+> **Current manifest note:** The alpha prohibition on manifest composition is
+> superseded by [RunX Manifest V2 Composition](manifest-v2-composition.md).
+> Other execution, safety, and distribution boundaries remain historical
+> constraints unless a later decision explicitly supersedes them.
+
 - Use one versioned YAML manifest named `runx.yaml`; do not merge manifests.
 - RunX is implemented in Bun/TypeScript but consumes commands from any project
   language through a configured local shell.
