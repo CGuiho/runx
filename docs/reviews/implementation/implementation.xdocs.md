@@ -16,6 +16,7 @@ files:
   upgrade-reliability-issue-12-review.md: Accepts synchronous verified replacement and the corrected complete, single-document release listing for GitHub issue 12.
   upgrade-reliability-issue-13-review.md: Accepts exact recovery across all outcomes and executable direct-installer version verification for GitHub issue 13.
   unicode-help-tree-review.md: Accepts the Unicode nested and aligned help tree plus explicit legacy ASCII regression coverage for GitHub issue 17.
+  runx-0.6.0-cli-experience-review.md: Accepts the welcome, safe child forwarding, simple installer, publishing gate removal, tests, assets, and release readiness for issues 23 through 25.
 documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
@@ -29,6 +30,7 @@ documents:
   upgrade-reliability-issue-12-review.md: Accepted implementation review for GitHub issue 12 upgrade reliability.
   upgrade-reliability-issue-13-review.md: Accepted implementation review for GitHub issue 13 recovery reliability.
   unicode-help-tree-review.md: Accepted implementation review for the RunX Unicode help tree.
+  runx-0.6.0-cli-experience-review.md: Accepted implementation review for the RunX 0.6.0 CLI experience.
 tags:
   - reviews
   - implementation
