@@ -47,7 +47,10 @@ commands:
 - A `runx` group mounts a child file under the group name. That name is the
   child namespace alias and may differ from the child's declared namespace.
 - A child declares its reciprocal parent with a relative path or full GitHub
-  URL. A mounted child without the matching parent declaration is invalid.
+  URL. Local-to-local and foreign-to-foreign mounts require exact canonical
+  identity. When a local working copy mounts a foreign child, RunX loads the
+  child's declared foreign parent and validates that complete upstream parent
+  graph declares the child before accepting the working-copy mount.
 - Relative paths resolve from the declaring file. Foreign references accept
   only HTTPS GitHub blob or raw-content URLs and are marked `foreign`; local
   references are marked `local`.
@@ -55,18 +58,24 @@ commands:
   directories and never silently merges unrelated catalogs.
 - Foreign catalogs have bounded fetch time, bounded size, process-local
   lifetime, cycle protection, and no persistent stale cache.
+- Relative references inside a foreign graph cannot escape its GitHub owner,
+  repository, and ref root; crossing those boundaries requires a full URL.
 
 ## Identity And Execution
 
 - Command IDs, group names, and mounted namespace aliases are unique among
   siblings. The manifest namespace cannot equal a top-level command or group.
-- UIDs and full selectors are unique across the composed graph.
+- UIDs, canonical selectors, and unique ID shorthands share one selection-key
+  collision domain across the composed graph. Aliases owned by the same command
+  may match; different commands may never shadow one another.
 - Full selectors follow the recursive mount/group path, such as
   `worker-alias/build/compile`; a unique UID or command ID remains selectable.
 - Local child commands resolve `cwd` from their own catalog directory. Foreign
   commands resolve from the local mount root because a URL has no local cwd.
 - Cycles, depth beyond 32, non-GitHub URLs, absolute filesystem references,
   invalid parent reciprocity, and escaping command cwd fail with exit code 3.
+- All catalog scripts directories and command cwd values are containment-
+  validated during composition, so check/list fail before execution.
 
 ## Breaking Migration
 
