@@ -20,5 +20,6 @@ owner: runx-prompts
 Load the `guiho-s-runx` skill. From the intended project directory, run
 `runx check --format json`, then `runx list --format json`. Prefer a stable UID,
 inspect unfamiliar work with `runx describe <uid>`, and run
-`runx run <uid> --dry-run` before execution. Never add `--yes` unless the
+`runx run --dry-run <uid>` before execution. RunX options belong before the
+selector; every token after it is forwarded to the child. Never add `--yes` unless the
 developer explicitly authorizes the confirmation-gated command.
