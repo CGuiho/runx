@@ -28,7 +28,7 @@ breaking migration, CLI surfaces, and distribution. Issue 22 is excluded.
 | Check | Result |
 | --- | --- |
 | `bun run typecheck` | Passed. |
-| `bun test` | Passed: 88 tests, 561 assertions. |
+| `bun test` | Passed: 90 tests, 571 assertions. |
 | Focused configuration/init/CLI tests | Passed: 32 tests, 221 assertions, including all eleven independent review blocker categories. |
 | `bun run build` | Passed. |
 | `bun run binaries` | Passed: twelve native targets. |
@@ -36,9 +36,9 @@ breaking migration, CLI surfaces, and distribution. Issue 22 is excluded.
 | `xdocs scan --strict` | Passed. |
 | `xdocs doctor` | Passed: zero errors and zero warnings. |
 | Independent implementation review | Cleared exact pushed HEAD `376404c`; all eleven direct adversarial probes passed. |
-| Main correction CI | Passed: [30036051275](https://github.com/CGuiho/runx/actions/runs/30036051275). |
-| Release CI | Passed: [30036242667](https://github.com/CGuiho/runx/actions/runs/30036242667). |
-| Publish | Passed: [30036245968](https://github.com/CGuiho/runx/actions/runs/30036245968); exact fourteen assets, exact-version installer, npm publication, and version-scoped notes. |
+| Main correction CI | Passed: [30047576118](https://github.com/CGuiho/runx/actions/runs/30047576118), including the full Windows suite with explicit process-test budgets. |
+| Release CI | Passed: [30047684096](https://github.com/CGuiho/runx/actions/runs/30047684096). |
+| Publish | Passed: [30047684524](https://github.com/CGuiho/runx/actions/runs/30047684524); exact fourteen assets, exact-version installer, npm publication, and version-scoped notes. |
 | GitHub issue | [Issue 26](https://github.com/CGuiho/runx/issues/26) closed as completed with evidence. |
 
 ## Release Outcome
@@ -47,5 +47,8 @@ RunX 0.7.0 delivered the accepted manifest-v2 runtime but exposed a parallel
 CI race by comparing an unreleased package version with the mutable latest
 release. RunX 0.7.1 corrected workflow ownership: ordinary CI performs a generic
 latest-release smoke, while publish verifies the immutable tag and exact version
-only after the fourteen assets exist. CI, npm provenance, public installation,
-version-scoped notes, and issue closure are complete.
+only after the fourteen assets exist. RunX 0.7.2 then gave the two Windows
+process tests explicit fifteen-second budgets so runner startup variance cannot
+produce false five-second failures. Final Linux and Windows CI, npm provenance,
+the exact fourteen assets, tag-pinned public installation, version-scoped notes,
+and issue closure are complete.
