@@ -1,3 +1,7 @@
+/**
+ * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
+ */
+
 import type { ResolvedCommand, RunXManifest } from './types.js'
 
 export const renderJson = (value: unknown): string => JSON.stringify(value, null, 2) + '\n'
@@ -37,11 +41,15 @@ export const renderDescription = (command: ResolvedCommand): string => [
   `command: ${command.command}`,
 ].join('\n') + '\n'
 
-export const renderExecutionPlan = (command: ResolvedCommand): string => [
+export const renderExecutionPlan = (command: ResolvedCommand, forwardedArguments: readonly string[] = []): string => [
   `uid: ${command.uid}`,
   `selector: ${command.selector}`,
   `manifest: ${command.manifestPath}`,
   `cwd: ${command.cwd}`,
   `shell: ${command.shell ?? 'auto'}`,
   `command: ${command.command}`,
+  'arguments:',
+  ...(forwardedArguments.length === 0
+    ? ['  (none)']
+    : forwardedArguments.map((argument, index) => `  [${index}] ${JSON.stringify(argument)}`)),
 ].join('\n') + '\n'
