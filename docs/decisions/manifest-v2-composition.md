@@ -41,6 +41,9 @@ are accepted. Blob URLs normalize to raw URLs. Fetches time out after ten
 seconds, reject payloads above one MiB, live only for the process, and share the
 same cycle/depth/collision validation as local files. Foreign commands use the
 local mount root for cwd resolution.
+Foreign-relative references remain inside the same owner/repository/ref root;
+cross-root composition requires an explicit full URL. Bodies are decoded as a
+stream and canceled immediately after crossing one MiB.
 
 ## Consequences
 
@@ -50,3 +53,7 @@ requirement, split `groups` map, `group` field on command leaves, and
 This decision supersedes the manifest-shape portions of the alpha and
 interactive-init decisions; it does not change execution confirmation, shell
 safety, CLI technology, release assets, or issue 22.
+Exact canonical identity is required within one source kind. A local working
+copy may mount a foreign child only when the child's declared foreign parent is
+loaded, fully validated, and itself declares that child. Effective child
+metadata retains both the local mounting parent and declared upstream parent.
