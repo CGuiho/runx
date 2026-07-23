@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.8.0 - 2026-07-24
+
+### Added
+
+- Complete Go (Golang) CLI rewrite using Cobra (`github.com/spf13/cobra`) and Viper (`github.com/spf13/viper`).
+- Exact 100% compliant `runx --help-tree` matrix parity conforming to GUIHO RFC 0034.
+- Sub-10ms cold startup and compact static binary footprint (~10 MiB).
+- Strict YAML-only configuration policy (`gopkg.in/yaml.v3` with `KnownFields(true)`).
+- Detached background update worker, automatic agent skill reconciliation (`go:embed`), and fail-safe atomic binary upgrade and rollback engine.
+- Multi-target cross-compilation matrix (`devops/build_binaries/main.go`) and 14 release asset verification (`devops/verify_assets/main.go`).
+- Preserved existing TypeScript source files side-by-side in repository root under coexistent architecture.
+
 ## 0.7.2 - 2026-07-23
 
 ### Fixed

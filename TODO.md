@@ -192,3 +192,13 @@ owner: runx
 - Review: [docs/reviews/implementation/manifest-v2-composition-review.md](docs/reviews/implementation/manifest-v2-composition-review.md)
 - Validation: [docs/validation/manifest-v2-composition.md](docs/validation/manifest-v2-composition.md)
 - External: GitHub issue [CGuiho/runx#26](https://github.com/CGuiho/runx/issues/26)
+
+### 14. RunX Complete Go CLI Rewrite
+
+- Status: completed
+- Created: `2026-07-24`
+- Updated: `2026-07-24`
+- Outcome: RunX CLI is fully rewritten in Go using Cobra and Viper with strict YAML-only decoding, 100% help-tree parity, sub-10ms startup, embedded assets, detached workers, atomic self-upgrades, and multi-target compilation while preserving TypeScript source.
+- Spec: [docs/rfc/runx-go-rewrite-rfc.md](docs/rfc/runx-go-rewrite-rfc.md)
+- External: GitHub issue [CGuiho/runx#22](https://github.com/CGuiho/runx/issues/22)
+
