@@ -4,8 +4,8 @@ description: CI and release workflows that validate RunX and publish native asse
 parent: runx-github
 children: []
 files:
-  ci.yml: Validates tests, builds, npm bootstrap syntax, the exact release matrix, and the public one-line Linux installer on Linux and Windows.
-  publish.yml: Creates or updates exact-version GitHub Release notes, publishes exactly fourteen assets, and publishes the public npm package through OIDC trusted publishing on version tags.
+  ci.yml: Validates tests, builds, npm bootstrap syntax, the exact release matrix, and a self-consistent latest public Linux installation without coupling unreleased source to the public latest version.
+  publish.yml: Creates or updates exact-version GitHub Release notes, publishes exactly fourteen assets, accepts the exact tagged public installer, and publishes the public npm package through OIDC trusted publishing.
 documents: {}
 tags:
   - ci
@@ -20,13 +20,14 @@ status: stable
 ---
 
 The CI workflow verifies RunX on Linux and Windows for every main-branch push
-and pull request. Its Ubuntu job also executes the public `curl -fsSL ... | bash`
-installer in an isolated home and project, then checks the published version,
-compatible released startup output, and both global skill files. The source and
-native tests own the strict current welcome contract while the unreleased main
-branch may still install the previous public greeting. The Publish workflow runs only for
-`@guiho/runx@*` tags without an environment approval gate, publishes twelve
-native binaries plus two `.md` agent assets,
-creates or refreshes notes from only the matching changelog section, and
-publishes the public npm package through short-lived OIDC credentials without
-an npm token.
+and pull request. Its Ubuntu job executes the public `curl -fsSL ... | bash`
+installer in an isolated home and project, then verifies that the installed
+latest version, startup output, and both global skill files agree. CI never
+requires that public latest equal an unreleased or concurrently publishing
+`package.json` version.
+
+The Publish workflow runs only for `@guiho/runx@*` tags. It publishes twelve
+native binaries plus two `.md` agent assets, verifies the exact asset set, and
+then executes the tagged public installer with `--version` for that release.
+Only after exact-version public installation succeeds may npm OIDC publication
+continue. Release notes contain only the matching changelog section.
