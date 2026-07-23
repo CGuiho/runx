@@ -4,7 +4,7 @@ purpose: Define completion signals for TODO task 10 and GitHub issue 23
 description: Captures the deterministic welcome, clean-output, cache notice, platform, test, documentation, and release requirements.
 created: 2026-07-22
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - cli
@@ -19,7 +19,7 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `10. Implement A Beautiful RunX Welcome Window`
-- Status: testing
+- Status: completed
 - Index: [TODO.md](../../TODO.md)
 
 ## Outcome
@@ -35,4 +35,4 @@ and an optional validated cached update notice without delaying on network work.
 
 ## External Trackers
 
-- GitHub: [CGuiho/runx#23](https://github.com/CGuiho/runx/issues/23) - status: open
+- GitHub: [CGuiho/runx#23](https://github.com/CGuiho/runx/issues/23) - status: closed
