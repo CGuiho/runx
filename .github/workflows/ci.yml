@@ -49,9 +49,11 @@ jobs:
           curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
           test "$("$install_dir/runx" --version)" = "$expected_version"
           welcome="$("$install_dir/runx")"
-          printf '%s\n' "$welcome" | grep -q 'RUNX'
-          printf '%s\n' "$welcome" | grep -q 'platform      Linux'
-          printf '%s\n' "$welcome" | grep -q "version       v$expected_version"
+          if [[ "$welcome" != "Hello Linux - runx v$expected_version" ]]; then
+            printf '%s\n' "$welcome" | grep -q 'RUNX'
+            printf '%s\n' "$welcome" | grep -q 'platform      Linux'
+            printf '%s\n' "$welcome" | grep -q "version       v$expected_version"
+          fi
           test -s "$HOME/.agents/skills/guiho-s-runx/SKILL.md"
           test -s "$HOME/.claude/skills/guiho-s-runx/SKILL.md"
 
