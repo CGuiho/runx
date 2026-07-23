@@ -10,7 +10,7 @@ export const renderList = (manifest: RunXManifest, manifestPath: string): string
   const rows = manifest.commands.map((command, index) => ({
     index: index + 1,
     uid: command.uid,
-    selector: `${command.group}/${command.id}`,
+    selector: command.selector ?? [command.group, command.id].filter(Boolean).join('/'),
     summary: command.summary,
     confirm: command.confirm ?? 'never',
   }))
