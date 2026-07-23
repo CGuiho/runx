@@ -180,13 +180,15 @@ owner: runx
 
 ### 13. Implement RunX Manifest V2 Composition
 
-- Status: in progress
+- Status: completed
 - Created: `2026-07-23`
 - Updated: `2026-07-23`
 - Outcome: RunX colocates recursive commands and groups and composes explicit,
   reciprocal local or GitHub child catalogs under renameable namespace aliases.
-- Spec: [docs/todo/manifest-v2-composition.md](docs/todo/manifest-v2-composition.md)
+- Spec: [docs/todo/done/manifest-v2-composition.md](docs/todo/done/manifest-v2-composition.md)
 - Requirements: [docs/requirements/manifest-v2-composition.md](docs/requirements/manifest-v2-composition.md)
 - Decision: [docs/decisions/manifest-v2-composition.md](docs/decisions/manifest-v2-composition.md)
 - Plan: [docs/plans/manifest-v2-composition.md](docs/plans/manifest-v2-composition.md)
+- Review: [docs/reviews/implementation/manifest-v2-composition-review.md](docs/reviews/implementation/manifest-v2-composition-review.md)
+- Validation: [docs/validation/manifest-v2-composition.md](docs/validation/manifest-v2-composition.md)
 - External: GitHub issue [CGuiho/runx#26](https://github.com/CGuiho/runx/issues/26)
