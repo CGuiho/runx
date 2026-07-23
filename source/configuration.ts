@@ -295,7 +295,13 @@ async function loadResolvedCatalog(reference: { path: string, source: CatalogSou
     if (!await Bun.file(reference.path).exists()) throw new RunXError(`Referenced RunX catalog not found: ${reference.path}`, 3)
     return loadLocalCatalog(reference.path)
   }
-  const response = await fetch(reference.path, { signal: AbortSignal.timeout(10_000), headers: { Accept: 'text/yaml, text/plain' } })
+  let response: Response
+  try {
+    response = await fetch(reference.path, { signal: AbortSignal.timeout(10_000), headers: { Accept: 'text/yaml, text/plain' } })
+  } catch (error) {
+    throw new RunXError(`Could not load foreign RunX catalog ${reference.path}: ${error instanceof Error ? error.message : String(error)}.`, 3)
+  }
+  if (response.url) normalizeGitHubUrl(response.url)
   if (!response.ok) throw new RunXError(`Could not load foreign RunX catalog ${reference.path}: HTTP ${response.status}.`, 3)
   const declaredLength = Number(response.headers.get('content-length') ?? '0')
   if (declaredLength > maximumCatalogBytes) throw new RunXError(`Foreign RunX catalog exceeds ${maximumCatalogBytes} bytes: ${reference.path}`, 3)
