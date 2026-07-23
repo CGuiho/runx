@@ -80,6 +80,22 @@ jobs:
           gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name' | sort > actual-assets.txt
           diff -u expected-assets.txt actual-assets.txt
 
+      - name: Verify exact-version public Linux installer
+        run: |
+          VERSION=$(bun -e "const p = await Bun.file('./package.json').json(); console.log(p.version)")
+          public_home="$(mktemp -d)"
+          project_dir="$(mktemp -d)"
+          install_dir="$public_home/.local/bin"
+          trap 'rm -rf "$public_home" "$project_dir"' EXIT
+          export HOME="$public_home"
+          export RUNX_INSTALL_DIR="$install_dir"
+          export RUNX_SKIP_PATH_UPDATE=1
+          cd "$project_dir"
+          curl -fsSL "https://raw.githubusercontent.com/CGuiho/runx/${GITHUB_REF_NAME}/devops/install.sh" | bash -s -- --version "$VERSION"
+          test "$("$install_dir/runx" --version)" = "$VERSION"
+          test -s "$HOME/.agents/skills/guiho-s-runx/SKILL.md"
+          test -s "$HOME/.claude/skills/guiho-s-runx/SKILL.md"
+
       - name: Set up npm trusted publishing
         uses: actions/setup-node@v6
         with:
