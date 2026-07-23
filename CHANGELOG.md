@@ -15,6 +15,14 @@ owner: runx
 
 # Changelog
 
+## 0.6.1 - 2026-07-23
+
+### Fixed
+
+- Restored the `production` GitHub Environment identity required by the npm
+  trusted-publisher record so tag releases authenticate through OIDC and reach
+  npm after the GitHub Release and exact fourteen-asset checks succeed.
+
 ## 0.6.0 - 2026-07-22
 
 ### Added
