@@ -4,7 +4,7 @@ description: Technical architecture for the RunX manifest, Citty command tree, a
 parent: runx-docs
 children: []
 files:
-  cli-architecture.md: Documents Citty routing, RunX domain boundaries, safety invariants, and native distribution.
+  cli-architecture.md: Documents Citty routing, child argument ownership, shell-safe execution, startup/update lifecycle, safety invariants, and native distribution.
 documents:
   cli-architecture.md: Technical architecture for the first RunX CLI release.
 tags:
