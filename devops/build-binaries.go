@@ -12,6 +12,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"sort"
+	"strings"
 )
 
 type BinaryTarget struct {
@@ -63,8 +64,10 @@ func copyFile(src, dst string) error {
 	}
 	defer out.Close()
 
-	_, err = io.Copy(out, in)
-	return err
+	if _, err = io.Copy(out, in); err != nil {
+		return err
+	}
+	return out.Sync()
 }
 
 func getRootDir() string {
@@ -83,47 +86,87 @@ func getRootDir() string {
 }
 
 func main() {
+	expected := getExpectedReleaseAssetNames()
+	if len(expected) != 14 {
+		log.Fatalf("RunX release matrix must contain exactly fourteen unique assets, got %d", len(expected))
+	}
+	assetSet := make(map[string]bool)
+	for _, name := range expected {
+		assetSet[name] = true
+	}
+	if len(assetSet) != 14 {
+		log.Fatalf("RunX release matrix contains duplicate asset names")
+	}
+
 	root := getRootDir()
 	binDir := filepath.Join(root, "bin")
 
+	if err := os.RemoveAll(binDir); err != nil {
+		log.Fatalf("failed to clean bin directory: %v", err)
+	}
 	if err := os.MkdirAll(binDir, 0755); err != nil {
 		log.Fatalf("failed to create bin directory: %v", err)
 	}
 
 	for _, target := range BinaryTargets {
-		outPath := filepath.Join(binDir, target.AssetName)
-		fmt.Printf("Building %s (%s/%s)...\n", target.AssetName, target.GOOS, target.GOARCH)
+		output := filepath.Join(binDir, target.AssetName)
 
-		cmd := exec.Command("go", "build", "-o", outPath, ".")
+		cmd := exec.Command("go", "build", "-ldflags=-s -w", "-o", output, ".")
 		cmd.Dir = root
-		cmd.Env = append(os.Environ(),
-			"CGO_ENABLED=0",
-			"GOOS="+target.GOOS,
-			"GOARCH="+target.GOARCH,
-		)
+
+		env := os.Environ()
+		env = append(env, "CGO_ENABLED=0")
+		env = append(env, fmt.Sprintf("GOOS=%s", target.GOOS))
+		env = append(env, fmt.Sprintf("GOARCH=%s", target.GOARCH))
 		if target.GOAMD64 != "" {
-			cmd.Env = append(cmd.Env, "GOAMD64="+target.GOAMD64)
+			env = append(env, fmt.Sprintf("GOAMD64=%s", target.GOAMD64))
 		}
+		cmd.Env = env
 
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			log.Fatalf("failed to build %s: %v\nOutput: %s", target.AssetName, err, string(out))
+			log.Fatalf("Failed to build %s:\n%s\n%v", target.AssetName, string(out), err)
 		}
+
+		info, err := os.Stat(output)
+		if err != nil || info.Size() == 0 {
+			log.Fatalf("Built binary is empty or missing: %s", target.AssetName)
+		}
+
+		fmt.Printf("built: %s\n", target.AssetName)
 	}
 
-	skillSrc := filepath.Join(root, "embed", "skills", "guiho-s-runx.SKILL.md")
+	skillSrc := filepath.Join(root, "skills", "guiho-s-runx", "SKILL.md")
 	skillDst := filepath.Join(binDir, "guiho-s-runx.md")
 	if err := copyFile(skillSrc, skillDst); err != nil {
-		log.Printf("warning: failed to copy skill asset: %v", err)
+		log.Fatalf("failed to copy skill asset: %v", err)
 	}
 
-	promptSrc := filepath.Join(root, "embed", "prompts", "guiho-i-runx.md")
+	promptSrc := filepath.Join(root, "prompts", "guiho-i-runx.md")
 	promptDst := filepath.Join(binDir, "guiho-i-runx.md")
 	if err := copyFile(promptSrc, promptDst); err != nil {
-		log.Printf("warning: failed to copy prompt asset: %v", err)
+		log.Fatalf("failed to copy prompt asset: %v", err)
 	}
 
-	expected := getExpectedReleaseAssetNames()
-	sort.Strings(expected)
-	fmt.Printf("Successfully built %d binaries and copied release assets to %s\n", len(BinaryTargets), binDir)
+	entries, err := os.ReadDir(binDir)
+	if err != nil {
+		log.Fatalf("failed to read bin directory: %v", err)
+	}
+
+	var observed []string
+	for _, entry := range entries {
+		if !entry.IsDir() {
+			observed = append(observed, entry.Name())
+		}
+	}
+	sort.Strings(observed)
+
+	expectedSorted := append([]string(nil), expected...)
+	sort.Strings(expectedSorted)
+
+	if strings.Join(observed, ",") != strings.Join(expectedSorted, ",") {
+		log.Fatalf("Release asset mismatch.\nExpected: %s\nObserved: %s", strings.Join(expectedSorted, ", "), strings.Join(observed, ", "))
+	}
+
+	fmt.Println("verified exactly 14 release assets")
 }

@@ -1,17 +1,12 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/CGuiho/mirror/main/mirror/schema/mirror.schema.json
 schema: 1
 project:
-  name_source: "package.json"
+  name: "@guiho/runx"
 version:
   scheme: semver
-  source: "package.json"
-  output: ["package.json", "git"]
+  source: "git"
+  output: ["git"]
   prerelease_id: ""
-package:
-  path: "package.json"
-  auxiliary_paths: []
-jsr:
-  path: "jsr.json"
 git:
   tag_template: "{name}/v{version}"
   commit: true
