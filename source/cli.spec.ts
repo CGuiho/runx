@@ -99,6 +99,45 @@ describe('RunX RFC 0034 CLI', () => {
     expect(JSON.parse(local.stdout).manifest.commands[0].uid).toBe('cwd-command')
   })
 
+  test('exposes one composed manifest-v2 graph through check, list, describe, and dry-run', async () => {
+    const cwd = await temporaryDirectory()
+    const child = join(cwd, 'packages', 'worker')
+    await Bun.write(join(cwd, 'runx.yaml'), `version: "2.0.0"
+namespace: root-catalog
+scripts:
+  directory: scripts
+commands:
+  - group: worker-alias
+    summary: Worker commands.
+    runx: packages/worker/runx.yaml
+`)
+    await Bun.write(join(child, 'runx.yaml'), `version: "2.0.0"
+namespace: worker
+scripts:
+  directory: scripts
+parent: ../../runx.yaml
+commands:
+  - group: build
+    summary: Build commands.
+    commands:
+      - uid: worker-compile
+        id: compile
+        summary: Compile worker.
+        description: Compile the worker package.
+        command: echo worker
+`)
+
+    const checked = await cli(['check', '--format', 'json'], cwd)
+    expect(JSON.parse(checked.stdout)).toMatchObject({ valid: true, commandCount: 1, groups: ['worker-alias', 'worker-alias/build'] })
+    const listed = JSON.parse((await cli(['list', '--format', 'json'], cwd)).stdout)
+    expect(listed.manifest.children[0]).toMatchObject({ namespace: 'worker-alias', declaredNamespace: 'worker', source: 'local' })
+    expect(listed.manifest.commands[0].selector).toBe('worker-alias/build/compile')
+    const described = JSON.parse((await cli(['describe', 'worker-compile', '--format', 'json'], cwd)).stdout)
+    expect(described).toMatchObject({ selector: 'worker-alias/build/compile', manifestPath: join(child, 'runx.yaml'), cwd: child })
+    const dryRun = JSON.parse((await cli(['run', '--dry-run', '--format', 'json', 'worker-alias/build/compile'], cwd)).stdout)
+    expect(dryRun).toMatchObject({ dryRun: true, command: { uid: 'worker-compile', cwd: child } })
+  })
+
   test('does not search parents and maps configuration errors to exit 3', async () => {
     const parent = await temporaryDirectory()
     const child = join(parent, 'child')
