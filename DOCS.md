@@ -69,6 +69,31 @@ configuration file loaded: <absolute-path>
 The complete manifest and nested records are TypeBox-decoded. Invalid or absent
 configuration exits `3`.
 
+### Manifest V2
+
+Every catalog uses manifest major version 2 with required `namespace`,
+`scripts.directory`, optional `parent`, and recursive `commands`. `project`, a
+top-level `groups` map, and `group` on command leaves are invalid legacy keys.
+
+Each `commands` entry is either an executable command (`uid`, `id`, summaries,
+and command fields) or a group (`group`, `summary`) with exactly one of nested
+`commands` or `runx`. Sibling command IDs, group names, and mounted namespaces
+share one collision domain. The catalog namespace cannot collide with a
+top-level entry, and composed UIDs/selectors are globally unique.
+
+`runx` and `parent` accept relative paths or full HTTPS GitHub blob/raw URLs.
+The group name aliases the mounted child namespace. A child must point back to
+the exact parent that mounts it. Local children execute relative to their own
+catalog directory; foreign children are marked `foreign` and execute relative
+to the local mount root. GitHub fetches have a ten-second timeout, a one-MiB
+limit, no persistent cache, cycle detection, and a maximum depth of 32.
+
+Canonical selectors join nested group and mount names, for example
+`worker-alias/build/compile`. Unique UIDs remain preferred for automation.
+Loading a child directly validates its declared parent but does not implicitly
+replace the child with the parent. RunX follows only explicit graph edges and
+does not search ancestor directories.
+
 ## Commands And Help
 
 The public command tree is the catalog shown in [README.md](README.md). Citty is
