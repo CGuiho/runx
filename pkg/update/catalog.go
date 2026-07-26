@@ -43,6 +43,7 @@ type ReleaseCatalogEntry struct {
 	Current         bool          `json:"current"`
 	LatestStable    bool          `json:"latestStable"`
 	CompatibleAsset *ReleaseAsset `json:"compatibleAsset"`
+	ChecksumsAsset  *ReleaseAsset `json:"checksumsAsset"`
 }
 
 type ReleaseAsset struct {
@@ -51,9 +52,9 @@ type ReleaseAsset struct {
 }
 
 type ReleasePlatform struct {
-	OS      string
-	Arch    string
-	Variant string
+	OS     string
+	Arch   string
+	Target string
 }
 
 func ResolveUpgradePlatform(goos, goarch string) (ReleasePlatform, error) {
@@ -72,7 +73,7 @@ func ResolveUpgradePlatform(goos, goarch string) (ReleasePlatform, error) {
 	arch := ""
 	switch goarch {
 	case "x64", "amd64":
-		arch = "x64"
+		arch = "amd64"
 	case "arm64":
 		arch = "arm64"
 	default:
@@ -80,35 +81,41 @@ func ResolveUpgradePlatform(goos, goarch string) (ReleasePlatform, error) {
 	}
 
 	return ReleasePlatform{
-		OS:      os,
-		Arch:    arch,
-		Variant: "baseline",
+		OS: os, Arch: arch, Target: fmt.Sprintf("runx-%s-%s", os, arch),
 	}, nil
 }
 
+func ResolveBuildTarget(buildTarget, goos, goarch string) (ReleasePlatform, error) {
+	target := strings.TrimSuffix(buildTarget, ".exe")
+	valid := map[string]ReleasePlatform{
+		"runx-linux-amd64":   {OS: "linux", Arch: "amd64", Target: "runx-linux-amd64"},
+		"runx-linux-arm64":   {OS: "linux", Arch: "arm64", Target: "runx-linux-arm64"},
+		"runx-linux-armv7":   {OS: "linux", Arch: "armv7", Target: "runx-linux-armv7"},
+		"runx-linux-armv6":   {OS: "linux", Arch: "armv6", Target: "runx-linux-armv6"},
+		"runx-darwin-amd64":  {OS: "darwin", Arch: "amd64", Target: "runx-darwin-amd64"},
+		"runx-darwin-arm64":  {OS: "darwin", Arch: "arm64", Target: "runx-darwin-arm64"},
+		"runx-windows-amd64": {OS: "windows", Arch: "amd64", Target: "runx-windows-amd64"},
+		"runx-windows-arm64": {OS: "windows", Arch: "arm64", Target: "runx-windows-arm64"},
+	}
+	if platform, ok := valid[target]; ok {
+		return platform, nil
+	}
+	return ResolveUpgradePlatform(goos, goarch)
+}
+
 func NormalizeReleaseVersion(tag string) string {
-	v := strings.TrimPrefix(tag, "@guiho/runx@")
+	v := strings.TrimPrefix(tag, "@guiho/runx/v")
+	v = strings.TrimPrefix(v, "@guiho/runx@")
 	v = strings.TrimPrefix(v, "v")
 	return v
 }
 
 func AssetCandidates(platform ReleasePlatform) []string {
-	suffix := ""
+	name := platform.Target
 	if platform.OS == "windows" {
-		suffix = ".exe"
+		name += ".exe"
 	}
-	if platform.Arch == "arm64" {
-		return []string{fmt.Sprintf("runx-%s-arm64%s", platform.OS, suffix)}
-	}
-	prefix := fmt.Sprintf("runx-%s-x64", platform.OS)
-	switch platform.Variant {
-	case "baseline":
-		return []string{prefix + "-baseline" + suffix, prefix + suffix, prefix + "-modern" + suffix}
-	case "modern":
-		return []string{prefix + "-modern" + suffix, prefix + suffix, prefix + "-baseline" + suffix}
-	default:
-		return []string{prefix + suffix, prefix + "-baseline" + suffix, prefix + "-modern" + suffix}
-	}
+	return []string{name}
 }
 
 func FindCompatibleAsset(release GitHubRelease, platform ReleasePlatform) *ReleaseAsset {
@@ -270,6 +277,12 @@ func FetchReleaseCatalog(apiURL string, platform ReleasePlatform, currentVersion
 			Current:         v == normCurrent,
 			LatestStable:    false,
 			CompatibleAsset: FindCompatibleAsset(rel, platform),
+		}
+		for _, asset := range rel.Assets {
+			if asset.Name == "checksums.txt" {
+				entry.ChecksumsAsset = &ReleaseAsset{Name: asset.Name, URL: asset.BrowserDownloadURL}
+				break
+			}
 		}
 		catalogEntries = append(catalogEntries, entry)
 	}
