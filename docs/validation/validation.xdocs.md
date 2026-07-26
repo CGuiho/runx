@@ -21,6 +21,7 @@ files:
   windows-installer-utf8.md: Records UTF-8 preservation, duplicate-marker recovery, worker isolation, full tests, and release evidence.
   runx-0.6.0-cli-experience.md: Records implementation, package, native, installer, release, and public acceptance evidence for issues 23 through 25.
   manifest-v2-composition.md: Records schema, graph, CLI, tests, builds, assets, XDocs, release, installer, and public acceptance evidence for issue 26.
+  runx-go-migration.md: Records the final production Go/Cobra migration, Go validation, native smokes, installer syntax, XDocs, Mirror planning, and 11-artifact cross-build evidence.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -40,6 +41,7 @@ documents:
   windows-installer-utf8.md: Validation report for strict UTF-8 Windows installation and idempotent instruction reconciliation.
   runx-0.6.0-cli-experience.md: Validation report for the RunX 0.6.0 CLI experience release.
   manifest-v2-composition.md: Validation and release-handoff report for RunX manifest v2 composition.
+  runx-go-migration.md: Final local validation report for the RunX Go migration and release boundary.
 tags:
   - validation
 keywords:
