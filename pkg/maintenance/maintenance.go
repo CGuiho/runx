@@ -1,10 +1,9 @@
 package maintenance
 
 import (
+	"fmt"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 )
 
@@ -47,26 +46,6 @@ func SkillDirectories(homeDir string) []string {
 	}
 }
 
-func NearestAgentsPath(cwd string) string {
-	abs, err := filepath.Abs(cwd)
-	if err != nil {
-		abs = cwd
-	}
-	curr := abs
-	for {
-		cand := filepath.Join(curr, "AGENTS.md")
-		if PathExists(cand) {
-			return cand
-		}
-		parent := filepath.Dir(curr)
-		if parent == curr {
-			break
-		}
-		curr = parent
-	}
-	return filepath.Join(abs, "AGENTS.md")
-}
-
 func MaintainAgentIntegration(cwd string, homeDir string, embeddedSkill string) (*MaintenanceResult, error) {
 	result := &MaintenanceResult{
 		Skills:       []string{},
@@ -77,79 +56,153 @@ func MaintainAgentIntegration(cwd string, homeDir string, embeddedSkill string) 
 		dirs := SkillDirectories(homeDir)
 		for _, dir := range dirs {
 			skillPath := filepath.Join(dir, "SKILL.md")
-			existing, _ := ReadTextIfExists(skillPath)
+			existing, err := ReadTextIfExists(skillPath)
+			if err != nil {
+				return result, err
+			}
 			if existing != embeddedSkill {
-				if err := WriteTextFileAtomic(skillPath, embeddedSkill); err == nil {
-					result.Skills = append(result.Skills, skillPath)
+				if err := WriteTextFileAtomic(skillPath, embeddedSkill); err != nil {
+					return result, err
 				}
+				result.Skills = append(result.Skills, skillPath)
 			}
 		}
 	}
 
-	targetAgentsPath := NearestAgentsPath(cwd)
-	existingText, _ := ReadTextIfExists(targetAgentsPath)
-	nextText := ReplaceManagedBlock(existingText, DefaultInstructionBlock())
-
-	if nextText != existingText {
-		if err := WriteTextFileAtomic(targetAgentsPath, nextText); err == nil {
-			result.Instructions = append(result.Instructions, targetAgentsPath)
+	repositoryRoot, found := RepositoryRoot(cwd)
+	if !found {
+		return result, nil
+	}
+	for _, instructionPath := range InstructionTargets(repositoryRoot) {
+		existingText, err := ReadTextIfExists(instructionPath)
+		if err != nil {
+			return result, err
+		}
+		nextText, err := ReplaceManagedBlockStrict(existingText, DefaultInstructionBlock())
+		if err != nil {
+			return result, fmt.Errorf("update managed RunX block in %s: %w", instructionPath, err)
+		}
+		if nextText != existingText {
+			if err := WriteTextFileAtomic(instructionPath, nextText); err != nil {
+				return result, err
+			}
+			result.Instructions = append(result.Instructions, instructionPath)
 		}
 	}
 
 	return result, nil
 }
 
-func ReplaceManagedBlock(existing string, newBlock string) string {
-	stripped := strings.TrimRight(RemoveKnownManagedBlocks(existing, false), " \t\r\n")
-	if stripped == "" {
-		return newBlock
-	}
-	return stripped + "\n\n" + newBlock
-}
-
-func RemoveKnownManagedBlocks(existing string, includeLeadingWhitespace bool) string {
-	output := existing
-	pairs := [][2]string{
-		{ManagedStart, ManagedEnd},
-		{MojibakeManagedStart, ManagedEnd},
-		{LegacyManagedStart, LegacyManagedEnd},
-	}
-
-	for _, pair := range pairs {
-		start := regexp.QuoteMeta(pair[0])
-		end := regexp.QuoteMeta(pair[1])
-		prefix := ""
-		if includeLeadingWhitespace {
-			prefix = `\s*`
-		}
-		pattern := regexp.MustCompile(prefix + start + `(?s:.*?)` + end + `\s*`)
-		replacement := ""
-		if includeLeadingWhitespace {
-			replacement = "\n"
-		}
-		output = pattern.ReplaceAllString(output, replacement)
-	}
-
-	return output
-}
-
-func SpawnAgentMaintenanceWorker(execPath string, cwd string) error {
-	if os.Getenv("RUNX_DISABLE_AGENT_MAINTENANCE_WORKER") == "1" {
-		return nil
-	}
-
-	if execPath == "" {
+func RepositoryRoot(cwd string) (string, bool) {
+	if cwd == "" {
 		var err error
-		execPath, err = os.Executable()
+		cwd, err = os.Getwd()
 		if err != nil {
-			return err
+			return "", false
 		}
 	}
+	current, err := filepath.Abs(cwd)
+	if err != nil {
+		return "", false
+	}
+	for {
+		if PathExists(filepath.Join(current, ".git")) {
+			return current, true
+		}
+		parent := filepath.Dir(current)
+		if parent == current {
+			return "", false
+		}
+		current = parent
+	}
+}
 
-	cmd := exec.Command(execPath, "--maintain-agent-integration-worker", cwd)
-	cmd.Stdout = nil
-	cmd.Stderr = nil
-	cmd.Stdin = nil
+func InstructionTargets(repositoryRoot string) []string {
+	agents := filepath.Join(repositoryRoot, "AGENTS.md")
+	claude := filepath.Join(repositoryRoot, "CLAUDE.md")
+	agentsExists, claudeExists := PathExists(agents), PathExists(claude)
+	if agentsExists && claudeExists {
+		return []string{agents, claude}
+	}
+	if claudeExists {
+		return []string{claude}
+	}
+	return []string{agents}
+}
 
-	return cmd.Start()
+type markerPair struct{ start, end string }
+
+var managedMarkerPairs = []markerPair{{ManagedStart, ManagedEnd}, {MojibakeManagedStart, ManagedEnd}, {LegacyManagedStart, LegacyManagedEnd}}
+
+func ReplaceManagedBlockStrict(existing, newBlock string) (string, error) {
+	start, end, found, err := managedBlockBounds(existing)
+	if err != nil {
+		return existing, err
+	}
+	lineEnding := detectLineEnding(existing)
+	block := strings.ReplaceAll(strings.ReplaceAll(newBlock, "\r\n", "\n"), "\n", lineEnding)
+	if found {
+		return existing[:start] + block + existing[end:], nil
+	}
+	if existing == "" {
+		return block, nil
+	}
+	separator := lineEnding + lineEnding
+	if strings.HasSuffix(existing, lineEnding+lineEnding) {
+		separator = ""
+	} else if strings.HasSuffix(existing, lineEnding) {
+		separator = lineEnding
+	}
+	return existing + separator + block, nil
+}
+
+func RemoveManagedBlockStrict(existing string) (string, error) {
+	start, end, found, err := managedBlockBounds(existing)
+	if err != nil || !found {
+		return existing, err
+	}
+	return existing[:start] + existing[end:], nil
+}
+
+func managedBlockBounds(existing string) (int, int, bool, error) {
+	foundStart, foundEnd := -1, -1
+	for _, pair := range managedMarkerPairs {
+		startCount, endCount := strings.Count(existing, pair.start), strings.Count(existing, pair.end)
+		if startCount == 0 {
+			continue
+		}
+		if foundStart >= 0 || startCount != 1 || endCount != 1 {
+			return 0, 0, false, fmt.Errorf("malformed or duplicate managed RunX markers")
+		}
+		foundStart = strings.Index(existing, pair.start)
+		endIndex := strings.Index(existing[foundStart+len(pair.start):], pair.end)
+		if endIndex < 0 {
+			return 0, 0, false, fmt.Errorf("managed RunX start marker has no matching end marker")
+		}
+		foundEnd = foundStart + len(pair.start) + endIndex + len(pair.end)
+		if strings.HasPrefix(existing[foundEnd:], "\r\n") {
+			foundEnd += 2
+		} else if strings.HasPrefix(existing[foundEnd:], "\n") {
+			foundEnd++
+		}
+	}
+	allStarts := strings.Count(existing, ManagedStart) + strings.Count(existing, MojibakeManagedStart) + strings.Count(existing, LegacyManagedStart)
+	allEnds := strings.Count(existing, ManagedEnd) + strings.Count(existing, LegacyManagedEnd)
+	if foundStart < 0 {
+		if allEnds != 0 {
+			return 0, 0, false, fmt.Errorf("managed RunX end marker has no matching start marker")
+		}
+		return 0, 0, false, nil
+	}
+	if allStarts != 1 || allEnds != 1 {
+		return 0, 0, false, fmt.Errorf("malformed or duplicate managed RunX markers")
+	}
+	return foundStart, foundEnd, true, nil
+}
+
+func detectLineEnding(value string) string {
+	if strings.Contains(value, "\r\n") {
+		return "\r\n"
+	}
+	return "\n"
 }
