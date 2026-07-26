@@ -61,6 +61,7 @@ func TestPerformReplacementAndRollback_Success(t *testing.T) {
 		"linux",
 		MockFileOps{},
 		verifyFunc,
+		"",
 	)
 
 	require.NoError(t, err)
@@ -95,6 +96,7 @@ func TestPerformReplacementAndRollback_VerificationFailureRollback(t *testing.T)
 		"linux",
 		MockFileOps{},
 		verifyFunc,
+		"",
 	)
 
 	assert.Error(t, err)
