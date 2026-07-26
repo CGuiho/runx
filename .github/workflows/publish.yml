@@ -3,7 +3,7 @@ name: Publish
 on:
   push:
     tags:
-      - '@guiho/runx@*'
+      - '@guiho/runx/v*'
 
 permissions:
   contents: write
@@ -11,100 +11,60 @@ permissions:
 
 jobs:
   publish:
-    name: Publish
     runs-on: ubuntu-latest
     environment: production
     steps:
-      - name: Checkout
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Resolve release metadata
         run: |
-          git init .
-          git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
-          git fetch --depth=1 origin "${GITHUB_REF}"
-          git checkout --detach FETCH_HEAD
-
-      - name: Install Bun
+          VERSION="${GITHUB_REF_NAME#@guiho/runx/v}"
+          test -n "$VERSION"
+          printf 'VERSION=%s\n' "$VERSION" >> "$GITHUB_ENV"
+          printf 'BUILD_DATE=%s\n' "$(git show -s --format=%cI HEAD)" >> "$GITHUB_ENV"
+      - run: go test -count=1 ./...
+      - run: go vet ./...
+      - name: Build and verify canonical release matrix
         run: |
-          curl -fsSL https://bun.sh/install | bash
-          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
-          "$HOME/.bun/bin/bun" --version
-
-      - run: bun install --frozen-lockfile
-      - run: bun run typecheck
-      - run: bun test
-      - run: bun run build
-      - run: bun run binaries
-      - run: bun run verify-assets
-
-      - name: Publish native binaries to GitHub release
+          go run devops/build-binaries.go --version "$VERSION" --commit "$GITHUB_SHA" --build-date "$BUILD_DATE"
+          go run devops/verify-release-assets.go
+          test "$(bundle/runx-linux-amd64 --version)" = "$VERSION"
+      - name: Extract version-scoped release notes
+        run: go run devops/extract-release-notes.go --version "$VERSION"
+      - name: Publish GitHub release assets
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          VERSION=$(bun -e "const p = await Bun.file('./package.json').json(); console.log(p.version)")
-          RELEASE_FLAGS=()
-
-          if [[ "$VERSION" == *-* ]]; then
-            RELEASE_FLAGS+=(--prerelease)
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+            gh release upload "$GITHUB_REF_NAME" bundle/* --clobber
           else
-            RELEASE_FLAGS+=(--latest)
+            gh release create "$GITHUB_REF_NAME" bundle/* --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag
           fi
-
-          bun run devops/extract-release-notes.ts "$VERSION" release-notes.md
-
-          if gh release view "${GITHUB_REF_NAME}" >/dev/null 2>&1; then
-            gh release edit "${GITHUB_REF_NAME}" --title "${GITHUB_REF_NAME}" --notes-file release-notes.md "${RELEASE_FLAGS[@]}"
-            gh release upload "${GITHUB_REF_NAME}" bin/* --clobber
-          else
-            gh release create "${GITHUB_REF_NAME}" bin/* --title "${GITHUB_REF_NAME}" --notes-file release-notes.md --verify-tag "${RELEASE_FLAGS[@]}"
-          fi
-
       - name: Verify exact GitHub release asset set
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          cat > expected-assets.txt <<'EOF'
-          guiho-i-runx.md
-          guiho-s-runx.md
-          runx-darwin-arm64
-          runx-darwin-x64
-          runx-darwin-x64-baseline
-          runx-darwin-x64-modern
-          runx-linux-arm64
-          runx-linux-x64
-          runx-linux-x64-baseline
-          runx-linux-x64-modern
-          runx-windows-arm64.exe
-          runx-windows-x64-baseline.exe
-          runx-windows-x64-modern.exe
-          runx-windows-x64.exe
-          EOF
-          gh release view "${GITHUB_REF_NAME}" --json assets --jq '.assets[].name' | sort > actual-assets.txt
+          find bundle -maxdepth 1 -type f -printf '%f\n' | sort > expected-assets.txt
+          gh release view "$GITHUB_REF_NAME" --json assets --jq '.assets[].name' | sort > actual-assets.txt
           diff -u expected-assets.txt actual-assets.txt
-
-      - name: Verify exact-version public Linux installer
+      - name: Verify exact-version installer
         run: |
-          VERSION=$(bun -e "const p = await Bun.file('./package.json').json(); console.log(p.version)")
           public_home="$(mktemp -d)"
-          project_dir="$(mktemp -d)"
           install_dir="$public_home/.local/bin"
-          trap 'rm -rf "$public_home" "$project_dir"' EXIT
-          export HOME="$public_home"
-          export RUNX_INSTALL_DIR="$install_dir"
-          export RUNX_SKIP_PATH_UPDATE=1
-          cd "$project_dir"
-          curl -fsSL "https://raw.githubusercontent.com/CGuiho/runx/${GITHUB_REF_NAME}/devops/install.sh" | bash -s -- --version "$VERSION"
-          test "$("$install_dir/runx" --version)" = "$VERSION"
-          test -s "$HOME/.agents/skills/guiho-s-runx/SKILL.md"
-          test -s "$HOME/.claude/skills/guiho-s-runx/SKILL.md"
-
-      - name: Set up npm trusted publishing
-        uses: actions/setup-node@v6
+          trap 'rm -rf "$public_home"' EXIT
+          HOME="$public_home" RUNX_INSTALL_DIR="$install_dir" RUNX_SKIP_PATH_UPDATE=1 \
+            bash devops/install.sh --version "$VERSION"
+          test "$(RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$install_dir/runx" --version)" = "$VERSION"
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           registry-url: 'https://registry.npmjs.org'
           package-manager-cache: false
-
-      - name: Install trusted-publishing npm CLI
-        run: npm install --global npm@11.17.0
-
-      - name: Publish package to npm
-        run: npm publish --access public
+      - name: Publish npm native bootstrap
+        run: |
+          npm version "$VERSION" --no-git-tag-version --allow-same-version
+          npm publish --access public
