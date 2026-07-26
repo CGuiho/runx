@@ -1,133 +1,129 @@
 ---
-name: RunX README
-purpose: Introduce RunX and provide the supported RFC 0034 installation and quick-start workflow.
-description: Public overview of the RunX YAML command catalog, native CLI, agent integration, and release channels.
+name: RunX
+purpose: Introduce the native RunX command-catalog CLI and its safe operating contract.
+description: Installation, manifest-v2 workflow, command discovery, execution, agent resources, upgrades, and Go release targets.
 created: 2026-07-12
-flags:
-  - public
+owner: runx
+flags: []
 tags:
   - cli
-  - runx
+  - go
+  - cobra
 keywords:
+  - runx
   - runx.yaml
-  - native binary
   - command catalog
-owner: runx
 ---
 
 # RunX
 
-RunX is a language-agnostic command catalog backed by a strict `runx.yaml`
-file. It makes project operations discoverable and keeps execution explicit:
-only `runx run <selector>` spawns a configured command.
+RunX is a native Go/Cobra CLI for documented, language-agnostic command
+catalogs. A project owns one explicit `runx.yaml`; RunX validates and describes
+catalog commands without executing them, and only `runx run` starts a configured
+command.
 
 ## Install
 
-PowerShell:
+Linux and macOS:
 
-```powershell
-irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
-```
-
-POSIX:
-
-```sh
+```bash
 curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
 ```
 
-The direct installers select and verify a native asset, install `runx` on PATH,
-install `guiho-s-runx` into both global agent-tool directories, and reconcile
-RunX instructions in the current project.
+Windows PowerShell:
 
-After installation, ordinary RunX invocations schedule a silent background
-maintenance worker. It repairs missing or stale global skill copies and keeps
-one compact RunX block in the nearest `AGENTS.md` without delaying or changing
-the requested command's output.
+```powershell
+& ([scriptblock]::Create((Invoke-RestMethod 'https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1')))
+```
 
-The npm package is a Node-compatible bootstrap that downloads and delegates to
-the version-matched native binary. Bun is not required for npm installation or
-first execution.
+Both installers select the canonical target, download `checksums.txt`, verify
+SHA-256 before replacement, install the bundled skill into both supported agent
+locations, and verify `runx --version`.
 
-## Quick Start
+## Start
 
-```text
+```bash
 runx init
-runx check
-runx list
-runx describe app-dev
-runx run --dry-run app-dev
-runx run app-dev
-runx run cli-ts -v
+runx check --format json
+runx list --format json
+runx describe <uid>
+runx run --dry-run <uid>
+runx run --yes <uid> -- <child arguments...>
 ```
 
-RunX options belong before the selector. Every token after the selector belongs
-to the selected child command; use one optional `--` after the selector when an
-explicit boundary improves readability:
+RunX options precede the selector. Every token after the selector belongs to
+the child and is forwarded without reinterpretation.
 
-```text
-runx run --dry-run cli-ts -v
-runx run cli-ts -- build --watch
+## Manifest v2
+
+```yaml
+version: "2.0.0"
+namespace: "example"
+scripts:
+  directory: "scripts"
+commands:
+  - uid: "test-command"
+    id: "test"
+    summary: "Run tests."
+    description: "Run the complete project test suite."
+    command: "go test ./..."
+    confirm: "never"
 ```
 
-The shorter public curl bootstrap is intentional. The fetched installer still
-uses HTTPS, validates downloaded native and Markdown assets, replaces the
-binary transactionally, and verifies the installed version.
-
-Configuration resolves in this exact order:
+Manifests are strictly decoded: unknown fields, invalid identifiers, unsafe
+paths, invalid shells, duplicate identities, non-reciprocal child catalogs,
+and unsupported manifest versions fail closed. Configuration precedence is:
 
 1. `--config <path>`;
-2. `<effective-cwd>/runx.yaml`;
+2. effective-cwd `runx.yaml`;
 3. `~/.guiho/runx/runx.yaml`.
 
 RunX never searches parent directories.
 
-RunX manifest v2 colocates groups and commands. `namespace` replaces
-`project.name`; the former top-level `groups` map and command `group` field are
-removed:
+## Developer Context
 
-```yaml
-version: "2.0.0"
-namespace: example
-scripts:
-  directory: scripts
-commands:
-  - group: cli
-    summary: CLI commands.
-    commands:
-      - uid: cli-test
-        id: test
-        summary: Test the CLI.
-        description: Run the CLI test suite.
-        command: bun test
-```
+Every command scope supports `-h`/`--help`, `--help-tree`,
+`--help-tree-depth <positive-integer>`, and `--help-docs`. Root additionally
+supports `-v`/`--version`. The tree and Markdown are generated from the live
+Cobra commands.
 
-A group may replace nested `commands` with `runx: relative/path/runx.yaml` or a
-full HTTPS GitHub blob/raw URL. The group name is the mounted child's namespace
-alias. The child declares the reciprocal `parent`; `runx check` rejects legacy,
-ambiguous, cyclic, unsafe, or non-reciprocal catalog graphs.
-
-## Command Catalog
+## Agent And Upgrade Commands
 
 ```text
-runx
-├── list
-├── describe <selector>
-├── run <selector>
-├── check
-├── init
-├── agent
-│   ├── skill install|uninstall|update|list|show
-│   ├── instruction apply|remove|update|show
-│   └── prompt list|show
-├── upgrade
-│   ├── check
-│   └── list
-└── uninstall
+runx agent skill install|uninstall|update|list|show
+runx agent instruction apply|remove|update|show
+runx agent prompt list|show
+runx upgrade
+runx upgrade check
+runx upgrade list
+runx uninstall --dry-run
 ```
 
-Every scope supports `--help`, `-h`, `--help-tree`,
-`--help-tree-depth <positive-integer>`, and `--help-docs`. Only root
-`--version` also has `-v`.
+Bare `runx` first installs its embedded skill in both global tool locations and
+idempotently reconciles a bounded RunX instruction block in the repository root.
+Both `AGENTS.md` and `CLAUDE.md` are updated when both exist; otherwise the one
+that exists is used, or `AGENTS.md` is created. Existing content and line endings
+are preserved, malformed markers fail safely, and no catalog command or network
+request runs during bootstrap. Help, version, agent-management, uninstall, and
+non-repository paths do not perform repository bootstrap. Other foreground
+startup reads only the local cache and starts bounded detached workers where
+appropriate.
+Self-upgrades verify published checksums and preserve the embedded build target,
+including ARMv6 versus ARMv7.
 
-See [DOCS.md](DOCS.md) for configuration, output, exit codes, agent resources,
-upgrade behavior, installers, npm bootstrap, and the exact release matrix.
+## Build
+
+```bash
+go test ./...
+go vet ./...
+go build ./...
+go run devops/build-binaries.go --version 0.8.0 --commit <commit> --build-date 2026-07-26T00:00:00Z
+go run devops/verify-release-assets.go
+```
+
+The release contract is exactly 11 artifacts: eight pure-Go executables
+(Linux AMD64/ARM64/ARMv7/ARMv6, Darwin AMD64/ARM64, Windows AMD64/ARM64),
+`guiho-s-runx.zip`, `guiho-i-runx.md`, and `checksums.txt`. AMD64 V2/V3/V4
+variants are not part of the contract.
+
+See [DOCS.md](DOCS.md) for the complete behavior and safety reference.
