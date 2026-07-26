@@ -1,6 +1,6 @@
 ---
 subject: guiho-s-runx
-description: Agent workflow for safe RunX catalog work, automatic resource maintenance, and verified native upgrade/list/recovery operations.
+description: Agent workflow for safe RunX catalog work, bare-command bootstrap, automatic resource maintenance, and verified native upgrade/list/recovery operations.
 parent: runx-skills
 children: []
 files:
@@ -12,7 +12,7 @@ tags:
   - runx
 keywords:
   - runx
-  - citty
+  - cobra
   - command catalog
   - dry run
   - runx upgrade
