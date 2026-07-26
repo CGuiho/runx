@@ -25,7 +25,7 @@ func TestResolveUpgradePlatform(t *testing.T) {
 	pWin, err := ResolveUpgradePlatform("windows", "amd64")
 	require.NoError(t, err)
 	assert.Equal(t, "windows", pWin.OS)
-	assert.Equal(t, "x64", pWin.Arch)
+	assert.Equal(t, "amd64", pWin.Arch)
 
 	pMac, err := ResolveUpgradePlatform("darwin", "arm64")
 	require.NoError(t, err)
@@ -43,8 +43,9 @@ func TestFetchReleaseCatalog(t *testing.T) {
 			Prerelease: false,
 			Draft:      false,
 			Assets: []GitHubAsset{
-				{Name: "runx-windows-x64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
-				{Name: "runx-linux-x64", BrowserDownloadURL: "https://example.com/linux"},
+				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
+				{Name: "runx-linux-amd64", BrowserDownloadURL: "https://example.com/linux"},
+				{Name: "checksums.txt", BrowserDownloadURL: "https://example.com/checksums"},
 			},
 		},
 		{
@@ -52,7 +53,8 @@ func TestFetchReleaseCatalog(t *testing.T) {
 			Prerelease: true,
 			Draft:      false,
 			Assets: []GitHubAsset{
-				{Name: "runx-windows-x64.exe", BrowserDownloadURL: "https://example.com/win-alpha.exe"},
+				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win-alpha.exe"},
+				{Name: "checksums.txt", BrowserDownloadURL: "https://example.com/checksums-alpha"},
 			},
 		},
 	}
@@ -63,14 +65,14 @@ func TestFetchReleaseCatalog(t *testing.T) {
 	}))
 	defer server.Close()
 
-	platform := ReleasePlatform{OS: "windows", Arch: "x64", Variant: "baseline"}
+	platform := ReleasePlatform{OS: "windows", Arch: "amd64", Target: "runx-windows-amd64"}
 	catalog, err := FetchReleaseCatalog(server.URL, platform, "0.9.0", server.Client())
 	require.NoError(t, err)
 
 	assert.Equal(t, "0.9.0", catalog.CurrentVersion)
 	assert.Equal(t, "1.0.0", catalog.LatestStableVersion)
 	assert.Len(t, catalog.Releases, 2)
-	assert.True(t, catalog.Releases[0].Prerelease) // 1.1.0-alpha.1 sorted first
+	assert.True(t, catalog.Releases[0].Prerelease)  // 1.1.0-alpha.1 sorted first
 	assert.False(t, catalog.Releases[1].Prerelease) // 1.0.0
 	assert.True(t, catalog.Releases[1].LatestStable)
 	assert.NotNil(t, catalog.Releases[1].CompatibleAsset)
