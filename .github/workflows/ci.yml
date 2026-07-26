@@ -6,66 +6,56 @@ permissions:
 on:
   pull_request:
   push:
-    branches:
-      - main
+    branches: [main]
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        run: |
-          git init .
-          git remote add origin "${GITHUB_SERVER_URL}/${GITHUB_REPOSITORY}.git"
-          git fetch --depth=1 origin "${GITHUB_REF}"
-          git checkout --detach FETCH_HEAD
-
-      - name: Install Bun
-        run: |
-          curl -fsSL https://bun.sh/install | bash
-          echo "$HOME/.bun/bin" >> "$GITHUB_PATH"
-          "$HOME/.bun/bin/bun" --version
-
-      - run: bun install --frozen-lockfile
-      - run: bun run typecheck
-      - run: bun test
-      - run: bun run build
-      - run: bun run binary
-      - run: bun run binaries
-      - run: bun run verify-assets
-      - name: Verify npm bootstrap parses under Node
-        run: node --check scripts/runx-bin.mjs
-      - name: Verify public Linux installer
-        run: |
-          public_home="$(mktemp -d)"
-          project_dir="$(mktemp -d)"
-          install_dir="$public_home/.local/bin"
-          trap 'rm -rf "$public_home" "$project_dir"' EXIT
-          export HOME="$public_home"
-          export RUNX_INSTALL_DIR="$install_dir"
-          export RUNX_SKIP_PATH_UPDATE=1
-          cd "$project_dir"
-          curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
-          installed_version="$("$install_dir/runx" --version)"
-          printf '%s\n' "$installed_version" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?$'
-          welcome="$("$install_dir/runx")"
-          if [[ "$welcome" != "Hello Linux - runx v$installed_version" ]]; then
-            printf '%s\n' "$welcome" | grep -q 'RUNX'
-            printf '%s\n' "$welcome" | grep -q 'platform      Linux'
-            printf '%s\n' "$welcome" | grep -q "version       v$installed_version"
-          fi
-          test -s "$HOME/.agents/skills/guiho-s-runx/SKILL.md"
-          test -s "$HOME/.claude/skills/guiho-s-runx/SKILL.md"
-
-  test-windows:
-    runs-on: windows-latest
+  go:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: oven-sh/setup-bun@v2
-      - run: bun install --frozen-lockfile
-      - run: bun run typecheck
-      - run: bun test
-      - run: bun run build
-      - run: bun run binary
-      - name: Verify npm bootstrap parses under Node
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify formatting
+        shell: bash
+        run: test -z "$(gofmt -l main.go cmd pkg embed devops)"
+      - name: Verify module graph
+        shell: bash
+        run: |
+          go mod tidy
+          git diff --exit-code -- go.mod go.sum
+      - run: go test -count=1 ./...
+      - run: go vet ./...
+      - name: Build native smoke binary
+        shell: bash
+        run: |
+          VERSION="$(git describe --tags --abbrev=0 2>/dev/null | sed -E 's#^(@guiho/runx/v|@guiho/runx@|v)##' || true)"
+          VERSION="${VERSION:-0.0.0-dev}"
+          TARGET="runx-linux-amd64"
+          OUTPUT="runx-smoke"
+          if [[ "${RUNNER_OS}" == "Windows" ]]; then TARGET="runx-windows-amd64"; OUTPUT="runx-smoke.exe"; fi
+          go build -trimpath -ldflags "-X main.version=${VERSION} -X main.commit=${GITHUB_SHA} -X main.buildTarget=${TARGET}" -o "${OUTPUT}" .
+          "./${OUTPUT}" --version
+          "./${OUTPUT}" --help-tree-depth 2 --help-tree
+
+  release-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Build canonical release matrix
+        run: go run devops/build-binaries.go --version 0.0.0-dev --commit "$GITHUB_SHA" --build-date 2026-01-01T00:00:00Z
+      - run: go run devops/verify-release-assets.go
+      - name: Smoke native Linux artifact
+        run: |
+          test "$(bundle/runx-linux-amd64 --version)" = "0.0.0-dev"
+          bundle/runx-linux-amd64 --help-tree-depth 2 --help-tree
+      - name: Verify Node bootstrap syntax
         run: node --check scripts/runx-bin.mjs
