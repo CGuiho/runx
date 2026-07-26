@@ -1,491 +1,218 @@
 ---
 name: RunX Go Rewrite RFC (Issue #22)
-purpose: Master technical specification, architecture, implementation plan, and verification roadmap for porting RunX from Bun/TypeScript to Go using Cobra and Viper with a strict YAML-only policy and TypeScript coexistence rule.
-description: Exhaustive RFC document for GitHub Issue 22, detailing the Cobra command tree, Viper YAML-only configuration management, Go standard library tools, Manifest V2 compliance, argument transport, detached update worker, TypeScript coexistence directive, complete implementation plan, cross-compilation release matrix, environment variables, exit codes, and verification criteria.
+purpose: Define the authoritative completed migration from Bun/TypeScript/Citty to Go/Cobra.
+description: Final architecture, manifest, startup, agent, upgrade, distribution, release, and verification contract for the native RunX CLI.
 created: 2026-07-24
+updated: 2026-07-26
 flags:
   - accepted
+  - implemented
 tags:
   - rfc
   - go
   - cobra
-  - viper
-  - yaml-only
-  - architecture
   - cli
-  - implementation-plan
-  - coexistence
 keywords:
   - issue 22
   - go rewrite
-  - cobra
-  - viper
-  - yaml only
-  - golang
-  - runx
-  - rfc 0034
-  - help tree
-  - implementation plan
-  - typescript coexistence
-owner: runx-architecture
+  - manifest v2
+  - release matrix
+owner: runx-rfc
 ---
 
-# GUIHO RFC: RunX Go Rewrite Specification & Master Implementation Plan (Issue #22)
+# GUIHO RFC: RunX Go Rewrite
 
-## 1. Executive Summary & Goals
+## Status And Authority
 
-This Request for Comments (RFC) serves as the **master technical specification** and **executable implementation plan** for **GitHub Issue [#22](https://github.com/CGuiho/runx/issues/22)**: rewriting the **RunX CLI** (`@guiho/runx`) from Bun/TypeScript to **Go (Golang)** using **Cobra** (`github.com/spf13/cobra`) as the primary CLI framework and **Viper** (`github.com/spf13/viper`) for configuration resolution under a strict **YAML-Only Policy**.
+This RFC is accepted and implemented. It supersedes the initial issue-22 draft
+where that draft required Viper, retained Bun as production authority, or
+described the retired 14-asset/V3 release matrix.
 
-### Strategic Objectives
+The authoritative implementation is `main.go`, `cmd/`, `pkg/`, and `embed/`.
+Cobra is the only command router. Configuration uses typed Go structs and
+strict `go.yaml.in/yaml/v3` decoding; Viper is intentionally absent because
+implicit environment and fallback behavior conflicts with RunX's exact
+single-file precedence.
 
-1. **Sub-10ms Cold Startup**: Eliminate JavaScript runtime bootstrap overhead to achieve instant (<10ms) command resolution across all invocations.
-2. **Compact Binary Size**: Reduce single-executable binary sizes from ~50 MiB (Bun compiled runtime) down to ~8–12 MiB per target platform.
-3. **Strict YAML-Only Directive**: Completely drop all `.toml` configuration file formats. RunX exclusively parses and supports YAML (`.yaml` / `.yml`) for all manifest files (`runx.yaml`) and configuration surfaces.
-4. **TypeScript Preservation & Coexistence Policy**: **Do not delete any existing TypeScript code** (`source/`, `scripts/`, `library/`, `package.json`, `tsconfig.json`). The Go codebase (`main.go`, `cmd/`, `pkg/`, `embed/`, `go.mod`, `go.sum`) coexists directly alongside the TypeScript code in the same repository. The TypeScript codebase remains untouched until a future decommission date explicitly authorized by the developer.
-5. **Cobra Command Framework**: Leverage Cobra for command routing (`runx`, `list`, `describe`, `run`, `check`, `init`, `agent`, `upgrade`, `uninstall`), flag handling, subcommands, usage/help rendering, and shell completion generation.
-6. **Viper & YAML Schema Configuration**: Use Viper and `gopkg.in/yaml.v3` for strict `runx.yaml` decoding (`KnownFields(true)`), environment variable bindings (`RUNX_*`), and configuration precedence (Flags > Env > YAML Config File > Defaults).
-7. **Command Tree Matrix Parity**: The migration is complete when running `runx --help-tree` against the compiled Go executable prints the exact 100% compliant command tree matrix specified in Section 4.
+The former TypeScript implementation remains in `source/` as historical
+reference. It is not built, tested, packaged as domain logic, or used by CI and
+release publication. The Node npm script is only a checksum-verifying native
+binary downloader and process delegate.
 
----
+## Product Contract
 
-## 2. Mandatory Technology Stack & Dependencies
+RunX provides a language-agnostic `runx.yaml` command catalog. Inspection is
+side-effect free; only `runx run` may execute a configured command. The CLI is
+pre-1.0 and the migration intentionally removes incompatible legacy aliases,
+implicit configuration behavior, V1 manifests, and old asset names.
 
-To guarantee high performance, memory safety, zero external C-dependencies (`CGO_ENABLED=0`), and full RFC 0034 CLI parity, the Go rewrite of RunX uses the following curated set of tools and libraries:
-
-### Core Frameworks & Configuration
-1. **Cobra (`github.com/spf13/cobra`)**
-   - **Role**: Command tree definition (`runx`, `list`, `describe`, `run`, `check`, `init`, `agent`, `upgrade`, `uninstall`), subcommands, POSIX flag routing, usage/help formatting, `--help-tree` recursive hierarchy printer, and shell completion generation.
-2. **Viper (`github.com/spf13/viper`)**
-   - **Role**: Hierarchical configuration management with deterministic precedence: Flags > Environment Variables (`RUNX_*`) > `runx.yaml` config file > Key/value defaults. Configured strictly for YAML parsing (`SetConfigType("yaml")`).
-
-### Serialization & Validation
-3. **`gopkg.in/yaml.v3`**
-   - **Role**: Strict YAML parser for `runx.yaml` (Manifest V2). Configured with `Decoder.KnownFields(true)` to reject unknown or malformed manifest fields. TOML parsing is completely excluded.
-4. **`encoding/json`** (Go Standard Library)
-   - **Role**: High-speed JSON serialization for `--json` outputs, dry-run argument reporting, and PowerShell argument transport splatting.
-
-### Standard Library Power Tools
-5. **`embed` (`go:embed`)**
-   - **Role**: Embeds CLI-owned agent skills (`guiho-s-runx.SKILL.md`), agent instructions, and documentation assets directly inside the compiled native binary.
-6. **`os/exec` & `syscall`**
-   - **Role**: Safe child command execution and background worker detachment (`SysProcAttr{Setsid: true}` on POSIX / `CREATE_NEW_PROCESS_GROUP` on Windows).
-7. **`crypto/sha256` & `crypto/subtle`**
-   - **Role**: Cryptographic hash calculation and constant-time checksum verification during `runx upgrade` binary verification.
-8. **`net/http` with `time.Duration` Timeouts**
-   - **Role**: Lightweight HTTP client with custom timeouts and user-agent headers for release discovery (`api.github.com`) and asset downloads.
-9. **`path/filepath` & `os`**
-   - **Role**: Atomic file operations (write-to-temp + rename) for skill reconciliation, cache updates, and binary upgrades without partial write corruption.
-
-### Testing & Build DevOps
-10. **Testify (`github.com/stretchr/testify`)**
-    - **Role**: Assertion helpers (`assert`, `require`, `suite`) for testing parity against the existing 90 Bun unit test cases.
-11. **`CGO_ENABLED=0` Pure-Go Compilation**
-    - **Role**: Guarantees completely static, self-contained binaries with zero C-library dependencies.
-
----
-
-## 3. Go Module & Coexistent Repository Architecture
-
-The Go codebase lives in the repository root alongside the existing TypeScript code:
+### Command Tree
 
 ```text
-runx/
-├── main.go                       # Primary Go CLI entry point
-├── go.mod                        # Go module (github.com/CGuiho/runx)
-├── go.sum                        # Go dependency checksums
-├── cmd/                          # Cobra Command Tree & Flag Routing
-│   ├── root.go                   # Root command 'runx' & Viper YAML configuration
-│   ├── list.go                   # 'runx list' command
-│   ├── describe.go               # 'runx describe' command
-│   ├── run.go                    # 'runx run' command with post-selector argument forwarding
-│   ├── check.go                  # 'runx check' command
-│   ├── init.go                   # 'runx init' command (interactive YAML catalog generator)
-│   ├── agent.go                  # 'runx agent' root command
-│   ├── agent_skill.go            # 'runx agent skill' (install, uninstall, update, list, show)
-│   ├── agent_instruction.go      # 'runx agent instruction' (apply, remove, update, show)
-│   ├── agent_prompt.go           # 'runx agent prompt' (list, show)
-│   ├── upgrade.go                # 'runx upgrade' root command & options
-│   ├── upgrade_check.go          # 'runx upgrade check' subcommand
-│   ├── upgrade_list.go           # 'runx upgrade list' subcommand
-│   ├── uninstall.go              # 'runx uninstall' command
-│   └── helptree.go               # '--help-tree', '--help-tree-depth', '--help-docs' handlers
-├── pkg/
-│   ├── manifest/                 # Manifest V2 YAML parser, composition engine & Viper mapping
-│   ├── executor/                 # Cross-platform command spawner & argument transport
-│   ├── update/                   # Detached update worker & cache management
-│   ├── maintenance/              # Automatic agent maintenance worker
-│   ├── welcome/                  # Platform-aware welcome window renderer
-│   └── updater/                  # Self-upgrade, binary verification & rollback engine
-├── embed/
-│   └── skills/                   # Embedded agent skills (`go:embed`)
-├── devops/
-│   ├── build-binaries.go         # Go multi-target build script
-│   └── verify-release-assets.go  # 14-asset verification script
-│
-├── source/                       # [PRESERVED] Existing TypeScript source files (DO NOT DELETE)
-├── package.json                  # [PRESERVED] Existing package configuration (DO NOT DELETE)
-├── bun.lock                      # [PRESERVED] Existing Bun lockfile (DO NOT DELETE)
-└── tsconfig.json                 # [PRESERVED] Existing TypeScript configuration (DO NOT DELETE)
-```
-
----
-
-## 4. Canonical Command Tree Contract (`runx --help-tree`)
-
-The Go migration will be considered **fully complete** when executing `runx --help-tree` against the compiled Go binary produces the exact hierarchy shown below:
-
-```text
-COMMAND TREE
-
 runx
-├── list                                  List commands in a RunX configuration.
-│   ├── --cwd <path>                          Use this effective working directory.
-│   ├── --config <path>                       Use this runx.yaml configuration file.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --verbose                             Enable diagnostics.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── describe                              Describe one catalog command without execution.
-│   ├── --cwd <path>                          Use this effective working directory.
-│   ├── --config <path>                       Use this runx.yaml configuration file.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --verbose                             Enable diagnostics.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── run                                   Execute one selected catalog command.
-│   ├── --cwd <path>                          Use this effective working directory.
-│   ├── --config <path>                       Use this runx.yaml configuration file.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --verbose                             Enable diagnostics.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   ├── --help-docs                           Emit Markdown documentation for this command.
-│   ├── --dry-run                             Print the execution plan without spawning.
-│   └── --yes                                 Approve a confirmation-gated command.
-├── check                                 Validate a RunX configuration without execution.
-│   ├── --cwd <path>                          Use this effective working directory.
-│   ├── --config <path>                       Use this runx.yaml configuration file.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --verbose                             Enable diagnostics.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── init                                  Create a new YAML RunX configuration.
-│   ├── --cwd <path>                          Use this effective working directory.
-│   ├── --config <path>                       Use this runx.yaml configuration file.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --verbose                             Enable diagnostics.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── agent                                 Manage RunX agent integration.
-│   ├── skill                                 Manage the bundled RunX skill.
-│   │   ├── install                               Install the bundled skill into both global tool locations.
-│   │   │   ├── --cwd <path>                          Use this effective working directory.
-│   │   │   ├── --local                               Use project-local tool directories.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── uninstall                             Remove the bundled skill from both tool locations.
-│   │   │   ├── --cwd <path>                          Use this effective working directory.
-│   │   │   ├── --local                               Use project-local tool directories.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── update                                Refresh the bundled skill in both tool locations.
-│   │   │   ├── --cwd <path>                          Use this effective working directory.
-│   │   │   ├── --local                               Use project-local tool directories.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── list                                  List bundled RunX skills.
-│   │   │   ├── --filter <keyword>                    Filter skill metadata.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── show                                  Show metadata for one bundled skill.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── --help                                Show command help.
-│   │   ├── --help-tree                           Show this command hierarchy.
-│   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   ├── instruction                           Manage RunX instruction blocks.
-│   │   ├── apply                                 Apply the managed instruction block.
-│   │   │   ├── --cwd <path>                          Use this effective working directory.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── remove                                Remove the managed instruction block.
-│   │   │   ├── --cwd <path>                          Use this effective working directory.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── update                                Replace stale managed instruction content.
-│   │   │   ├── --cwd <path>                          Use this effective working directory.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── show                                  Print the raw instruction template.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── --help                                Show command help.
-│   │   ├── --help-tree                           Show this command hierarchy.
-│   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   ├── prompt                                Inspect bundled agent prompts.
-│   │   ├── list                                  List bundled RunX prompts.
-│   │   │   ├── --names                               Print prompt names only.
-│   │   │   ├── --format <text|json>                  Select output format.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── show                                  Print one raw bundled prompt.
-│   │   │   ├── --help                                Show command help.
-│   │   │   ├── --help-tree                           Show this command hierarchy.
-│   │   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   │   ├── --help                                Show command help.
-│   │   ├── --help-tree                           Show this command hierarchy.
-│   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── upgrade                               Inspect or upgrade a native RunX executable.
-│   ├── check                                 Check whether a newer stable release exists.
-│   │   ├── --format <text|json>                  Select output format.
-│   │   ├── --help                                Show command help.
-│   │   ├── --help-tree                           Show this command hierarchy.
-│   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   ├── list                                  List RunX releases newest first.
-│   │   ├── --page <positive-integer>             Select result page.
-│   │   ├── --per-page <positive-integer>         Select page size.
-│   │   ├── --pre-releases                        Accepted explicitly; prereleases are always included.
-│   │   ├── --arch <x64|arm64>                    Select target architecture.
-│   │   ├── --variant <baseline|default|modern>   Select x64 variant.
-│   │   ├── --format <text|json>                  Select output format.
-│   │   ├── --help                                Show command help.
-│   │   ├── --help-tree                           Show this command hierarchy.
-│   │   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   │   └── --help-docs                           Emit Markdown documentation for this command.
-│   ├── --version <version>                   Select an exact release version.
-│   ├── --arch <x64|arm64>                    Select target architecture.
-│   ├── --variant <baseline|default|modern>   Select x64 binary variant.
-│   ├── --dry-run                             Plan without mutation.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── uninstall                             Uninstall the native RunX executable.
-│   ├── --dry-run                             Print the target without deleting it.
-│   ├── --format <text|json>                  Select output format.
-│   ├── --help                                Show command help.
-│   ├── --help-tree                           Show this command hierarchy.
-│   ├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-│   └── --help-docs                           Emit Markdown documentation for this command.
-├── --version                             Show the RunX version.
-├── --help                                Show command help.
-├── --help-tree                           Show this command hierarchy.
-├── --help-tree-depth <positive-integer>  Limit help-tree recursion depth.
-└── --help-docs                           Emit Markdown documentation for this command.
+├── list
+├── describe <uid-or-selector>
+├── run [options] <selector> [--] [child arguments...]
+├── check
+├── init
+├── agent
+│   ├── skill install|uninstall|update|list|show
+│   ├── instruction apply|remove|update|show
+│   └── prompt list|show
+├── upgrade
+│   ├── check
+│   └── list
+└── uninstall
 ```
 
----
+Every scope has `-h`/`--help`, `--help-tree`,
+`--help-tree-depth <positive-integer>`, and `--help-docs`. Root alone has
+`-v`/`--version`. Tree and Markdown output traverse the live Cobra tree.
 
-## 5. Detailed Subcommand & Module Specifications
+### Startup
 
-### 5.1. `runx list`
-- **Purpose**: Lists all available command leaves and group hierarchies resolved from `runx.yaml`.
-- **Flags**: `--cwd`, `--config`, `--format` (`text`|`json`), `--verbose`.
-- **JSON Format**: Emits structured array of command objects containing `uid`, `full_id`, `description`, `run`, `cwd`, and `confirm`.
+A bare invocation synchronously and idempotently installs the embedded skill in
+both global tool locations and reconciles the bounded RunX block at the current
+repository root before it prints `Hello Windows - runx v<version>`. Both
+existing instruction files are updated; otherwise the one existing file is
+used, or `AGENTS.md` is created. Unmanaged content and line endings are
+preserved, malformed markers fail safely, and no catalog command or network
+request runs. Help, version, agent-management, uninstall, and non-repository
+paths skip repository bootstrap. Foreground startup otherwise reads the typed
+cache, optionally prints a newer stable notice, and starts recursion-safe hidden
+workers. Update checks use a cache-scoped lease, finite timeout, stale recovery,
+and atomic cache replacement.
 
-### 5.2. `runx describe <uid>`
-- **Purpose**: Inspects metadata and execution configuration for a single catalog command without running it.
-- **Flags**: `--cwd`, `--config`, `--format` (`text`|`json`), `--verbose`.
+### Configuration And Manifest
 
-### 5.3. `runx run <selector> [--] [child arguments...]`
-- **Purpose**: Executes a resolved catalog command.
-- **Argument Forwarding Grammar**:
-  - Tokens before `<selector>` belong to RunX (`--dry-run`, `--yes`, `--cwd`, `--config`, `--format`).
-  - All tokens after `<selector>` are forwarded losslessly to the child process.
-  - Option delimiter `--` is stripped if placed directly after `<selector>`.
-- **Transport Drivers**:
-  - **POSIX** (`sh -c`): Encapsulates parameters safely into positional array strings.
-  - **Windows PowerShell**: Constructs JSON-backed splat arrays without parameter string interpolation.
-  - **Windows cmd**: Short-lived environment context wrapper with delayed expansion disabled.
-- **Dry-Run Mode (`--dry-run`)**: Prints resolved command execution payload (JSON or text) without spawning child processes.
+Configuration precedence is exact:
 
-### 5.4. `runx check`
-- **Purpose**: Parses and validates `runx.yaml` against Manifest V2 schema rules without executing any command.
-- **Validation Rules**:
-  - Requires `version: "2"` and non-empty `namespace`.
-  - Rejects unknown top-level or command fields via `KnownFields(true)`.
-  - Validates group colocation depth (max 32).
-  - Validates reciprocal child catalog mounts (`runx` and `parent` fields).
+1. explicit `--config`;
+2. effective-cwd `runx.yaml`;
+3. `~/.guiho/runx/runx.yaml`.
 
-### 5.5. `runx init`
-- **Purpose**: Generates a valid starter `runx.yaml` configuration in the target directory.
-- **Rules**: Fails safely if `runx.yaml` already exists unless explicitly forced.
+No ancestor search, file merging, or implicit environment override is allowed.
 
-### 5.6. `runx agent`
-- **Subcommands**:
-  - `agent skill`: `install`, `uninstall`, `update`, `list`, `show`.
-  - `agent instruction`: `apply`, `remove`, `update`, `show`.
-  - `agent prompt`: `list`, `show`.
-- **Embedded Source**: Uses `go:embed` to read bundled skill files (`embed/skills/guiho-s-runx.SKILL.md`) directly from binary memory.
+Manifest v2 requires semantic version 2.x, an identifier-safe namespace, a
+contained scripts subdirectory, and recursive commands. Leaves require stable
+UID and ID, summary, description, and command. Groups require exactly one of
+nested commands or a child `runx` reference. Strict decoding rejects unknown
+fields and multiple YAML documents.
 
-### 5.7. `runx upgrade`
-- **Subcommands**: `check`, `list`.
-- **Flags**: `--version`, `--arch`, `--variant`, `--dry-run`, `--format`.
-- **Atomic Process Replacement**:
-  - Downloads target binary from GitHub Releases.
-  - Verifies native executable magic header and SHA256 checksum.
-  - Performs two-phase file rename on Windows (`.exe` -> `.old.exe` -> new `.exe`).
-  - Executes fail-safe rollback if verification fails.
+Local and GitHub child catalogs require reciprocal parents. Foreign catalogs
+are HTTPS GitHub blob/raw resources, limited to one MiB and ten seconds, and
+cannot escape an owner/repository/ref through relative references. Graph depth
+is limited to 32 and cycles fail closed. UID, selector, and unique ID shorthand
+collisions are validated across the composed graph. Command cwd and scripts
+paths must remain contained by their catalog base.
 
-### 5.8. `runx uninstall`
-- **Purpose**: Removes the installed native RunX binary from the system PATH.
+### Output And Execution
 
----
+JSON mode writes exactly one deterministic document to stdout. Diagnostics use
+stderr. `check`, `list`, `describe`, help, agent commands, and dry runs never
+spawn catalog commands.
 
-## 6. Environment Variables Matrix
+RunX-owned `run` flags precede the selector. Flag parsing stops at the selector;
+all later tokens are forwarded losslessly. POSIX shells use positional
+parameters, PowerShell uses JSON-backed splatting, and cmd uses environment-
+backed transport. `confirm: always` requires `--yes`. Child exit codes are
+preserved.
 
-Viper binds environment variables with the `RUNX_` prefix:
+### Agent Resources
 
-| Environment Variable | Equivalent Flag / Config | Usage / Meaning |
-| --- | --- | --- |
-| `RUNX_CONFIG` | `--config <path>` | Path to explicit `runx.yaml` configuration file. |
-| `RUNX_CWD` | `--cwd <path>` | Target effective working directory for execution. |
-| `RUNX_FORMAT` | `--format <text\|json>` | Output format selection (`text` or `json`). |
-| `RUNX_CACHE_DIR` | N/A | Override directory for update worker TTL cache. |
-| `RUNX_NO_UPDATE_CHECK` | N/A | Disable background update worker scheduling when set to `1` or `true`. |
-| `RUNX_NO_AGENT_MAINTENANCE` | N/A | Disable automatic agent skill reconciliation when set to `1` or `true`. |
+The production binary embeds the RunX skill and prompt. Explicit skill actions
+target both `.agents` and `.claude`, globally by default and locally with
+`--local`. Instruction actions use one bounded managed block while preserving
+all unrelated text. Writes use temporary files and atomic replacement.
 
----
+### Upgrade And Installation
 
-## 7. Exit Code Policy
+Release reads use typed GitHub responses and finite HTTP clients. The embedded
+build target selects the exact upgrade asset, preserving ARMv6 versus ARMv7.
+Every upgrade downloads and validates `checksums.txt` before replacement.
+Unix replacement uses same-filesystem staged renames and rollback. Windows
+starts a hidden helper that waits for the current process to exit, then replaces,
+verifies, cleans up, or restores the previous binary.
 
-RunX enforces deterministic exit code behavior:
+Both installers detect the exact platform target, display metadata and download
+progress, verify binary and skill ZIP checksums, replace transactionally,
+install both global skill copies, reconcile existing instructions, and verify
+the installed version.
 
-| Exit Code | Classification | Cause / Scenario |
-| --- | --- | --- |
-| `0` | **Success** | Command completed cleanly, `--help`, `--version`, `--dry-run`, or check passed. |
-| `1` | **User / Usage / Config Error** | Missing required flags, invalid manifest YAML syntax, unresolvable command selector, unknown flag. |
-| `2` | **Execution Failure** | Child process failed (preserves child process non-zero exit status where available) or transport spawn error. |
-| `3` | **Network / Upgrade Error** | Transport failure during `runx upgrade` download or catalog fetch error. |
+## Release Matrix Decision
 
----
+The current shared GUIHO Go CLI engineering contract resolves the earlier
+asset drift. RunX produces eight pure-Go binaries:
 
-## 8. Master Phase-by-Phase Implementation Plan
+| Asset | Build controls |
+| --- | --- |
+| `runx-linux-amd64` | `GOOS=linux GOARCH=amd64 GOAMD64=v1 CGO_ENABLED=0` |
+| `runx-linux-arm64` | `GOOS=linux GOARCH=arm64 GOARM64=v8.0 CGO_ENABLED=0` |
+| `runx-linux-armv7` | `GOOS=linux GOARCH=arm GOARM=7 CGO_ENABLED=0` |
+| `runx-linux-armv6` | `GOOS=linux GOARCH=arm GOARM=6 CGO_ENABLED=0` |
+| `runx-darwin-amd64` | `GOOS=darwin GOARCH=amd64 GOAMD64=v1 CGO_ENABLED=0` |
+| `runx-darwin-arm64` | `GOOS=darwin GOARCH=arm64 GOARM64=v8.0 CGO_ENABLED=0` |
+| `runx-windows-amd64.exe` | `GOOS=windows GOARCH=amd64 GOAMD64=v1 CGO_ENABLED=0` |
+| `runx-windows-arm64.exe` | `GOOS=windows GOARCH=arm64 GOARM64=v8.0 CGO_ENABLED=0` |
 
-### Phase 1: Project Scaffolding & Cobra Command Tree
-- [x] Initialize `go.mod` module (`github.com/CGuiho/runx`).
-- [x] Install Go dependencies (`github.com/spf13/cobra`, `github.com/spf13/viper`, `gopkg.in/yaml.v3`, `github.com/stretchr/testify`).
-- [x] Create `embed/embed.go` with `go:embed` asset binding for `guiho-s-runx.SKILL.md`.
-- [x] Scaffold root Cobra command tree (`cmd/root.go`, `run.go`, `init.go`, `check.go`, `list.go`, `upgrade.go`, `agent.go`).
-- [x] Compile and verify basic binary execution (`go build -o bin/runx-go.exe .`).
+`guiho-s-runx.zip`, `guiho-i-runx.md`, and `checksums.txt` make exactly 11
+release artifacts. The checksum manifest is deterministic and does not hash
+itself. AMD64 V2/V3/V4 variants are excluded without benchmarks and a separate
+contract decision.
 
-### Phase 2: Manifest V2 Parser & Strict YAML Decoder (`pkg/manifest`)
-- [x] Create `pkg/manifest/types.go` struct definitions.
-- [x] Implement strict YAML parser in `pkg/manifest/parser.go` with `KnownFields(true)`.
-- [x] Implement group composition & indexing in `pkg/manifest/composition.go`.
-- [x] Write Testify unit test suite in `pkg/manifest/manifest_test.go`.
-- [x] Run `go test ./pkg/manifest/...` (Passing cleanly).
+## Implementation Checklist
 
-### Phase 3: Argument Transport & Executor (`pkg/executor`)
-- [x] Implement POSIX parameter transport (`buildPOSIXCommand`).
-- [x] Implement PowerShell JSON-backed splatting (`buildPowerShellCommand`).
-- [x] Connect `pkg/manifest` and `pkg/executor` inside `cmd/run.go`.
-- [x] Implement `--dry-run` execution plan reporting.
-- [x] Run `go test ./pkg/executor/...` (Passing cleanly).
+### Phase 1: Production Architecture
 
-### Phase 4: Full Subcommand Tree & Help Tree Generator (`cmd/`)
-- [ ] Implement `cmd/describe.go` for single command inspection.
-- [ ] Implement `cmd/uninstall.go` with `--dry-run` support.
-- [ ] Implement `cmd/helptree.go` to render the exact `runx --help-tree` matrix matching Section 4.
-- [ ] Implement full subcommand flag sets (`--cwd`, `--config`, `--format`, `--verbose`, `--help-docs`, `--help-tree-depth`).
-- [ ] Implement `cmd/agent_skill.go`, `cmd/agent_instruction.go`, and `cmd/agent_prompt.go`.
+- [x] Pin the Go module and dependencies.
+- [x] Make `main.go` a thin build-info and exit-code entrypoint.
+- [x] Construct fresh Cobra trees through `NewRootCommand` with injected I/O,
+  HTTP, clock, filesystem location, executable, and worker launch dependencies.
+- [x] Remove Viper and global mutable command routing.
 
-### Phase 5: Detached Workers & Upgrade Engine (`pkg/update`, `pkg/maintenance`, `pkg/updater`)
-- [ ] Implement `pkg/update/worker.go` for background update checks via process detachment (`SysProcAttr` on POSIX / `CREATE_NEW_PROCESS_GROUP` on Windows).
-- [ ] Implement `pkg/maintenance/maintenance.go` for non-blocking automatic agent skill and `AGENTS.md` block reconciliation.
-- [ ] Implement `pkg/updater/upgrade.go` for atomic binary replacement and rollback.
+### Phase 2: Manifest And Execution
 
-### Phase 6: Test Parity, Multi-Target Build DevOps & Verification
-- [ ] Port remaining Bun test cases to Go tests (`go test ./...`) achieving 90/90 test parity.
-- [ ] Update `devops/build-binaries.go` for Go multi-target cross-compilation (`CGO_ENABLED=0`).
-- [ ] Verify 14-asset release matrix and direct installers (`devops/install.sh`, `devops/install.ps1`).
+- [x] Strictly decode and semantically validate manifest v2.
+- [x] Implement exact configuration precedence without parent search.
+- [x] Compose reciprocal local and bounded GitHub child catalogs.
+- [x] Validate identity collisions, graph bounds, scripts, cwd, shell, and
+  confirmation before execution.
+- [x] Preserve post-selector child arguments and child exit codes.
 
----
+### Phase 3: CLI And Agent Contract
 
-## 9. Release Matrix & Asset Delivery
+- [x] Implement real `check`, `list`, `describe`, `run`, and `init` behavior.
+- [x] Generate help tree and Markdown from the live Cobra tree.
+- [x] Support only `-h` and root `-v` short aliases.
+- [x] Embed skill and prompt resources and implement idempotent agent actions.
+- [x] Bootstrap global skills and repository instructions on successful bare invocation.
 
-Go static cross-compilation (`CGO_ENABLED=0`) covers all 12 platform targets:
+### Phase 4: Lifecycle And Upgrade
 
-| Target OS | Target Arch | Binary Name | Release Asset Name |
-| --- | --- | --- | --- |
-| Windows | `amd64` | `runx-windows-amd64.exe` | `runx-windows-amd64.exe` |
-| Windows | `arm64` | `runx-windows-arm64.exe` | `runx-windows-arm64.exe` |
-| Linux | `amd64` | `runx-linux-amd64` | `runx-linux-amd64` |
-| Linux | `arm64` | `runx-linux-arm64` | `runx-linux-arm64` |
-| Linux | `riscv64` | `runx-linux-riscv64` | `runx-linux-riscv64` |
-| macOS | `amd64` | `runx-darwin-amd64` | `runx-darwin-amd64` |
-| macOS | `arm64` | `runx-darwin-arm64` | `runx-darwin-arm64` |
+- [x] Wire cached notices and detached update/maintenance workers.
+- [x] Coalesce update workers and atomically replace typed cache state.
+- [x] Resolve upgrades from embedded build targets.
+- [x] Verify release checksums and native formats before replacement.
+- [x] Implement Unix rollback and staged Windows post-exit replacement.
 
-Plus 2 agent markdown release assets (`guiho-s-runx.SKILL.md`, `guiho-s-runx.INSTRUCTIONS.md`), for a total of **14 release assets**.
+### Phase 5: Distribution And Automation
 
----
+- [x] Build and verify the standard 11 artifacts.
+- [x] Update Bash and PowerShell installers for all standard targets.
+- [x] Make the npm entrypoint a checksum-verifying native bootstrap only.
+- [x] Make CI and protected-tag publication validate the Go implementation and
+  exact Go release matrix without Bun/TypeScript authority.
 
-## 10. Verification Plan
+### Phase 6: Documentation And Verification
 
-### Automated Verification
-1. **Go Unit & Integration Tests**:
-   ```bash
-   go test -v ./...
-   ```
-2. **Help Tree Parity Check**:
-   ```bash
-   go run . --help-tree
-   ```
-   Must output the exact hierarchy defined in Section 4.
+- [x] Reconcile AGENTS, README, DOCS, TODO, XDocs, and validation records.
+- [x] Run formatting, module-tidy, complete tests, vet, native smokes, XDocs,
+  and all eight cross-builds.
+- [x] Defer Mirror version application, tag, push, publication, and external
+  release approval to a separately authorized release task.
 
-3. **Existing Bun Check Baseline**:
-   ```bash
-   bun run check
-   ```
+## Exit Policy
 
-### Manual Verification
-1. Verify `runx run <selector> --dry-run` against complex multi-group `runx.yaml` catalogs.
-2. Test `runx upgrade` replacement and rollback on Windows and Linux.
-3. Test direct installer bootstrap (`devops/install.sh | bash` and `devops/install.ps1`).
+RunX uses `0` success, `1` unexpected operation failure, `2` usage or approval
+failure, `3` configuration failure, `4` release/network failure, and `5`
+installation/filesystem failure. `run` preserves explicit child exit codes.
