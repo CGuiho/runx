@@ -1,49 +1,54 @@
 ---
 subject: runx
-description: Open-source Bun CLI package for documented, language-agnostic local command catalogs with a deterministic welcome, safe child argument forwarding, and direct native installation.
+description: Native Go/Cobra command-catalog CLI with strict manifest v2, safe execution, bare-invocation agent bootstrap, verified upgrades, installers, and release automation.
 parent: null
 children:
-  - runx-source
+  - runx-cmd
+  - runx-packages
+  - runx-embed
   - runx-scripts
   - runx-skills
   - runx-prompts
   - runx-devops
+  - runx-source
   - runx-docs
 files:
-  .gitignore: Ignores local dependencies and generated build outputs.
-  bun.lock: Locks Bun dependencies for reproducible installs.
-  mirror.yaml: Mirror semantic versioning configuration for package, Git commit, tag, push, and changelog behavior.
-  package.json: Package metadata, RFC scripts, Node-compatible npm bootstrap entrypoint, and runtime dependencies.
-  tsconfig.json: Strict TypeScript compiler configuration for library output and type checking.
-  xdocs.config.toml: XDocs metadata and agent automation configuration.
+  .gitignore: Ignores local dependencies, caches, and generated build outputs.
+  bun.lock: Preserved lockfile for the legacy TypeScript reference implementation.
+  go.mod: Pins the production Go toolchain and module dependencies.
+  go.sum: Records production Go dependency checksums.
+  main.go: Thin production entrypoint that supplies embedded build metadata and mapped exit codes to the Cobra tree.
+  mirror.yaml: Mirror semantic version configuration using Git tags as the version source.
+  package.json: npm native-bootstrap metadata and Go-backed contributor command aliases; it contains no RunX domain implementation.
+  tsconfig.json: Preserved compiler configuration for the legacy TypeScript reference implementation.
+  xdocs.config.toml: XDocs metadata and agent-mode configuration.
 documents:
-  AGENTS.md: Repository instructions for coding agents, including the mandatory SWE agent, CLI engineer skill, Citty ownership, breaking RFC migration, and protected release boundaries.
-  CHANGELOG.md: Mirror-managed release history, including the 0.4.0 full RFC 0034 migration.
-  CONTRIBUTING.md: Contribution, validation, and protected release workflow guide.
-  DOCS.md: Canonical Citty-backed CLI, manifest, complete release catalog, transactional upgrade/recovery, direct installer, distribution, and release reference.
+  AGENTS.md: Repository rules for the Go CLI, XDocs, Mirror, validation, and protected release boundaries.
+  CHANGELOG.md: Mirror-managed historical release record.
+  CONTRIBUTING.md: Go validation, documentation, and protected release contribution workflow.
+  DOCS.md: Complete production CLI, manifest, lifecycle, agent, upgrade, installer, and 11-artifact reference.
   LICENSE.md: MIT license.
-  README.md: Public RFC 0034 overview, installation, command catalog, YAML precedence, and help entrypoints.
-  SECURITY.md: Vulnerability reporting and manifest trust-boundary policy.
-  TODO.md: Package-local task index.
+  README.md: Public installation, manifest-v2, commands, and Go release overview.
+  SECURITY.md: Vulnerability reporting and trusted-manifest boundary.
+  TODO.md: Package-local task index and migration status.
 tags:
   - cli
-  - bun
+  - go
+  - cobra
   - open source
 keywords:
   - runx
-  - citty
   - command catalog
   - yaml
-  - initialization
+  - manifest v2
   - native binary
   - RFC 0034
-  - cli engineer
 flags: []
 status: stable
 ---
 
-RunX is a standalone RFC 0034 command-catalog CLI with one Citty tree, TypeBox
-boundaries, Bun-only core source, a deterministic welcome, safe child argument
-forwarding, complete agent
-integration, transactional native installation and upgrades, a Node-compatible
-npm bootstrap, and fourteen release assets.
+RunX production behavior is owned by one testable Cobra command tree and focused
+Go packages. Structured manifest validation, command execution, idempotent
+bare-invocation agent bootstrap, cached lifecycle workers, agent resources,
+verified upgrades, installers, and the standard
+11-artifact release matrix are enforced by Go tests and workflows.
