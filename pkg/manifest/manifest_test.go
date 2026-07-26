@@ -1,6 +1,9 @@
 package manifest_test
 
 import (
+	"context"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/CGuiho/runx/pkg/manifest"
@@ -8,56 +11,97 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestParseManifestValidYAML(t *testing.T) {
-	yamlData := []byte(`
-version: "2"
+const validManifest = `version: "2.0.0"
 namespace: "test-app"
-description: "Test manifest"
-
+scripts:
+  directory: "scripts"
 commands:
-  - uid: "test:hello"
+  - uid: "hello-command"
     id: "hello"
-    description: "Say hello"
-    run: "echo Hello"
-`)
+    summary: "Say hello."
+    description: "Say hello from a test."
+    command: "echo Hello"
+  - group: "tools"
+    summary: "Tool commands."
+    commands:
+      - uid: "test-command"
+        id: "test"
+        summary: "Run tests."
+        description: "Run all tests."
+        command: "go test ./..."
+`
 
-	m, err := manifest.ParseManifestBytes(yamlData)
+func TestStrictManifestAndIndex(t *testing.T) {
+	value, err := manifest.ParseManifestBytes([]byte(validManifest))
 	require.NoError(t, err)
-	assert.Equal(t, "2", m.Version)
-	assert.Equal(t, "test-app", m.Namespace)
-	assert.Len(t, m.Commands, 1)
-
-	index, err := manifest.IndexManifest(m, "runx.yaml")
+	assert.Equal(t, "2.0.0", value.Version)
+	index, err := manifest.IndexManifest(value, "runx.yaml")
 	require.NoError(t, err)
-	assert.Contains(t, index, "test-app:hello")
-	assert.Equal(t, "echo Hello", index["test-app:hello"].Run)
+	assert.Equal(t, "echo Hello", index["hello-command"].Command)
+	assert.Equal(t, "go test ./...", index["tools/test"].Command)
 }
-
-func TestParseManifestInvalidUnknownField(t *testing.T) {
-	yamlData := []byte(`
-version: "2"
-namespace: "test-app"
-unknown_field: "invalid"
-
-commands:
-  - id: "hello"
-    run: "echo Hello"
-`)
-
-	_, err := manifest.ParseManifestBytes(yamlData)
-	assert.Error(t, err, "Strict YAML parser must reject unknown_field")
+func TestUnknownAndSemanticFieldsFail(t *testing.T) {
+	_, err := manifest.ParseManifestBytes([]byte(validManifest + "unknown: true\n"))
+	assert.Error(t, err)
+	_, err = manifest.ParseManifestBytes([]byte("version: \"1.0.0\"\nnamespace: app\nscripts:\n  directory: scripts\ncommands: []\n"))
+	assert.Error(t, err)
+	_, err = manifest.ParseManifestBytes([]byte("version: \"2.0.0\"\nnamespace: app\nscripts:\n  directory: ..\ncommands: []\n"))
+	assert.Error(t, err)
 }
-
-func TestParseManifestUnsupportedVersion(t *testing.T) {
-	yamlData := []byte(`
-version: "1"
-namespace: "test-app"
-
+func TestConfigurationPrecedenceAndNoParentSearch(t *testing.T) {
+	root := t.TempDir()
+	cwd := filepath.Join(root, "a", "b")
+	require.NoError(t, os.MkdirAll(cwd, 0o755))
+	home := filepath.Join(root, "home")
+	require.NoError(t, os.MkdirAll(filepath.Join(home, ".guiho", "runx"), 0o755))
+	require.NoError(t, os.WriteFile(filepath.Join(root, "runx.yaml"), []byte(validManifest), 0o644))
+	global := filepath.Join(home, ".guiho", "runx", "runx.yaml")
+	require.NoError(t, os.WriteFile(global, []byte(validManifest), 0o644))
+	path, err := manifest.ResolveConfigPath(cwd, "", home)
+	require.NoError(t, err)
+	assert.Equal(t, global, path)
+	local := filepath.Join(cwd, "runx.yaml")
+	require.NoError(t, os.WriteFile(local, []byte(validManifest), 0o644))
+	path, err = manifest.ResolveConfigPath(cwd, "", home)
+	require.NoError(t, err)
+	assert.Equal(t, local, path)
+	explicit := filepath.Join(root, "explicit.yaml")
+	require.NoError(t, os.WriteFile(explicit, []byte(validManifest), 0o644))
+	path, err = manifest.ResolveConfigPath(cwd, explicit, home)
+	require.NoError(t, err)
+	assert.Equal(t, explicit, path)
+}
+func TestLocalCompositionAndReciprocity(t *testing.T) {
+	directory := t.TempDir()
+	parent := filepath.Join(directory, "runx.yaml")
+	child := filepath.Join(directory, "child.yaml")
+	parentText := `version: "2.0.0"
+namespace: parent
+scripts:
+  directory: scripts
 commands:
-  - id: "hello"
-    run: "echo Hello"
-`)
-
-	_, err := manifest.ParseManifestBytes(yamlData)
-	assert.Error(t, err, "Version 1 should be rejected")
+  - group: worker
+    summary: Worker commands.
+    runx: child.yaml
+`
+	childText := `version: "2.0.0"
+namespace: child
+scripts:
+  directory: scripts
+parent: runx.yaml
+commands:
+  - uid: child-build
+    id: build
+    summary: Build child.
+    description: Build the child project.
+    command: go build ./...
+`
+	require.NoError(t, os.WriteFile(parent, []byte(parentText), 0o644))
+	require.NoError(t, os.WriteFile(child, []byte(childText), 0o644))
+	catalog, err := manifest.Load(context.Background(), manifest.LoadOptions{CWD: directory})
+	require.NoError(t, err)
+	resolved, ok := catalog.Resolve("worker/build")
+	require.True(t, ok)
+	assert.Equal(t, "child-build", resolved.UID)
+	assert.Len(t, catalog.Children, 1)
 }
