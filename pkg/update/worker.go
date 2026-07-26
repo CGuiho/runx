@@ -1,19 +1,27 @@
 package update
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"runtime"
 	"time"
 )
+
+type workerLease struct {
+	PID       int       `json:"pid"`
+	CreatedAt time.Time `json:"createdAt"`
+}
 
 type WorkerOptions struct {
 	CachePath      string
 	CurrentVersion string
 	GOOS           string
 	GOARCH         string
+	BuildTarget    string
 	APIURL         string
 	HTTPClient     *http.Client
 	Timeout        time.Duration
@@ -35,12 +43,23 @@ func RunUpdateWorker(opts WorkerOptions) (*UpdateCache, error) {
 	}
 	currentVer := opts.CurrentVersion
 	if currentVer == "" {
-		currentVer = "0.8.0-dev"
+		currentVer = "dev"
 	}
 	cachePath := opts.CachePath
 	if cachePath == "" {
 		cachePath = GetDefaultCachePath()
 	}
+	if cache, err := ReadCache(cachePath); err == nil && IsCacheFresh(cache, CacheTTL) {
+		return cache, nil
+	}
+	release, acquired, err := acquireWorkerLease(cachePath+".lease", 30*time.Second)
+	if err != nil {
+		return nil, err
+	}
+	if !acquired {
+		return nil, nil
+	}
+	defer release()
 
 	now := opts.Now
 	if now == nil {
@@ -57,7 +76,7 @@ func RunUpdateWorker(opts WorkerOptions) (*UpdateCache, error) {
 		client = &http.Client{Timeout: timeout}
 	}
 
-	platform, err := ResolveUpgradePlatform(goos, goarch)
+	platform, err := ResolveBuildTarget(opts.BuildTarget, goos, goarch)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve platform: %w", err)
 	}
@@ -88,6 +107,45 @@ func RunUpdateWorker(opts WorkerOptions) (*UpdateCache, error) {
 	}
 
 	return cache, nil
+}
+
+func acquireWorkerLease(path string, staleAfter time.Duration) (func(), bool, error) {
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return nil, false, err
+	}
+	create := func() (*os.File, error) { return os.OpenFile(path, os.O_CREATE|os.O_EXCL|os.O_WRONLY, 0o600) }
+	file, err := create()
+	if err != nil {
+		if !os.IsExist(err) {
+			return nil, false, err
+		}
+		data, readErr := os.ReadFile(path)
+		var lease workerLease
+		if readErr == nil && json.Unmarshal(data, &lease) == nil && time.Since(lease.CreatedAt) >= 0 && time.Since(lease.CreatedAt) < staleAfter {
+			return func() {}, false, nil
+		}
+		if removeErr := os.Remove(path); removeErr != nil && !os.IsNotExist(removeErr) {
+			return nil, false, removeErr
+		}
+		file, err = create()
+		if err != nil {
+			if os.IsExist(err) {
+				return func() {}, false, nil
+			}
+			return nil, false, err
+		}
+	}
+	leaseData, _ := json.Marshal(workerLease{PID: os.Getpid(), CreatedAt: time.Now().UTC()})
+	if _, err := file.Write(leaseData); err != nil {
+		file.Close()
+		os.Remove(path)
+		return nil, false, err
+	}
+	if err := file.Close(); err != nil {
+		os.Remove(path)
+		return nil, false, err
+	}
+	return func() { _ = os.Remove(path) }, true, nil
 }
 
 func SpawnUpdateWorker(execPath string, args ...string) error {
