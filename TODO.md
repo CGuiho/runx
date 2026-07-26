@@ -26,10 +26,10 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
+| in progress | 0 |
 | testing | 2 |
 | stopped | 0 |
-| completed | 11 |
+| completed | 13 |
 
 ## Tasks
 
@@ -197,8 +197,8 @@ owner: runx
 
 - Status: completed
 - Created: `2026-07-24`
-- Updated: `2026-07-24`
-- Outcome: RunX CLI is fully rewritten in Go using Cobra and Viper with strict YAML-only decoding, 100% help-tree parity, sub-10ms startup, embedded assets, detached workers, atomic self-upgrades, and multi-target compilation while preserving TypeScript source.
+- Updated: `2026-07-26`
+- Outcome: RunX production, CI, installers, and release publication are owned by Go/Cobra with strict typed YAML, real manifest-backed commands, live Developer Context help, synchronous idempotent bare-command agent bootstrap, bounded detached lifecycle workers, embedded agent resources, checksum-verifying upgrades, and the standard 11-artifact compatibility matrix. Legacy TypeScript remains reference-only.
 - Spec: [docs/rfc/runx-go-rewrite-rfc.md](docs/rfc/runx-go-rewrite-rfc.md)
+- Validation: [docs/validation/runx-go-migration.md](docs/validation/runx-go-migration.md)
 - External: GitHub issue [CGuiho/runx#22](https://github.com/CGuiho/runx/issues/22)
-
