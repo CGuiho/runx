@@ -15,6 +15,34 @@ owner: runx
 
 # Changelog
 
+## 0.9.0 - 2026-07-26
+
+### Added
+
+- Completed the native Go/Cobra command catalog with strict manifest-v2
+  parsing, local and bounded GitHub composition, deterministic inspection
+  output, safe execution, and preserved child exit codes.
+- Added live positional-aware command-tree and Markdown help at every public
+  scope, embedded agent resources, and idempotent bare-command agent bootstrap
+  for both global skill locations and repository instruction files.
+- Added bounded update and maintenance workers plus checksum-verified,
+  target-preserving self-upgrades with Unix rollback and staged Windows
+  replacement.
+
+### Changed
+
+- Made Go the sole production, CI, installer, npm-bootstrap, and protected-tag
+  publication authority; retained TypeScript sources as historical reference.
+- Replaced the retired 14-asset and AMD64 V3 release shape with the standard
+  eight compatibility binaries, skill ZIP, instruction Markdown, and checksum
+  manifest: exactly 11 release assets.
+
+### Security
+
+- Reject unknown or invalid manifest fields, unsafe catalog graphs, malformed
+  managed instruction markers, unchecked downloads, and shell argument
+  interpolation before any configured command or executable replacement occurs.
+
 ## 0.8.0 - 2026-07-24
 
 ### Added
