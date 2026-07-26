@@ -26,14 +26,13 @@ Stop if you can not find it.
 - Use `guiho-a-0001-swe` as the coordinating GUIHO Software Engineer/SWE agent
   for CLI architecture, planning, execution, review, validation, and release
   work.
-- Load and follow the `guiho-s-0034-cli-engineer` agent skill whenever creating,
+- Load and follow the `guiho-s-0035-cli-engineer-go` agent skill whenever creating,
   upgrading, refactoring, reviewing, testing, packaging, installing, or
   releasing the RunX CLI.
-- `guiho-s-0034-cli-engineer` is a skill, not an agent. It supplements the SWE
+- `guiho-s-0035-cli-engineer-go` is a skill, not an agent. It supplements the SWE
   agent and does not replace the lifecycle controller required by that agent.
-- During RFC 0034 implementation, also load the Bun, TypeScript, TypeBox, xdocs,
-  Mirror, documentation, TODO, plan execution, implementation review, and
-  validation skills named by the approved plan.
+- During Go CLI work, also load the XDocs and Mirror skills at the boundaries
+  defined by the Go CLI engineering skill and the approved migration RFC.
 - The approved RFC 0034 migration may make breaking changes. RunX is pre-1.0;
   do not preserve legacy aliases, configuration discovery, command shapes, or
   release names when they conflict with the approved migration plan.
@@ -41,18 +40,26 @@ Stop if you can not find it.
 
 ## Repository Notes
 
-- RunX is the open-source `@guiho/runx` Bun/TypeScript CLI for a documented,
+- RunX is the open-source Go/Cobra CLI for a documented,
   language-agnostic `runx.yaml` command catalog.
-- The executable entrypoint is `source/guiho-runx-bin.ts`; native builds use
-  `source/guiho-runx-native-bin.ts`. The npm entrypoint is the isolated
-  Node-compatible `scripts/runx-bin.mjs` bootstrap.
-- Use Bun for installs, tests, typechecking, builds, and executable compilation.
-- `runx` without arguments prints a deterministic platform-aware welcome.
+- The executable entrypoint is `main.go`; `cmd/` owns the single Cobra tree and
+  `pkg/` owns manifest, execution, update, maintenance, and upgrade behavior.
+  The isolated Node-compatible `scripts/runx-bin.mjs` remains only an npm
+  downloader/delegator and contains no RunX domain logic.
+- Use the Go toolchain for formatting, tests, vetting, builds, and release
+  compilation. TypeScript/Bun sources are retained as legacy reference only.
+- `runx` without arguments first performs local-only, idempotent agent
+  bootstrap: install the embedded skill in both global tool locations and
+  reconcile the bounded RunX block in both existing repository instruction
+  files, the single existing file, or a new root `AGENTS.md`. It then prints
+  `Hello Windows - runx v<version>` and may append only a validated cached
+  update notice. Help, version, agent-management, uninstall, and non-repository
+  paths do not perform repository bootstrap.
   `runx list` lists a configuration; only
   `runx run <selector>` executes a catalog command.
 - RunX-owned `run` options precede the selector; post-selector tokens are child
   arguments and must be forwarded without reinterpretation.
-- Citty owns argument parsing and command routing. Only `-h`/`--help` and root
+- Cobra owns argument parsing and command routing. Only `-h`/`--help` and root
   `-v`/`--version` have short aliases.
 - Configuration resolves by `--config`, effective cwd `runx.yaml`, then
   `~/.guiho/runx/runx.yaml`; never search parent directories.
@@ -93,11 +100,12 @@ skill, native installers, and package-local documentation.
 
 ### Commands
 
-- Typecheck: `bun run typecheck`
-- Tests: `bun test`
-- Build: `bun run build`
-- Compile local executable: `bun run binary`
-- Compile release asset matrix: `bun run binaries`
+- Format: `gofmt -w main.go cmd pkg embed devops`
+- Tests: `go test ./...`
+- Vet: `go vet ./...`
+- Build: `go build ./...`
+- Compile release asset matrix: `go run devops/build-binaries.go --version <version> --commit <commit> --build-date <RFC3339>`
+- Verify release assets: `go run devops/verify-release-assets.go`
 
 ## Semantic Project Versioning -- GUIHO Mirror
 
