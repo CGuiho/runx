@@ -1,19 +1,19 @@
 ---
 subject: runx-architecture
-description: Technical architecture for the RunX manifest, Citty command tree, automatic agent maintenance, and native distribution.
+description: Technical architecture for the RunX manifest, Cobra command tree, lifecycle workers, agent resources, upgrades, and native Go distribution.
 parent: runx-docs
 children: []
 files:
-  cli-architecture.md: Documents Citty routing, child argument ownership, shell-safe execution, startup/update lifecycle, safety invariants, and native distribution.
+  cli-architecture.md: Documents Cobra routing, strict typed manifests, child argument ownership, shell-safe execution, lifecycle workers, upgrades, and native Go distribution.
 documents:
   cli-architecture.md: Technical architecture for the first RunX CLI release.
 tags:
   - architecture
 keywords:
   - runx
-  - bun
+  - go
   - cli
-  - citty
+  - cobra
   - agent maintenance
 flags: []
 status: stable
