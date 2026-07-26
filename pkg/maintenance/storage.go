@@ -42,7 +42,7 @@ func WriteTextFileAtomic(path string, content string) error {
 	if err := os.WriteFile(tmpPath, []byte(content), 0644); err != nil {
 		return err
 	}
-	if err := os.Rename(tmpPath, path); err != nil {
+	if err := replaceFileAtomic(tmpPath, path); err != nil {
 		_ = os.Remove(tmpPath)
 		return err
 	}
