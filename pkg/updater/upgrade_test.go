@@ -1,7 +1,9 @@
 package updater
 
 import (
+	"crypto/sha256"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -36,7 +38,8 @@ func TestUpgradeSelf_UpToDate(t *testing.T) {
 			Prerelease: false,
 			Draft:      false,
 			Assets: []update.GitHubAsset{
-				{Name: "runx-windows-x64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
+				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
+				{Name: "checksums.txt", BrowserDownloadURL: "https://example.com/checksums"},
 			},
 		},
 	}
@@ -68,7 +71,8 @@ func TestUpgradeSelf_DryRun(t *testing.T) {
 			Prerelease: false,
 			Draft:      false,
 			Assets: []update.GitHubAsset{
-				{Name: "runx-windows-x64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
+				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
+				{Name: "checksums.txt", BrowserDownloadURL: "https://example.com/checksums"},
 			},
 		},
 	}
@@ -101,7 +105,8 @@ func TestUpgradeSelf_FullUpgrade(t *testing.T) {
 			Prerelease: false,
 			Draft:      false,
 			Assets: []update.GitHubAsset{
-				{Name: "runx-windows-x64.exe", BrowserDownloadURL: "https://example.com/win2.exe"},
+				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win2.exe"},
+				{Name: "checksums.txt", BrowserDownloadURL: "https://example.com/checksums"},
 			},
 		},
 	}
@@ -118,6 +123,8 @@ func TestUpgradeSelf_FullUpgrade(t *testing.T) {
 	execPath := filepath.Join(tempDir, "runx.exe")
 	require.NoError(t, os.WriteFile(execPath, []byte{0x4D, 0x5A, 0x01}, 0755))
 
+	binary := []byte{0x4D, 0x5A, 0x02}
+	hash := sha256.Sum256(binary)
 	opts := UpgradeOptions{
 		CurrentVersion: "1.0.0",
 		ExecutablePath: execPath,
@@ -125,7 +132,10 @@ func TestUpgradeSelf_FullUpgrade(t *testing.T) {
 		GOARCH:         "amd64",
 		APIURL:         server.URL,
 		DownloadFunc: func(url string) ([]byte, error) {
-			return []byte{0x4D, 0x5A, 0x02}, nil // Valid MZ binary
+			if url == "https://example.com/checksums" {
+				return []byte(fmt.Sprintf("%x  runx-windows-amd64.exe\n", hash)), nil
+			}
+			return binary, nil
 		},
 		VerifyFunc: func(path, expectedVersion string) error {
 			return nil
