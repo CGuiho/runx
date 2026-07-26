@@ -16,4 +16,4 @@ flags: []
 status: stable
 ---
 
-GitHub metadata and CI workflows for the RunX repository.
+GitHub automation validates and publishes the production Go implementation.
