@@ -20,7 +20,7 @@ func TestRunUpdateWorker(t *testing.T) {
 			Prerelease: false,
 			Draft:      false,
 			Assets: []GitHubAsset{
-				{Name: "runx-windows-x64.exe", BrowserDownloadURL: "https://example.com/win2.exe"},
+				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win2.exe"},
 			},
 		},
 	}
