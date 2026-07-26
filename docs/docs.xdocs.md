@@ -4,6 +4,7 @@ description: Durable requirements, architecture, decisions, plans, task specific
 parent: runx
 children:
   - runx-requirements
+  - runx-rfc
   - runx-architecture
   - runx-decisions
   - runx-plans
