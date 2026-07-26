@@ -1,132 +1,102 @@
-/**
- * @copyright Copyright © 2026 GUIHO Technologies as represented by Cristóvão GUIHO. All Rights Reserved.
- */
+//go:build ignore
 
 package main
 
 import (
-	"bytes"
-	"encoding/json"
+	"archive/zip"
+	"bufio"
+	"crypto/sha256"
+	"encoding/hex"
+	"flag"
 	"fmt"
-	"log"
+	"io"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strings"
-	"unicode/utf8"
 )
 
-var ExpectedReleaseAssetNames = []string{
-	"runx-linux-arm64",
-	"runx-linux-x64",
-	"runx-linux-x64-baseline",
-	"runx-linux-x64-modern",
-	"runx-darwin-arm64",
-	"runx-darwin-x64",
-	"runx-darwin-x64-baseline",
-	"runx-darwin-x64-modern",
-	"runx-windows-arm64.exe",
-	"runx-windows-x64.exe",
-	"runx-windows-x64-baseline.exe",
-	"runx-windows-x64-modern.exe",
-	"guiho-s-runx.md",
-	"guiho-i-runx.md",
-}
-
-func getRootDir() string {
-	dir, err := os.Getwd()
-	if err != nil {
-		log.Fatalf("failed to get working directory: %v", err)
-	}
-	if _, err := os.Stat(filepath.Join(dir, "go.mod")); err == nil {
-		return dir
-	}
-	parent := filepath.Dir(dir)
-	if _, err := os.Stat(filepath.Join(parent, "go.mod")); err == nil {
-		return parent
-	}
-	return dir
-}
-
-func verifyMarkdownAsset(binDir, assetName, expectedName string) {
-	path := filepath.Join(binDir, assetName)
-	data, err := os.ReadFile(path)
-	if err != nil {
-		log.Fatalf("failed to read markdown asset %s: %v", assetName, err)
-	}
-	if len(data) == 0 {
-		log.Fatalf("Release Markdown asset is empty: %s", assetName)
-	}
-	if len(data) >= 2 && data[0] == 0x4d && data[1] == 0x5a {
-		log.Fatalf("Release Markdown asset has executable header: %s", assetName)
-	}
-	if bytes.IndexByte(data, 0) != -1 {
-		log.Fatalf("Release Markdown asset contains binary NUL bytes: %s", assetName)
-	}
-	if !utf8.Valid(data) {
-		log.Fatalf("Release Markdown asset is not valid UTF-8: %s", assetName)
-	}
-	text := strings.ReplaceAll(string(data), "\r\n", "\n")
-	if !strings.HasPrefix(text, "---\n") {
-		log.Fatalf("Release Markdown asset does not start with YAML frontmatter: %s", assetName)
-	}
-	pattern := fmt.Sprintf(`(?m)^name:\s*%s\s*$`, regexp.QuoteMeta(expectedName))
-	matched, err := regexp.MatchString(pattern, text)
-	if err != nil || !matched {
-		log.Fatalf("Release Markdown asset has invalid frontmatter identity: %s", assetName)
-	}
-}
+var expected = []string{"checksums.txt", "guiho-i-runx.md", "guiho-s-runx.zip", "runx-darwin-amd64", "runx-darwin-arm64", "runx-linux-amd64", "runx-linux-arm64", "runx-linux-armv6", "runx-linux-armv7", "runx-windows-amd64.exe", "runx-windows-arm64.exe"}
 
 func main() {
-	root := getRootDir()
-	binDir := filepath.Join(root, "bin")
-
-	entries, err := os.ReadDir(binDir)
+	directory := flag.String("directory", "bundle", "asset directory")
+	flag.Parse()
+	entries, err := os.ReadDir(*directory)
 	if err != nil {
-		log.Fatalf("failed to read bin directory: %v", err)
+		fatalf("read assets: %v", err)
 	}
-
-	var observed []string
+	observed := []string{}
 	for _, entry := range entries {
 		if !entry.IsDir() {
 			observed = append(observed, entry.Name())
 		}
 	}
 	sort.Strings(observed)
-
-	expected := append([]string(nil), ExpectedReleaseAssetNames...)
 	sort.Strings(expected)
-
-	if strings.Join(observed, ",") != strings.Join(expected, ",") {
-		log.Fatalf("Expected exactly %d release assets.\nExpected: %s\nObserved: %s",
-			len(expected), strings.Join(expected, ", "), strings.Join(observed, ", "))
+	if strings.Join(observed, "\n") != strings.Join(expected, "\n") {
+		fatalf("expected exactly 11 assets\nexpected: %s\nobserved: %s", strings.Join(expected, ", "), strings.Join(observed, ", "))
 	}
-
-	markdownAssets := []struct {
-		assetName    string
-		expectedName string
-	}{
-		{"guiho-s-runx.md", "guiho-s-runx"},
-		{"guiho-i-runx.md", "guiho-i-runx"},
+	if err := verifyChecksums(*directory); err != nil {
+		fatalf("verify checksums: %v", err)
 	}
-
-	for _, item := range markdownAssets {
-		verifyMarkdownAsset(binDir, item.assetName, item.expectedName)
-	}
-
-	outputStruct := struct {
-		Count  int      `json:"count"`
-		Assets []string `json:"assets"`
-	}{
-		Count:  len(observed),
-		Assets: observed,
-	}
-
-	jsonBytes, err := json.MarshalIndent(outputStruct, "", "  ")
+	archive, err := zip.OpenReader(filepath.Join(*directory, "guiho-s-runx.zip"))
 	if err != nil {
-		log.Fatalf("failed to marshal verification output: %v", err)
+		fatalf("open skill archive: %v", err)
 	}
-
-	fmt.Println(string(jsonBytes))
+	defer archive.Close()
+	found := false
+	for _, file := range archive.File {
+		if file.Name == "guiho-s-runx/SKILL.md" {
+			found = true
+		}
+	}
+	if !found {
+		fatalf("skill archive is missing guiho-s-runx/SKILL.md")
+	}
+	fmt.Println("verified exactly 11 release assets and every SHA-256 checksum")
 }
+func verifyChecksums(directory string) error {
+	file, err := os.Open(filepath.Join(directory, "checksums.txt"))
+	if err != nil {
+		return err
+	}
+	defer file.Close()
+	seen := map[string]bool{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		fields := strings.Fields(scanner.Text())
+		if len(fields) != 2 {
+			return fmt.Errorf("invalid checksum line %q", scanner.Text())
+		}
+		name := strings.TrimPrefix(fields[1], "*")
+		if name == "checksums.txt" {
+			return fmt.Errorf("checksums.txt must not hash itself")
+		}
+		input, err := os.Open(filepath.Join(directory, name))
+		if err != nil {
+			return err
+		}
+		hash := sha256.New()
+		_, copyErr := io.Copy(hash, input)
+		closeErr := input.Close()
+		if copyErr != nil {
+			return copyErr
+		}
+		if closeErr != nil {
+			return closeErr
+		}
+		actual := hex.EncodeToString(hash.Sum(nil))
+		if !strings.EqualFold(actual, fields[0]) {
+			return fmt.Errorf("checksum mismatch for %s", name)
+		}
+		seen[name] = true
+	}
+	if err := scanner.Err(); err != nil {
+		return err
+	}
+	if len(seen) != 10 {
+		return fmt.Errorf("expected 10 checksum entries, got %d", len(seen))
+	}
+	return nil
+}
+func fatalf(format string, values ...any) { fmt.Fprintf(os.Stderr, format+"\n", values...); os.Exit(1) }
