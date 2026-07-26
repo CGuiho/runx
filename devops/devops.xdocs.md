@@ -1,32 +1,36 @@
 ---
 subject: runx-devops
-description: Native release-asset compilation and direct RunX installer scripts.
+description: Go release builders, asset verification, release-note extraction, and checksum-verifying direct installers for RunX.
 parent: runx
 children: []
 files:
-  build-binaries.ts: Cross-compiles twelve RFC-named native binaries and adds the two exact .md agent assets.
-  extract-release-notes.ts: Extracts one exact version section from CHANGELOG.md and fails closed when the heading or notes are missing.
-  extract-release-notes.spec.ts: Verifies exact heading boundaries and exclusion of frontmatter and other release sections.
-  verify-release-assets.ts: Fails on missing, duplicate, extra, legacy, empty, binary, or misidentified release assets.
-  installers.spec.ts: Verifies latest-alias and exact-tag URLs, installer progress, resources, executable version matching, Markdown rejection, and no POSIX Bun dependency.
-  workflows.spec.ts: Verifies that ordinary CI smokes latest without source-version coupling and Publish accepts the exact tag only after release assets exist.
-  install.ps1: Resolves an exact Windows release, downloads and validates a compatible asset, transactionally replaces the canonical executable, verifies its version, and rolls back on failure.
-  install.sh: Bash installer for Linux or Darwin with stable latest-download resolution, exact tagged releases, progress, validation, PATH, dual skills, instructions, verification, and rollback.
+  build-binaries.go: Builds the eight standard pure-Go targets, skill ZIP, instruction Markdown, and deterministic checksum manifest.
+  verify-release-assets.go: Verifies the exact 11-file set, every SHA-256 entry, and the skill archive structure.
+  extract-release-notes.go: Extracts one exact version section from CHANGELOG.md for protected-tag publication.
+  install.ps1: Detects Windows AMD64 or ARM64, verifies checksums, replaces transactionally, installs skills, and verifies the version.
+  install.sh: Detects Linux AMD64, ARM64, ARMv7, ARMv6 or Darwin targets, verifies checksums, replaces transactionally, installs skills, and verifies the version.
+  build-binaries.ts: Legacy Bun 14-asset builder retained as migration history and not invoked by current scripts or workflows.
+  verify-release-assets.ts: Legacy Bun asset verifier retained as migration history and not invoked by current scripts or workflows.
+  extract-release-notes.ts: Legacy Bun release-note extractor retained as migration history and not invoked by current workflows.
+  extract-release-notes.spec.ts: Historical Bun release-note tests.
+  installers.spec.ts: Historical Bun installer tests for the retired asset contract.
+  workflows.spec.ts: Historical Bun workflow tests for the retired release path.
 documents: {}
 tags:
   - devops
+  - go
   - installers
   - releases
 keywords:
   - runx
-  - windows
-  - darwin
-  - linux
-  - native binary
+  - checksums
+  - cross compilation
+  - Raspberry Pi
+  - 11 artifacts
 flags: []
 status: stable
 ---
 
-These scripts build and verify the exact fourteen-asset release, validate the
-downloaded Markdown resource contract, create exact version-only GitHub Release
-notes, and support direct installation without npm or Bun.
+The Go programs and shell installers are current release authority. They build
+and verify eight executables plus `guiho-s-runx.zip`, `guiho-i-runx.md`, and
+`checksums.txt`. TypeScript files in this directory are retained history only.
