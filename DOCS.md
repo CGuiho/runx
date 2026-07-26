@@ -1,250 +1,207 @@
 ---
-name: RunX Documentation
-purpose: Define the canonical supported RunX CLI contract.
-description: Complete reference for command routing, YAML configuration, startup, help, output, agents, upgrades, installation, and release assets.
+name: RunX CLI Reference
+purpose: Define the complete current behavior of the native RunX CLI.
+description: Cobra routing, strict manifest v2, configuration precedence, deterministic output, execution, agents, lifecycle workers, upgrades, installers, and release assets.
 created: 2026-07-12
-flags:
-  - canonical
+owner: runx
+flags: []
 tags:
   - cli
-  - reference
+  - go
+  - documentation
 keywords:
-  - RFC 0034
-  - runx.yaml
-  - agent namespace
-  - release assets
-owner: runx
+  - runx
+  - cobra
+  - manifest v2
+  - release
 ---
 
-# RunX Documentation
+# RunX CLI Reference
 
-## Runtime Contract
+## Runtime Authority
 
-RunX uses Bun, strict ESM TypeScript, raw Citty, and TypeBox. Core source is
-Bun-only. The isolated npm bootstrap is Node-compatible because it must work
-before Bun is installed.
+`main.go`, `cmd/`, and `pkg/` are the RunX production implementation. Cobra is
+the only command and flag router. The Node npm entrypoint downloads and delegates
+to a native Go release; it contains no domain logic. Retained Bun/TypeScript
+files are legacy reference and are not used by CI or release publication.
 
-No arguments print a deterministic bordered welcome containing RunX, its
-purpose, GUIHO identity, platform, architecture, version, and help guidance:
+The build injects `version`, `commit`, `buildDate`, and `buildTarget`. The target
+is retained during self-upgrade so Linux ARMv6 and ARMv7 installations select
+the same compatible architecture.
 
-```text
-╔════════════════════════════════════════════════════════╗
-║  RUNX                                                  ║
-║  Documented command catalog                            ║
-║  GUIHO · Cristóvão GUIHO                               ║
-╚════════════════════════════════════════════════════════╝
-```
-
-The platform label matches the runtime operating system.
-
-The foreground reads `~/.guiho/runx/cache.json` and never waits for network
-work. A valid cache remains fresh for four hours. When another check is needed,
-RunX atomically acquires an ownership-safe lease before it detaches exactly one
-worker for the global cache directory. The worker validates GitHub release data,
-atomically refreshes the cache, stops remote work after 15 seconds, and releases
-its lease on every outcome. A 30-second stale lease can be reclaimed; malformed
-or missing lease metadata uses the same delayed recovery. When a decoded cache
-announces an update and its validated latest SemVer is newer than the running
-version, RunX appends:
+## Command Tree
 
 ```text
-  ⚠ New version available: v<version>
-    Run `runx upgrade` to update.
+runx
+├── list
+├── describe <uid-or-selector>
+├── run [options] <selector> [--] [child arguments...]
+├── check
+├── init
+├── agent
+│   ├── skill install|uninstall|update|list|show
+│   ├── instruction apply|remove|update|show
+│   └── prompt list|show
+├── upgrade
+│   ├── check
+│   └── list
+└── uninstall
 ```
 
-## Configuration
+Every scope exposes `-h`/`--help`, `--help-tree`,
+`--help-tree-depth <positive-integer>`, and `--help-docs`. Root alone exposes
+`-v`/`--version`. The Unicode tree and Markdown help traverse the live Cobra
+tree, so separate static command metadata cannot drift.
 
-RunX loads YAML only. Resolution is:
+## Startup
 
-1. `--config <path>`;
+With no arguments RunX prints:
+
+```text
+Hello Windows - runx v<version>
+```
+
+A successful bare invocation first performs a synchronous, local-only agent
+bootstrap. It installs the embedded skill under both
+`~/.agents/skills/guiho-s-runx` and `~/.claude/skills/guiho-s-runx`, locates the
+current repository root, and reconciles the bounded RunX instruction block in
+both existing `AGENTS.md` and `CLAUDE.md`, the one file that exists, or a newly
+created `AGENTS.md`. It preserves unmanaged bytes and the existing line-ending
+style, rejects malformed or duplicate markers, uses atomic replacement, and is
+idempotent. A non-repository directory still receives global skills but no
+instruction file. Help, version, agent-management, and uninstall paths skip the
+bootstrap.
+
+A newer stable version may add a validated notice read from
+`~/.guiho/runx/cache.json`. Foreground startup performs no remote request.
+Ordinary invocations start hidden detached workers for a bounded release check
+and automatic agent maintenance. A cache lease coalesces simultaneous update
+workers and stale leases recover automatically. Internal worker commands are
+hidden from help and cannot recursively start workers.
+
+## Configuration Resolution
+
+Commands that use a catalog resolve exactly one YAML file:
+
+1. `--config <path>`, relative to effective cwd when needed;
 2. `<effective-cwd>/runx.yaml`;
 3. `~/.guiho/runx/runx.yaml`.
 
-Whenever loaded, the absolute path is reported as:
+RunX never searches ancestors and never merges configuration files. Successful
+human and JSON inspection identifies the absolute configuration path.
 
-```text
-configuration file loaded: <absolute-path>
-```
+## Manifest v2
 
-The complete manifest and nested records are TypeBox-decoded. Invalid or absent
-configuration exits `3`.
+The root fields are:
 
-### Manifest V2
+- `version`: semantic version whose major is `2`;
+- `namespace`: identifier matching `^[a-z][a-z0-9-]*$`;
+- `scripts.directory`: a relative subdirectory contained by the catalog;
+- optional `parent`: a relative path or full HTTPS GitHub blob/raw URL;
+- `commands`: recursive command leaves and groups.
 
-Every catalog uses manifest major version 2 with required `namespace`,
-`scripts.directory`, optional `parent`, and recursive `commands`. `project`, a
-top-level `groups` map, and `group` on command leaves are invalid legacy keys.
+A command leaf requires `uid`, `id`, `summary`, `description`, and `command`.
+Optional fields are `cwd`, `shell`, `tags`, and `confirm`. Shell is `auto`,
+`bash`, `sh`, `powershell`, or `cmd`; confirmation is `never` or `always`.
 
-Each `commands` entry is either an executable command (`uid`, `id`, summaries,
-and command fields) or a group (`group`, `summary`) with exactly one of nested
-`commands` or `runx`. Sibling command IDs, group names, and mounted namespaces
-share one collision domain. The catalog namespace cannot collide with a
-top-level entry, and composed UIDs/selectors are globally unique.
+A group requires `group`, `summary`, and exactly one of nested `commands` or a
+`runx` child reference. Child catalogs must declare the reciprocal parent.
+Relative foreign references cannot escape their GitHub owner/repository/ref.
+Foreign reads have a 10-second client deadline, a one-MiB limit, cycle
+protection, and a maximum graph depth of 32.
 
-`runx` and `parent` accept relative paths or full HTTPS GitHub blob/raw URLs.
-The group name aliases the mounted child namespace. A child must point back to
-the exact parent identity within the same source kind. A local working copy may
-mount a foreign child only after RunX loads and validates the declared upstream
-foreign parent and confirms it mounts that child. Local children execute relative to their own
-catalog directory; foreign children are marked `foreign` and execute relative
-to the local mount root. GitHub fetches have a ten-second timeout, a one-MiB
-limit, no persistent cache, cycle detection, and a maximum depth of 32.
-Foreign-relative references cannot escape their GitHub owner/repository/ref;
-use a full URL for an intentional cross-root mount.
+UIDs, canonical selectors, and unique ID shorthands share one collision domain.
+Canonical selectors use slash-separated group paths. Command and scripts paths
+are containment-validated before `check`, `list`, or `describe` succeeds.
 
-Canonical selectors join nested group and mount names, for example
-`worker-alias/build/compile`. Unique UIDs remain preferred for automation.
-Loading a child directly validates its declared parent but does not implicitly
-replace the child with the parent. RunX follows only explicit graph edges and
-does not search ancestor directories.
+YAML uses `go.yaml.in/yaml/v3` with `KnownFields(true)`. Multiple documents and
+unknown fields are rejected before semantic validation.
 
-UIDs, canonical selectors, and usable unique-ID shorthands share one collision
-domain. Same-command aliases may coincide, but different leaves cannot shadow
-one another. Scripts directories and every effective command cwd are validated
-during graph composition, before check/list can report a catalog as valid.
+## Inspection And Execution
 
-`runx init` derives the namespace from the directory that will contain the
-target configuration (including nested `--config` paths), lowercases it,
-collapses invalid runs to hyphens, trims edges, prefixes leading digits with
-`n-`, and falls back to `runx`. It validates the complete rendered v2 document
-before an atomic write.
+`check`, `list`, `describe`, help, agent operations, and `run --dry-run` never
+spawn a configured command. `--format json` emits one stable JSON document to
+stdout; diagnostics use stderr.
 
-## Commands And Help
+Only `runx run` executes a selected command. RunX-owned options precede the
+selector. Flag parsing stops at the selector and every later token is forwarded
+without RunX reinterpretation. POSIX shells use positional parameters,
+PowerShell uses JSON-backed splatting, and cmd uses environment-backed argument
+transport. Child values are never interpolated into generated shell source.
 
-The public command tree is the catalog shown in [README.md](README.md). Citty is
-the only parser and router. The only short flags are `-h` and root `-v`.
+`confirm: always` requires `--yes` before the selector. Child process exit codes
+are preserved.
 
-Every root, group, and leaf supports:
+## Agent Resources
 
-- standard help with usage, description, positionals, flags, and examples;
-- `--help-tree`, using Unicode box-drawing branches;
-- `--help-tree-depth <positive-integer>`;
-- redirect-safe Markdown through `--help-docs`.
+The Go binary embeds the RunX skill and instruction prompt. Skill install/update
+targets both `.agents/skills/guiho-s-runx` and
+`.claude/skills/guiho-s-runx`; `--local` selects the effective project instead
+of the user home. Writes use temporary files and Windows-safe atomic replacement.
 
-Only `runx run <selector>` executes catalog code. RunX options belong before the
-selector; every token after the selector belongs to the child command. One
-immediate `--` after the selector acts as a delimiter and is removed. Listing,
-describing, checking, help, initialization, agent operations, upgrade
-inspection, and dry runs do not execute catalog code.
+Instruction actions preserve all unmanaged text and reconcile the bounded RunX
+block in `AGENTS.md`, `CLAUDE.md`, both existing files, or a newly created
+`AGENTS.md`. Malformed markers fail without modifying the instruction file.
+Background automatic maintenance is silent and failure-isolated.
 
-Shell adapters keep forwarded values as data. Bash and sh use positional
-parameters, PowerShell uses JSON-backed array splatting, and cmd uses a
-short-lived delayed-expansion-disabled wrapper with environment-backed values.
-Text dry runs show an indexed argument list and JSON dry runs expose a separate
-`arguments` array.
+## Updates And Self-Upgrade
 
-## Output And Exit Codes
+`upgrade check` and `upgrade list` read GitHub Releases through a finite-timeout
+HTTP client. Listing exhausts API pagination before applying the visible
+`--page`/`--size` slice. JSON retains complete release and compatible-asset
+metadata.
 
-Text results use stdout and diagnostics use stderr. JSON mode emits one valid
-JSON document on stdout; configuration reports and diagnostics remain on
-stderr.
+`upgrade` resolves the embedded build target, downloads the exact binary and
+`checksums.txt`, verifies SHA-256 and native executable magic, and only then
+changes the installed executable. Unix replacement uses same-filesystem staged
+renames with verification and rollback. A running Windows executable starts a
+hidden helper that waits for the parent process to exit, replaces and verifies
+the binary, restores the backup on failure, and records a recovery error log.
+Every terminal failure reports an exact-version installer recovery command.
+
+## Installers And npm Bootstrap
+
+`devops/install.sh` detects AMD64, ARM64, ARMv7, ARMv6, and Darwin targets.
+`devops/install.ps1` detects Windows AMD64 and ARM64. Both display target
+metadata, use download progress, verify binary and skill archive checksums,
+replace transactionally, install both global skill copies, reconcile existing
+project instructions, and verify the installed version.
+
+`scripts/runx-bin.mjs` is a Node-compatible npm bootstrap. It downloads the
+package version's native artifact and checksum manifest into
+`~/.guiho/runx/npm/<version>/`, verifies SHA-256, and delegates stdio,
+environment, arguments, signals, and exit status.
+
+## Exit Codes
 
 | Code | Meaning |
 | ---: | --- |
-| `0` | Success |
-| `1` | Unexpected operational failure |
-| `2` | Usage or structured flag validation failure |
-| `3` | Configuration resolution or decoding failure |
-| `4` | Release or network failure |
-| `5` | Installation, upgrade, or filesystem mutation failure |
-| `130` | Interruption |
+| `0` | Success. |
+| `1` | Unexpected or operational failure. |
+| `2` | Usage, flag, or approval failure. |
+| `3` | Configuration resolution, decoding, or semantic validation failure. |
+| `4` | Remote release or network failure. |
+| `5` | Installation, upgrade, or filesystem mutation failure. |
+| child | `run` preserves the configured child process exit code. |
 
-An executed catalog command preserves its exact delegated exit code.
+## Release Contract
 
-## Agent Integration
-
-Skill install, update, and uninstall default to global scope and target both:
+`devops/build-binaries.go` produces exactly:
 
 ```text
-~/.agents/skills/guiho-s-runx
-~/.claude/skills/guiho-s-runx
-```
-
-Use `--local` for the corresponding project-local paths.
-
-Ordinary RunX commands schedule a hidden detached worker that compares the
-bundled skill with both global copies and rewrites only missing or stale
-targets. The worker finds the nearest existing `AGENTS.md` from effective
-`--cwd`; when none exists in an ancestor, it creates `AGENTS.md` at effective
-cwd. Reconciliation is atomic, migrates legacy RunX markers, preserves content
-outside managed markers, and is silent when no change is required. Worker
-failures never change foreground output or exit status.
-
-Instruction actions manage both `AGENTS.md` and `CLAUDE.md` when both exist,
-the existing one when only one exists, and create `AGENTS.md` when neither
-exists. The exact idempotent boundaries are:
-
-```text
-<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->
-<!-- END RUNX -->
-```
-
-The canonical prompt is `guiho-i-runx`. `agent prompt list --names` prints raw
-names; `agent prompt show <id>` prints only the raw prompt.
-
-## Upgrade And Installation
-
-`runx upgrade` accepts `--version`, `--arch`, `--variant`, `--dry-run`, and
-`--format`. x64 defaults to `baseline`. `upgrade list` returns the complete
-published catalog, including labeled prereleases, by default. Positive
-`--page` and `--per-page` values request an explicit view; `--pre-releases` is
-accepted but is unnecessary because prereleases are never hidden.
-
-Replacement is transactional: download, native-format validation, backup,
-replacement, version verification, rollback on failure, agent-skill refresh,
-instruction reconciliation, then cleanup.
-
-Both direct installers show target metadata and download progress, configure
-PATH, install both global skill copies, reconcile project instructions, and
-verify the final version.
-
-The canonical POSIX bootstrap is:
-
-```sh
-curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
-```
-
-The PowerShell installer reads and writes instruction files as strict UTF-8
-without a byte-order mark. Reconciliation preserves the file's newline style,
-removes canonical, legacy, damaged, or duplicate RunX managed blocks, and then
-writes exactly one canonical block. Its verification probe disables both
-background workers so installation cannot race a second instruction write.
-
-## Npm Bootstrap
-
-`scripts/runx-bin.mjs` detects platform and architecture, chooses the exact
-versioned native asset, caches it under `~/.guiho/runx/npm/<version>/`, applies
-Unix execute permissions, delegates args/stdin/stdout/stderr/environment, and
-preserves the native exit code. It contains no RunX domain logic.
-
-## Release Assets
-
-Every release contains exactly fourteen assets: twelve native binaries and two
-agent assets.
-
-```text
+runx-linux-amd64
 runx-linux-arm64
-runx-linux-x64
-runx-linux-x64-baseline
-runx-linux-x64-modern
+runx-linux-armv7
+runx-linux-armv6
+runx-darwin-amd64
 runx-darwin-arm64
-runx-darwin-x64
-runx-darwin-x64-baseline
-runx-darwin-x64-modern
+runx-windows-amd64.exe
 runx-windows-arm64.exe
-runx-windows-x64.exe
-runx-windows-x64-baseline.exe
-runx-windows-x64-modern.exe
-guiho-s-runx.md
+guiho-s-runx.zip
 guiho-i-runx.md
+checksums.txt
 ```
 
-The Markdown suffix is part of the public GitHub Release filename contract.
-Installers retain the standard installed skill filename `SKILL.md` and use the
-instruction asset contents when reconciling managed instruction blocks. Before
-either write, installers reject empty, executable, binary, invalid UTF-8, or
-misidentified Markdown payloads.
-
-Release descriptions contain only the matching `## <version> - <date>`
-changelog section. The publish workflow fails closed when that exact section is
-missing and refreshes the notes when rerunning an existing release.
+All binaries use `CGO_ENABLED=0`; AMD64 uses V1, ARM64 uses V8.0, and 32-bit
+ARM uses its named GOARM level. AMD64 V2/V3/V4 and the former 14-asset matrix
+are not supported by the current contract.
