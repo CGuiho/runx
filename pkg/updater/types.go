@@ -1,14 +1,16 @@
 package updater
 
+import "net/http"
+
 type UpgradeEnvelope struct {
-	SchemaVersion int                   `json:"schemaVersion"`
-	Command       string                `json:"command"`
-	Outcome       string                `json:"outcome"` // "upgraded", "up-to-date", "dry-run", "rolled-back", "failed"
-	Plan          *UpgradePlan          `json:"plan,omitempty"`
-	Events        []UpgradeEvent        `json:"events"`
-	Result        *UpgradeResult        `json:"result,omitempty"`
-	Recovery      RecoveryInstructions  `json:"recovery"`
-	Error         *UpgradeError         `json:"error,omitempty"`
+	SchemaVersion int                  `json:"schemaVersion"`
+	Command       string               `json:"command"`
+	Outcome       string               `json:"outcome"` // "upgraded", "up-to-date", "dry-run", "rolled-back", "failed"
+	Plan          *UpgradePlan         `json:"plan,omitempty"`
+	Events        []UpgradeEvent       `json:"events"`
+	Result        *UpgradeResult       `json:"result,omitempty"`
+	Recovery      RecoveryInstructions `json:"recovery"`
+	Error         *UpgradeError        `json:"error,omitempty"`
 }
 
 type UpgradePlan struct {
@@ -19,6 +21,9 @@ type UpgradePlan struct {
 	AssetName      string `json:"assetName"`
 	AssetURL       string `json:"assetUrl"`
 	ExecutablePath string `json:"executablePath"`
+	BuildTarget    string `json:"buildTarget"`
+	ChecksumsURL   string `json:"checksumsUrl"`
+	ExpectedSHA256 string `json:"expectedSha256,omitempty"`
 }
 
 type UpgradeEvent struct {
@@ -59,10 +64,14 @@ type UpgradeOptions struct {
 	ExecutablePath   string
 	GOOS             string
 	GOARCH           string
+	BuildTarget      string
 	APIURL           string
+	HTTPClient       *http.Client
 	FileOps          FileOperations
 	OnPlan           func(plan UpgradePlan)
 	OnEvent          func(event UpgradeEvent)
 	VerifyFunc       func(execPath, expectedVersion string) error
 	DownloadFunc     func(url string) ([]byte, error)
+	MaintenanceCWD   string
+	Spawn            func(executable string, args ...string) error
 }
