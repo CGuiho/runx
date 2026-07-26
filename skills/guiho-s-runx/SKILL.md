@@ -90,10 +90,18 @@ current executable contract.
 
 ## Automatic Agent Maintenance
 
+Bare `runx` synchronously ensures this embedded skill is installed in both
+global agent-tool directories before showing the welcome. Inside a Git
+repository it also reconciles the bounded RunX instruction block at the
+repository root: both `AGENTS.md` and `CLAUDE.md` when both exist, the one that
+exists, or a new `AGENTS.md`. Unmanaged content and line endings are preserved;
+malformed markers fail safely. Help, version, agent-management, uninstall, and
+non-repository paths do not perform repository instruction bootstrap.
+
 Ordinary RunX commands schedule a silent, non-blocking worker that keeps the
-bundled skill current in both global agent-tool directories and reconciles one
-compact managed block in the nearest `AGENTS.md`. A current installation is not
-rewritten. Automatic failures never fail or pollute the foreground command.
+bundled skill current and reconciles the same repository-root instruction
+targets. A current installation is not rewritten. Background failures never
+fail or pollute the foreground command.
 
 Explicit `runx agent ...` commands remain the manual repair and local-scope
 interface. Explicit agent-resource removal and `runx uninstall` do not schedule
