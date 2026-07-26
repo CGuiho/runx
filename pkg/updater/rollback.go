@@ -82,6 +82,7 @@ func PerformReplacementAndRollback(
 	osName string,
 	fileOps FileOperations,
 	verifyFunc func(path, expectedVersion string) error,
+	maintenanceCWD string,
 ) (*UpgradeResult, string, error) {
 	if fileOps == nil {
 		fileOps = SystemFileOps{}
@@ -99,12 +100,23 @@ func PerformReplacementAndRollback(
 	if err := os.WriteFile(tempPath, binaryData, 0755); err != nil {
 		return nil, "download_invalid", fmt.Errorf("failed to write temporary executable: %w", err)
 	}
+	preserveTemporary := false
 	defer func() {
-		_ = fileOps.Remove(tempPath)
+		if !preserveTemporary {
+			_ = fileOps.Remove(tempPath)
+		}
 	}()
 
 	if err := fileOps.MakeExecutable(tempPath); err != nil {
 		return nil, "download_invalid", fmt.Errorf("failed to make executable: %w", err)
+	}
+
+	if osName == "windows" && isCurrentExecutable(execPath) {
+		if err := stageWindowsReplacement(os.Getpid(), execPath, tempPath, targetVersion, maintenanceCWD); err != nil {
+			return nil, "replace_failed", fmt.Errorf("stage Windows replacement: %w", err)
+		}
+		preserveTemporary = true
+		return &UpgradeResult{InstalledVersion: targetVersion, CleanupDeferred: true}, "", nil
 	}
 
 	// Two-phase rename
@@ -146,4 +158,20 @@ func PerformReplacementAndRollback(
 		InstalledVersion: targetVersion,
 		CleanupDeferred:  cleanupDeferred,
 	}, "", nil
+}
+
+func isCurrentExecutable(path string) bool {
+	current, err := os.Executable()
+	if err != nil {
+		return false
+	}
+	currentInfo, err := os.Stat(current)
+	if err != nil {
+		return false
+	}
+	targetInfo, err := os.Stat(path)
+	if err != nil {
+		return false
+	}
+	return os.SameFile(currentInfo, targetInfo)
 }
