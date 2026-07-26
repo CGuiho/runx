@@ -1,6 +1,7 @@
 package update
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -26,7 +27,7 @@ func GetDefaultCachePath() string {
 	if err != nil {
 		home = "."
 	}
-	return filepath.Join(home, ".runx", "update-cache.json")
+	return filepath.Join(home, ".guiho", "runx", "cache.json")
 }
 
 func ReadCache(path string) (*UpdateCache, error) {
@@ -38,7 +39,9 @@ func ReadCache(path string) (*UpdateCache, error) {
 		return nil, err
 	}
 	var cache UpdateCache
-	if err := json.Unmarshal(data, &cache); err != nil {
+	decoder := json.NewDecoder(bytes.NewReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&cache); err != nil {
 		return nil, fmt.Errorf("invalid update cache JSON: %w", err)
 	}
 	return &cache, nil
@@ -62,7 +65,11 @@ func WriteCache(path string, cache *UpdateCache) error {
 		return err
 	}
 
-	return os.Rename(tmpPath, path)
+	if err := replaceFileAtomic(tmpPath, path); err != nil {
+		_ = os.Remove(tmpPath)
+		return err
+	}
+	return nil
 }
 
 func IsCacheFresh(cache *UpdateCache, ttl time.Duration) bool {
