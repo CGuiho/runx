@@ -103,5 +103,12 @@ commands:
 	resolved, ok := catalog.Resolve("worker/build")
 	require.True(t, ok)
 	assert.Equal(t, "child-build", resolved.UID)
+	resolved, ok = catalog.Resolve("1")
+	require.True(t, ok)
+	assert.Equal(t, "child-build", resolved.UID)
+	for _, selector := range []string{"0", "-1", "01", "2"} {
+		_, ok = catalog.Resolve(selector)
+		assert.False(t, ok)
+	}
 	assert.Len(t, catalog.Children, 1)
 }

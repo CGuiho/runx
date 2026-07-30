@@ -5,11 +5,11 @@ parent: runx
 children: []
 files:
   root.go: Constructs fresh Cobra trees, maps exits, bootstraps bare-invocation agent integration, injects dependencies and build information, and schedules hidden lifecycle workers.
-  catalog.go: Implements real manifest-backed check, list, describe, run, and init commands with deterministic text and JSON.
+  catalog.go: Implements real manifest-backed check, aligned list, numeric-index-aware describe/run, and init commands with deterministic text and JSON.
   help.go: Traverses live Cobra commands to produce Unicode tree and stable Markdown help.
   agent.go: Implements embedded skill, instruction, and prompt commands with global or local scope.
   upgrade.go: Implements release checks, complete listing, verified self-upgrade reporting, and uninstall behavior.
-  root_test.go: Exercises bootstrap/exclusions, version, welcome, every help scope, aliases, real manifests, no-spawn inspection, argument forwarding, full agent actions, and initialization.
+  root_test.go: Exercises bootstrap/exclusions, version, welcome, every help scope, aliases, aligned lists, numeric index selection and confirmation, real manifests, no-spawn inspection, argument forwarding, full agent actions, and initialization.
 documents: {}
 tags:
   - cli

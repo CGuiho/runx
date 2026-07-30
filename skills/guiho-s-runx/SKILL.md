@@ -23,9 +23,11 @@ metadata:
 
 1. Run `runx check --format json`.
 2. Run `runx list --format json`.
-3. Prefer a stable UID for automation.
-4. Run `runx describe <uid>` before unfamiliar work.
-5. Run `runx run --dry-run <uid>` before any mutation or high-impact command.
+3. Prefer a stable UID for automation. The numeric `IDX` from the current
+   `runx list` output is available for interactive use.
+4. Run `runx describe <uid-or-selector-or-index>` before unfamiliar work.
+5. Run `runx run --dry-run <uid-or-selector-or-index>` before any mutation or
+   high-impact command.
 
 RunX manifests are trusted executable code. A group name is not a safety
 boundary. Never add `--yes` unless the developer explicitly authorizes the
@@ -46,11 +48,14 @@ It does not search parent directories.
 Use only:
 
 ```text
-runx run [RunX options] <uid> [--] <child arguments...>
+runx run [RunX options] <uid-or-selector-or-index> [--] <child arguments...>
 ```
 
 Listing, describing, checking, help, agent operations, and dry runs must never
 execute a manifest command. Preserve the child command's exact exit code.
+Exact UID, selector, or unique-ID matches take precedence over numeric `IDX`
+fallback. Numeric indexes belong to the current resolved listing and must not
+replace stable UIDs in automation.
 RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.

@@ -34,8 +34,8 @@ the same compatible architecture.
 ```text
 runx
 ├── list
-├── describe <uid-or-selector>
-├── run [options] <selector> [--] [child arguments...]
+├── describe <uid-or-selector-or-index>
+├── run [options] <uid-or-selector-or-index> [--] [child arguments...]
 ├── check
 ├── init
 ├── agent
@@ -111,8 +111,11 @@ Foreign reads have a 10-second client deadline, a one-MiB limit, cycle
 protection, and a maximum graph depth of 32.
 
 UIDs, canonical selectors, and unique ID shorthands share one collision domain.
-Canonical selectors use slash-separated group paths. Command and scripts paths
-are containment-validated before `check`, `list`, or `describe` succeeds.
+Canonical selectors use slash-separated group paths. Exact identities resolve
+before a canonical positive-decimal `IDX` fallback. Numeric indexes refer to
+the current resolved `runx list` order and are intended for interactive use;
+stable UIDs remain the automation contract. Command and scripts paths are
+containment-validated before `check`, `list`, or `describe` succeeds.
 
 YAML uses `go.yaml.in/yaml/v3` with `KnownFields(true)`. Multiple documents and
 unknown fields are rejected before semantic validation.
@@ -121,7 +124,8 @@ unknown fields are rejected before semantic validation.
 
 `check`, `list`, `describe`, help, agent operations, and `run --dry-run` never
 spawn a configured command. `--format json` emits one stable JSON document to
-stdout; diagnostics use stderr.
+stdout; diagnostics use stderr. Human `list` output uses padded columns so the
+`IDX`, `UID`, `SELECTOR`, and `SUMMARY` fields align across supported terminals.
 
 Only `runx run` executes a selected command. RunX-owned options precede the
 selector. Flag parsing stops at the selector and every later token is forwarded
