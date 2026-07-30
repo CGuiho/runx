@@ -4,7 +4,7 @@ schema = 1
 supported = [".xdocs.md"]
 
 [ai]
-mode = "prompt"
+mode = "auto"
 
 [scan]
 exclude = ["node_modules", ".git", "dist", "build", "library", "bin", "bundle"]
