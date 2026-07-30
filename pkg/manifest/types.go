@@ -1,5 +1,7 @@
 package manifest
 
+import "strconv"
+
 // Manifest is the strict on-disk RunX manifest v2 contract.
 type Manifest struct {
 	Version   string    `yaml:"version" json:"version"`
@@ -82,9 +84,17 @@ type Catalog struct {
 }
 
 func (catalog *Catalog) Resolve(selector string) (ResolvedCommand, bool) {
-	index, ok := catalog.lookup[selector]
-	if !ok {
+	if index, ok := catalog.lookup[selector]; ok {
+		return catalog.Commands[index], true
+	}
+	numericIndex, err := strconv.Atoi(selector)
+	if err != nil || numericIndex < 1 || strconv.Itoa(numericIndex) != selector {
 		return ResolvedCommand{}, false
 	}
-	return catalog.Commands[index], true
+	for _, command := range catalog.Commands {
+		if command.Index == numericIndex {
+			return command, true
+		}
+	}
+	return ResolvedCommand{}, false
 }

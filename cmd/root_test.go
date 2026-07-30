@@ -145,8 +145,8 @@ func TestLiveHelpTreeAndDocs(t *testing.T) {
 	require.NoError(t, err)
 	assert.Contains(t, out, "COMMAND TREE")
 	assert.Contains(t, out, "├── list")
-	assert.Contains(t, out, "describe <uid-or-selector>")
-	assert.Contains(t, out, "run [options] <selector> [--] [child arguments...]")
+	assert.Contains(t, out, "describe <uid-or-selector-or-index>")
+	assert.Contains(t, out, "run [options] <uid-or-selector-or-index> [--] [child arguments...]")
 	assert.Contains(t, out, "└── -v, --version")
 	assert.NotContains(t, out, "â”œ")
 	out, _, err = executeTest(t, cwd, "list", "--help-tree-depth", "1", "--help-tree")
@@ -204,16 +204,66 @@ func TestCatalogCommandsReadRealManifest(t *testing.T) {
 	out, _, err = executeTest(t, cwd, "describe", "hello-command", "--format", "json")
 	require.NoError(t, err)
 	assert.Contains(t, out, "Print a greeting")
+	out, _, err = executeTest(t, cwd, "describe", "1", "--format", "json")
+	require.NoError(t, err)
+	assert.Contains(t, out, `"uid": "hello-command"`)
 	out, _, err = executeTest(t, cwd, "run", "--dry-run", "hello-command", "--", "--hostile", "$HOME")
 	require.NoError(t, err)
 	assert.Contains(t, out, "[0] \"--hostile\"")
 	assert.Contains(t, out, "[1] \"$HOME\"")
+	out, _, err = executeTest(t, cwd, "run", "--dry-run", "1")
+	require.NoError(t, err)
+	assert.Contains(t, out, "uid: hello-command")
 	_, _, err = executeTest(t, cwd, "run", "--dry-run", "danger-command")
+	assert.Error(t, err)
+	assert.Equal(t, 2, ExitCode(err))
+	_, _, err = executeTest(t, cwd, "run", "--dry-run", "2")
 	assert.Error(t, err)
 	assert.Equal(t, 2, ExitCode(err))
 	out, _, err = executeTest(t, cwd, "run", "--dry-run", "--yes", "danger-command")
 	require.NoError(t, err)
 	assert.Contains(t, out, "danger-command")
+	out, _, err = executeTest(t, cwd, "run", "--dry-run", "--yes", "2")
+	require.NoError(t, err)
+	assert.Contains(t, out, "danger-command")
+	for _, selector := range []string{"0", "01", "3"} {
+		_, _, err = executeTest(t, cwd, "run", "--dry-run", selector)
+		require.Error(t, err)
+		assert.Equal(t, 3, ExitCode(err))
+	}
+	_, _, err = executeTest(t, cwd, "run", "--dry-run", "--", "-1")
+	require.Error(t, err)
+	assert.Equal(t, 3, ExitCode(err))
+}
+
+func TestListTextAlignsColumns(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+	out, _, err := executeTest(t, cwd, "list")
+	require.NoError(t, err)
+	lines := strings.Split(out, "\n")
+	require.GreaterOrEqual(t, len(lines), 6)
+	header := lines[3]
+	headers := []string{"IDX", "UID", "SELECTOR", "SUMMARY"}
+	starts := make([]int, len(headers))
+	for index, value := range headers {
+		starts[index] = strings.Index(header, value)
+		require.NotEqualf(t, -1, starts[index], "header column %s was not found", value)
+	}
+	expectedRows := [][]string{
+		{"1", "hello-command", "hello", "Print hello."},
+		{"2", "danger-command", "tools/danger", "Dangerous operation. [confirm]"},
+	}
+	for rowIndex, row := range lines[4:6] {
+		for columnIndex, expected := range expectedRows[rowIndex] {
+			end := len(row)
+			if columnIndex+1 < len(starts) {
+				end = starts[columnIndex+1]
+			}
+			require.GreaterOrEqual(t, len(row), end)
+			assert.Equalf(t, expected, strings.TrimSpace(row[starts[columnIndex]:end]), "row %d column %s is not aligned", rowIndex+1, headers[columnIndex])
+		}
+	}
 }
 
 func TestInspectionNeverExecutesConfiguredCommand(t *testing.T) {

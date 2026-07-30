@@ -28,7 +28,7 @@ documents:
   CONTRIBUTING.md: Go validation, documentation, and protected release contribution workflow.
   DOCS.md: Complete production CLI, manifest, lifecycle, agent, upgrade, installer, and 11-artifact reference.
   LICENSE.md: MIT license.
-  README.md: Public installation with concise verified bootstrap commands and cross-shell PATH guidance, plus manifest-v2, command, and Go release overviews.
+  README.md: Public installation with concise verified bootstrap commands and cross-shell PATH guidance, plus manifest-v2, stable UID, numeric-index, command, and Go release overviews.
   SECURITY.md: Vulnerability reporting and trusted-manifest boundary.
   TODO.md: Package-local task index and migration status.
 tags:

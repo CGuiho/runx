@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"text/tabwriter"
 	"time"
 
 	"github.com/CGuiho/runx/pkg/executor"
@@ -103,15 +104,16 @@ func newListCommand(deps Dependencies) *cobra.Command {
 			}{catalog.Path, catalog.Namespace, commands})
 		}
 		fmt.Fprintf(command.OutOrStdout(), "configuration file loaded: %s\nRunX commands\n\n", catalog.Path)
-		fmt.Fprintln(command.OutOrStdout(), "IDX  UID  SELECTOR  SUMMARY")
+		table := tabwriter.NewWriter(command.OutOrStdout(), 0, 4, 2, ' ', 0)
+		fmt.Fprintln(table, "IDX\tUID\tSELECTOR\tSUMMARY")
 		for _, item := range commands {
 			suffix := ""
 			if item.Confirm == "always" {
 				suffix = " [confirm]"
 			}
-			fmt.Fprintf(command.OutOrStdout(), "%d  %s  %s  %s%s\n", item.Index, item.UID, item.Selector, item.Summary, suffix)
+			fmt.Fprintf(table, "%d\t%s\t%s\t%s%s\n", item.Index, item.UID, item.Selector, item.Summary, suffix)
 		}
-		return nil
+		return table.Flush()
 	}}
 	addCatalogFlags(command, &flags)
 	return command
@@ -119,7 +121,7 @@ func newListCommand(deps Dependencies) *cobra.Command {
 
 func newDescribeCommand(deps Dependencies) *cobra.Command {
 	var flags catalogFlags
-	command := &cobra.Command{Use: "describe <uid-or-selector>", Short: "Describe one catalog command without execution.", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
+	command := &cobra.Command{Use: "describe <uid-or-selector-or-index>", Short: "Describe one catalog command without execution.", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
 		catalog, err := loadCatalog(command, deps, flags)
 		if err != nil {
 			return err
@@ -141,7 +143,7 @@ func newDescribeCommand(deps Dependencies) *cobra.Command {
 func newRunCommand(deps Dependencies) *cobra.Command {
 	var flags catalogFlags
 	var dryRun, yes bool
-	command := &cobra.Command{Use: "run [options] <selector> [--] [child arguments...]", Short: "Execute one selected catalog command.", Args: cobra.MinimumNArgs(1), RunE: func(command *cobra.Command, args []string) error {
+	command := &cobra.Command{Use: "run [options] <uid-or-selector-or-index> [--] [child arguments...]", Short: "Execute one selected catalog command.", Args: cobra.MinimumNArgs(1), RunE: func(command *cobra.Command, args []string) error {
 		catalog, err := loadCatalog(command, deps, flags)
 		if err != nil {
 			return err

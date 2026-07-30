@@ -49,13 +49,15 @@ the change immediately with `source ~/.bashrc`.
 runx init
 runx check --format json
 runx list --format json
-runx describe <uid>
-runx run --dry-run <uid>
-runx run --yes <uid> -- <child arguments...>
+runx describe <uid-or-selector-or-index>
+runx run --dry-run <uid-or-selector-or-index>
+runx run --yes <uid-or-selector-or-index> -- <child arguments...>
 ```
 
 RunX options precede the selector. Every token after the selector belongs to
-the child and is forwarded without reinterpretation.
+the child and is forwarded without reinterpretation. The numeric `IDX` printed
+by `runx list` is convenient for interactive use; prefer stable UIDs for
+automation because indexes belong to the current resolved listing.
 
 ## Manifest v2
 
