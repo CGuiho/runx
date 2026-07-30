@@ -33,12 +33,15 @@ curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh 
 Windows PowerShell:
 
 ```powershell
-& ([scriptblock]::Create((Invoke-RestMethod 'https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1')))
+irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
 ```
 
 Both installers select the canonical target, download `checksums.txt`, verify
 SHA-256 before replacement, install the bundled skill into both supported agent
-locations, and verify `runx --version`.
+locations, and verify `runx --version`. The Windows installer adds its directory
+to the persistent user `Path`, the current PowerShell process, and Git Bash's
+`~/.bashrc` without duplicating entries. An existing Git Bash session can load
+the change immediately with `source ~/.bashrc`.
 
 ## Start
 
