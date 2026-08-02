@@ -15,6 +15,28 @@ owner: runx
 
 # Changelog
 
+## 0.10.0 - 2026-08-03
+
+### Added
+
+- Added canonical positive-decimal `IDX` selection for `describe` and `run`
+  after exact UID, selector, and unique-ID resolution, while preserving
+  confirmation requirements and stable UIDs as the automation contract.
+
+### Changed
+
+- Aligned human `runx list` columns across Windows PowerShell, Git Bash, and
+  Unix terminals and documented interactive numeric-index selection.
+- Switched repository XDocs AI mode to automatic documentation maintenance.
+
+### Fixed
+
+- Made the Windows installer normalize and deduplicate the persistent user
+  `Path`, refresh the current PowerShell process, and idempotently configure
+  Git Bash `~/.bashrc` while preserving UTF-8 and existing line endings.
+- Pinned Go source files to LF in Windows checkouts so formatting validation is
+  stable across CI runners.
+
 ## 0.9.0 - 2026-07-26
 
 ### Added
