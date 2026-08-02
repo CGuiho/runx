@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 3 |
+| testing | 2 |
 | stopped | 0 |
 | completed | 14 |
 
@@ -216,13 +216,3 @@ owner: runx
   - GitHub PR [CGuiho/runx#29](https://github.com/CGuiho/runx/pull/29) - Fix Windows installer PATH setup.
   - GitHub PR [CGuiho/runx#31](https://github.com/CGuiho/runx/pull/31) - Align list output and resolve numeric indexes.
 - Release: [RunX 0.10.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0)
-
-### 16. Release All Remaining RunX Changes
-
-- Status: testing
-- Created: `2026-08-03T00:50:45+02:00`
-- Updated: `2026-08-03T00:52:08+02:00`
-- Outcome: RunX 0.10.1 publishes every change remaining after 0.10.0 through the complete Mirror-managed 11-artifact lifecycle.
-- Spec: [docs/todo/release-runx-0.10.1.md](docs/todo/release-runx-0.10.1.md)
-- Related files:
-  - [docs/validation/runx-0.10.1-release.md](docs/validation/runx-0.10.1-release.md) - Live audit, validation, workflow, asset, checksum, npm, and native smoke evidence.
