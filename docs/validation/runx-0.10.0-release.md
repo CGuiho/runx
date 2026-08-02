@@ -4,7 +4,7 @@ purpose: Preserve live audit, validation, publication, workflow, asset, checksum
 description: Records why a minor release is required for merged pull requests 29 and 31 and the gates that must pass before completion.
 created: 2026-08-03
 flags:
-  - testing
+  - completed
   - release-validation
 tags:
   - validation
@@ -35,6 +35,8 @@ PR 29 is a compatible installer repair included in the same release.
 - Prior release tag: `@guiho/runx/v0.9.0`
 - Peeled prior tag commit: `6af31f1f03fdad2a93d258a969671e44aab9aa31`
 - Intended release: `@guiho/runx/v0.10.0`
+- Release source commit: `6ab7dbff2195ce660c169a48499b52e0414c00b1`
+- Annotated tag object: `227a5661ac1f1df93fafb206add75ca8bdec7324`
 
 ## Live Release Audit
 
@@ -111,6 +113,40 @@ read-only module-cache timestamp warnings.
   `@guiho/runx/v0.10.0`. Its only planned effects are annotated-tag creation
   and an exact-tag push (`commit=false`, `exact_tag=true`); it plans no version
   commit or additional file mutation.
+- Branch CI [run 30769771102](https://github.com/CGuiho/runx/actions/runs/30769771102)
+  passed for the first release-evidence push. Final branch CI
+  [run 30769897784](https://github.com/CGuiho/runx/actions/runs/30769897784)
+  passed for exact release source `6ab7dbf`; its Ubuntu, Windows, and
+  `release-contract` jobs all completed successfully.
+- Mirror applied the inspected minor plan and created annotated tag object
+  `227a5661ac1f1df93fafb206add75ca8bdec7324`, peeled to exact release source
+  `6ab7dbff2195ce660c169a48499b52e0414c00b1`. The same object and peeled commit
+  were independently observed on `origin`, and the release commit is reachable
+  from `origin/main`.
+- The protected GitHub `production` environment required its configured
+  reviewer approval. The approval started only the already-inspected source
+  publication job; the workflow contains no application deployment or live
+  production mutation.
+- Publish [run 30770011393](https://github.com/CGuiho/runx/actions/runs/30770011393)
+  passed on exact tag `@guiho/runx/v0.10.0`. Tests, vet, the canonical matrix,
+  scoped notes, GitHub Release creation, exact asset-set verification,
+  exact-version installer smoke, and npm OIDC publication all passed.
+- The public [RunX 0.10.0 release](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0)
+  was published at `2026-08-02T22:28:13Z` as non-draft and non-prerelease.
+  It contains exactly 11 authored assets: eight binaries,
+  `guiho-s-runx.zip`, `guiho-i-runx.md`, and `checksums.txt`.
+- Downloaded all 11 public assets. The checksum file contained exactly ten
+  payload entries, every payload matched its listed SHA-256, and all 11 files
+  also matched GitHub's independent asset digests.
+- The downloaded skill archive contained exactly
+  `guiho-s-runx/SKILL.md`, `guiho-s-runx/agents/openai.yaml`, and
+  `guiho-s-runx/guiho-s-runx.xdocs.md`.
+- The downloaded Windows AMD64 executable returned exit 0 and version `0.10.0`;
+  its depth-two help tree returned exit 0 and showed `list`,
+  `describe <uid-or-selector-or-index>`, and
+  `run [options] <uid-or-selector-or-index> [--] [child arguments...]`.
+- The public npm `@guiho/runx` latest endpoint reported `0.10.0` after the
+  Publish workflow completed.
 
 ## Results
 
@@ -119,13 +155,23 @@ read-only module-cache timestamp warnings.
 - Repository validation: passed.
 - Exact local release matrix and checksums: passed.
 - Native Windows AMD64 smoke: passed.
-- Mirror bootstrap, configuration, current-version check, and plan: passed.
-- Mirror apply: pending final pushed-commit CI success.
-- Workflow, release, asset, checksum, and native smoke verification: pending.
+- Mirror bootstrap, configuration, plan, and apply: passed.
+- Branch CI and tag-triggered Publish workflow: passed.
+- GitHub Release metadata and exact 11-asset set: passed.
+- Downloaded checksum and GitHub digest verification: passed.
+- Downloaded native Windows AMD64 smoke: passed.
+- npm 0.10.0 publication: passed.
+- Production-boundary verification: passed; no production action occurred.
 
 ## Failures Or Blockers
 
-- None at audit time.
+- The first bulk public-asset download exceeded its observation window and left
+  one incomplete temporary file. A bounded resume fetched only missing or
+  size-mismatched temporary targets. A concurrent completion briefly caused a
+  Windows sharing violation during that resume, but the final independent
+  file-size, checksum, and GitHub-digest checks all passed. This affected only
+  the disposable verification directory, not any published asset or repository
+  file.
 
 ## Skipped Checks
 
@@ -136,15 +182,16 @@ read-only module-cache timestamp warnings.
 
 ## Residual Risks
 
-- Tag creation immediately triggers public GitHub/npm source publication.
-- The release remains incomplete until all remote workflow and artifact checks
-  are independently observed.
+- Foreign targets remain build-only in this Windows audit unless the matching
+  workflow runner or target hardware executed them. The workflow's native
+  exact-version installer smoke covered Linux AMD64; this audit independently
+  executed Windows AMD64.
 
 ## Readiness
 
-Ready to commit and push the reconciled Mirror instruction block and this plan
-evidence. Mirror application remains gated on successful CI for that final
-pushed release source and a clean synchronized main.
+Complete. The accepted pull requests are contained in canonical RunX 0.10.0,
+all repository, workflow, publication, asset, checksum, and supported native
+smoke gates passed, and no production action occurred.
 
 ## References
 
