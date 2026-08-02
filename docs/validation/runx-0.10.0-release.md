@@ -103,6 +103,14 @@ read-only module-cache timestamp warnings.
   verifies Go assets, creates/updates a GitHub Release, runs an exact-version
   installer, and publishes the npm bootstrap. It performs no cloud deployment,
   production promotion, traffic, DNS, database, or secret mutation.
+- Ran plain `mirror`: Mirror 4.0.0 refreshed its global skill and idempotently
+  reconciled the bounded managed block in `AGENTS.md`.
+- `mirror config check` loaded `C:\GUIHO\runx\mirror.yaml` successfully.
+- `mirror version current` reported `0.9.0`.
+- `mirror version plan minor` resolved `0.10.0` and the exact tag
+  `@guiho/runx/v0.10.0`. Its only planned effects are annotated-tag creation
+  and an exact-tag push (`commit=false`, `exact_tag=true`); it plans no version
+  commit or additional file mutation.
 
 ## Results
 
@@ -111,7 +119,8 @@ read-only module-cache timestamp warnings.
 - Repository validation: passed.
 - Exact local release matrix and checksums: passed.
 - Native Windows AMD64 smoke: passed.
-- Mirror plan/apply: pending.
+- Mirror bootstrap, configuration, current-version check, and plan: passed.
+- Mirror apply: pending final pushed-commit CI success.
 - Workflow, release, asset, checksum, and native smoke verification: pending.
 
 ## Failures Or Blockers
@@ -133,10 +142,9 @@ read-only module-cache timestamp warnings.
 
 ## Readiness
 
-Ready to commit and push release preparation. Mirror application remains gated
-on a clean synchronized main, plain Mirror bootstrap, configuration check,
-current-version observation, and inspection of the resolved minor plan and
-tag-triggered effects.
+Ready to commit and push the reconciled Mirror instruction block and this plan
+evidence. Mirror application remains gated on successful CI for that final
+pushed release source and a clean synchronized main.
 
 ## References
 
