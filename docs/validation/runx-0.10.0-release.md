@@ -195,7 +195,7 @@ smoke gates passed, and no production action occurred.
 
 ## References
 
-- [Release task](../todo/release-runx-0.10.0.md)
+- [Release task](../todo/done/release-runx-0.10.0.md)
 - [RunX 0.9.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.9.0)
 - [PR #29](https://github.com/CGuiho/runx/pull/29)
 - [PR #31](https://github.com/CGuiho/runx/pull/31)
