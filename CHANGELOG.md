@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.10.1 - 2026-08-03
+
+### Changed
+
+- Published the complete RunX 0.10.0 audit, validation, workflow, artifact,
+  checksum, native-smoke, and npm evidence with its archived release task.
+
+### Fixed
+
+- Corrected the 0.10.0 validation report to link to the task's permanent
+  `docs/todo/done/` archive location.
+
 ## 0.10.0 - 2026-08-03
 
 ### Added
