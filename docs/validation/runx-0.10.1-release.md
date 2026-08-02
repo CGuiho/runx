@@ -34,7 +34,9 @@ requires a patch transition to 0.10.1 so every current-main change is released.
 - Prior release tag: `@guiho/runx/v0.10.0`
 - Peeled prior tag commit: `6ab7dbff2195ce660c169a48499b52e0414c00b1`
 - Intended release: `@guiho/runx/v0.10.1`
-- Intended release source: pending preparation commit and CI.
+- Locally validated preparation source:
+  `a709dcfe8ed0902a8260a38b4209cdf66ab08862`.
+- Intended release source: pending final evidence commit and exact-commit CI.
 
 ## Live Release Audit
 
@@ -69,7 +71,23 @@ It adds no CLI feature, command, configuration, package, or behavior change.
 - `mirror version plan patch` - resolved 0.10.1 and exact tag
   `@guiho/runx/v0.10.1`; planned only annotated-tag creation and exact-tag push
   with `commit=false` and `exact_tag=true`.
-- Full repository, XDocs, release matrix, checksum, and native checks - pending.
+- `gofmt -l main.go cmd pkg embed devops` - passed with no output.
+- `go mod tidy` - passed without changing `go.mod` or `go.sum`.
+- `go test -count=1 ./...` - passed.
+- `go vet ./...` - passed.
+- `go build ./...` - passed.
+- Bash and PowerShell installer parsing - passed.
+- `xdocs meta . --documents --strict`, `xdocs tree`, and
+  `xdocs doctor .` - passed.
+- Exact 0.10.1 changelog-note extraction - passed.
+- `go run devops/build-binaries.go --version 0.10.1 --commit
+  a709dcfe8ed0902a8260a38b4209cdf66ab08862 --build-date
+  2026-08-02T23:00:05Z` - passed for all eight targets.
+- `go run devops/verify-release-assets.go` - verified exactly 11 authored
+  assets and every SHA-256 checksum.
+- Locally built Windows AMD64 `--version` reported exactly `0.10.1`; root and
+  `run` help passed the `list`, `describe`, `run`, selector, and child-argument
+  contract.
 
 ## Manual Checks
 
@@ -84,7 +102,10 @@ It adds no CLI feature, command, configuration, package, or behavior change.
 - Live unreleased-content audit: passed.
 - SemVer classification: patch.
 - Changelog and broken-link preparation: complete.
-- Repository validation: pending.
+- Repository and XDocs validation: passed on archived preparation source
+  `a709dcfe8ed0902a8260a38b4209cdf66ab08862`.
+- Eight-target compilation and exact local 11-artifact verification: passed.
+- Windows AMD64 local native smoke: passed.
 - Mirror apply and remote publication verification: pending.
 
 ## Failures Or Blockers
@@ -103,8 +124,9 @@ It adds no CLI feature, command, configuration, package, or behavior change.
 
 ## Readiness
 
-Not ready for Mirror apply until full validation passes, preparation is committed
-and pushed, exact-source CI succeeds, and `main` is clean and synchronized.
+Local readiness gates passed. Mirror apply remains blocked until the final
+preparation commit is pushed, exact-source CI succeeds, and `main` is clean and
+synchronized.
 
 ## References
 
