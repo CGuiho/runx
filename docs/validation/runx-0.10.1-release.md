@@ -1,10 +1,10 @@
 ---
 name: RunX 0.10.1 Release Validation
 purpose: Preserve the live audit, validation, publication, workflow, asset, checksum, npm, and native smoke evidence for releasing every RunX change after 0.10.0.
-description: Records why the remaining documentation and release-evidence commits require patch 0.10.1 and the gates that must pass before completion.
+description: Records why the remaining documentation and release-evidence commits required patch 0.10.1 and the completed publication and verification gates.
 created: 2026-08-03
 flags:
-  - testing
+  - completed
   - release-validation
 tags:
   - validation
@@ -33,10 +33,11 @@ requires a patch transition to 0.10.1 so every current-main change is released.
 - Audited pre-preparation main: `edebb5dd19049633c4303a7e74527cf786bf3005`
 - Prior release tag: `@guiho/runx/v0.10.0`
 - Peeled prior tag commit: `6ab7dbff2195ce660c169a48499b52e0414c00b1`
-- Intended release: `@guiho/runx/v0.10.1`
+- Release tag: `@guiho/runx/v0.10.1`
 - Locally validated preparation source:
   `a709dcfe8ed0902a8260a38b4209cdf66ab08862`.
-- Intended release source: pending final evidence commit and exact-commit CI.
+- Release source: `15f17b3a01628d861ba6f83e47240304feeb0891`.
+- Annotated tag object: `bf074f6a3dd0c1b30484313ebd622090e07cfaa5`.
 
 ## Live Release Audit
 
@@ -88,6 +89,24 @@ It adds no CLI feature, command, configuration, package, or behavior change.
 - Locally built Windows AMD64 `--version` reported exactly `0.10.1`; root and
   `run` help passed the `list`, `describe`, `run`, selector, and child-argument
   contract.
+- Exact-source [CI run 30771543747](https://github.com/CGuiho/runx/actions/runs/30771543747)
+  passed its Ubuntu, Windows, and release-contract jobs.
+- A fresh fetch, clean/synchronized branch check, remote-tag absence check,
+  plain `mirror`, configuration check, current-version query, and patch plan
+  all passed immediately before apply.
+- `mirror version apply patch --yes` created and pushed only annotated tag
+  `@guiho/runx/v0.10.1`; local and remote peeled targets both resolved to
+  `15f17b3a01628d861ba6f83e47240304feeb0891`.
+- Tag-triggered [Publish run 30771632490](https://github.com/CGuiho/runx/actions/runs/30771632490)
+  passed every test, vet, build, release, installer, and npm step.
+- GitHub Release inspection confirmed a public, non-draft, non-prerelease
+  release with exactly 11 authored assets and a SHA-256 digest for each.
+- npm `latest` reported `0.10.1`.
+- All 11 assets were independently downloaded. All ten checksum-manifest
+  payloads and all 11 GitHub digests matched; the skill ZIP contained
+  `SKILL.md`, `agents/openai.yaml`, and `guiho-s-runx.xdocs.md`.
+- The downloaded Windows AMD64 binary reported exactly `0.10.1`; root, list,
+  describe, and run help passed.
 
 ## Manual Checks
 
@@ -106,30 +125,37 @@ It adds no CLI feature, command, configuration, package, or behavior change.
   `a709dcfe8ed0902a8260a38b4209cdf66ab08862`.
 - Eight-target compilation and exact local 11-artifact verification: passed.
 - Windows AMD64 local native smoke: passed.
-- Mirror apply and remote publication verification: pending.
+- Mirror apply and annotated local/remote tag ancestry: passed.
+- Exact-source branch CI and tag-triggered Publish: passed.
+- Public release state and exact 11-asset inventory: passed.
+- Independent checksum manifest and GitHub digests: 10/10 and 11/11 passed.
+- Canonical skill ZIP and downloaded Windows AMD64 smoke: passed.
+- npm latest: 0.10.1.
+- Production boundary: no production deployment, promotion, traffic, DNS,
+  database, secret, or other live production action occurred.
 
 ## Failures Or Blockers
 
-- None at preparation time.
+- None.
 
 ## Skipped Checks
 
-- Foreign-target runtime execution will remain build-only where no matching
+- Foreign-target runtime execution remains build-only where no matching
   runner or hardware executes the binary.
 
 ## Residual Risks
 
-- Tag creation triggers public GitHub/npm source publication after the protected
-  environment gate is approved.
+- No known release blocker remains. Foreign native targets retain the stated
+  build-only limitation.
 
 ## Readiness
 
-Local readiness gates passed. Mirror apply remains blocked until the final
-preparation commit is pushed, exact-source CI succeeds, and `main` is clean and
-synchronized.
+Complete. RunX 0.10.1 contains every audited post-0.10.0 change and passed the
+local, CI, Mirror, publication, asset, checksum, npm, and native-smoke gates.
 
 ## References
 
-- [Release task](../todo/release-runx-0.10.1.md)
+- [Release task](../todo/done/release-runx-0.10.1.md)
+- [RunX 0.10.1](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.1)
 - [RunX 0.10.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0)
 - [RunX 0.10.0 validation](runx-0.10.0-release.md)
