@@ -26,3 +26,14 @@ keywords:
 - Validation: [manifest-v2-composition.md](../../validation/manifest-v2-composition.md)
 - Final acceptance release: [RunX 0.7.2](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%400.7.2)
 - Issue: [CGuiho/runx#26](https://github.com/CGuiho/runx/issues/26), closed.
+
+## 2026-08-03 - RunX 0.10.0 Release
+
+- Specification: [release-runx-0.10.0.md](release-runx-0.10.0.md)
+- Validation: [runx-0.10.0-release.md](../../validation/runx-0.10.0-release.md)
+- Accepted pull requests:
+  - [CGuiho/runx#29](https://github.com/CGuiho/runx/pull/29) - Fix Windows installer PATH setup.
+  - [CGuiho/runx#31](https://github.com/CGuiho/runx/pull/31) - Align list output and resolve numeric indexes.
+- Final acceptance release: [RunX 0.10.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0)
+- Workflows: branch [CI 30769897784](https://github.com/CGuiho/runx/actions/runs/30769897784) and tag-triggered [Publish 30770011393](https://github.com/CGuiho/runx/actions/runs/30770011393), successful.
+- Acceptance: exactly 11 authored assets, all checksums and GitHub digests verified, downloaded Windows AMD64 smoke passed, npm latest 0.10.0, and no production action occurred.

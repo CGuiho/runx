@@ -20,7 +20,6 @@ files:
   beautiful-welcome-window.md: Defines GitHub issue 23 deterministic welcome and cached update acceptance.
   simplified-install-command.md: Defines GitHub issue 24 exact public curl bootstrap acceptance.
   forward-command-arguments.md: Defines GitHub issue 25 argument ownership, safe forwarding, and dry-run acceptance.
-  release-runx-0.10.0.md: Defines live ancestry, SemVer, validation, Mirror, publication, and 11-artifact acceptance gates for merged pull requests 29 and 31.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   bounded-update-worker.md: Task specification for the bounded RunX update worker audit prompted by XDocs issue 14.
@@ -37,7 +36,6 @@ documents:
   beautiful-welcome-window.md: Task specification for the RunX welcome window.
   simplified-install-command.md: Task specification for the simple installer command.
   forward-command-arguments.md: Task specification for safe child argument forwarding.
-  release-runx-0.10.0.md: Active task specification for the Mirror-managed RunX 0.10.0 release.
 tags:
   - todo
 keywords:

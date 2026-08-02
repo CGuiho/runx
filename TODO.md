@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 3 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 13 |
+| completed | 14 |
 
 ## Tasks
 
@@ -205,13 +205,14 @@ owner: runx
 
 ### 15. Release Unreleased RunX Pull Requests
 
-- Status: testing
+- Status: completed
 - Created: `2026-08-03T00:03:50+02:00`
-- Updated: `2026-08-03T00:05:51+02:00`
-- Outcome: RunX 0.10.0 publishes the accepted Windows installer and numeric-index selector changes through the complete Mirror-managed 11-artifact release lifecycle.
-- Spec: [docs/todo/release-runx-0.10.0.md](docs/todo/release-runx-0.10.0.md)
+- Updated: `2026-08-03T00:33:38+02:00`
+- Outcome: RunX 0.10.0 published the accepted Windows installer and numeric-index selector changes through the complete Mirror-managed 11-artifact release lifecycle, with all remote checks passing and no production action.
+- Spec: [docs/todo/done/release-runx-0.10.0.md](docs/todo/done/release-runx-0.10.0.md)
 - Related files:
   - [docs/validation/runx-0.10.0-release.md](docs/validation/runx-0.10.0-release.md) - Live release audit, validation, workflow, asset, and smoke evidence.
 - External:
   - GitHub PR [CGuiho/runx#29](https://github.com/CGuiho/runx/pull/29) - Fix Windows installer PATH setup.
   - GitHub PR [CGuiho/runx#31](https://github.com/CGuiho/runx/pull/31) - Align list output and resolve numeric indexes.
+- Release: [RunX 0.10.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0)

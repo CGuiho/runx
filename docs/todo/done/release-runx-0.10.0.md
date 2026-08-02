@@ -1,10 +1,10 @@
 ---
 name: Release Unreleased RunX Pull Requests
-purpose: Define the evidence and publication gates for the first RunX release containing merged pull requests 29 and 31.
-description: Requires live ancestry proof, a justified semantic version, full Go and XDocs validation, Mirror-managed publication, and independent 11-artifact verification.
+purpose: Preserve the completed evidence and publication gates for the first RunX release containing merged pull requests 29 and 31.
+description: Records live ancestry proof, the justified minor version, full Go and XDocs validation, Mirror-managed publication, and independent 11-artifact verification.
 created: 2026-08-03
 flags:
-  - testing
+  - completed
   - release
 tags:
   - todo
@@ -15,7 +15,7 @@ keywords:
   - pull request 29
   - pull request 31
   - 11 artifacts
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # Release Unreleased RunX Pull Requests
@@ -23,15 +23,16 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `15. Release Unreleased RunX Pull Requests`
-- Status: testing
-- Index: [TODO.md](../../TODO.md)
-- Validation: [runx-0.10.0-release.md](../validation/runx-0.10.0-release.md)
+- Status: completed
+- Index: [TODO.md](../../../TODO.md)
+- Validation: [runx-0.10.0-release.md](../../validation/runx-0.10.0-release.md)
 
 ## Outcome
 
 The accepted Windows installer PATH repair and numeric-index selector feature
-are published in the first canonical RunX release that contains their merge
-commits, with no duplicate release and no production deployment.
+were published in canonical RunX 0.10.0 through the complete Mirror-managed
+11-artifact release lifecycle, with no duplicate release and no production
+deployment.
 
 ## Scope
 
@@ -67,8 +68,21 @@ commits, with no duplicate release and no production deployment.
 - The public GitHub Release is non-draft and non-prerelease and contains exactly
   eight binaries, `guiho-s-runx.zip`, `guiho-i-runx.md`, and `checksums.txt`.
 - All checksum-listed payloads verify, and the downloaded Windows AMD64 binary
-  reports 0.10.0 and passes native help/list smoke coverage.
+  reports 0.10.0 and passes native help-tree smoke coverage.
 - No production action occurs.
+
+## Completion Evidence
+
+- Release: [RunX 0.10.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0).
+- Release source: `6ab7dbff2195ce660c169a48499b52e0414c00b1`.
+- Annotated tag object: `227a5661ac1f1df93fafb206add75ca8bdec7324`.
+- Branch CI: [run 30769897784](https://github.com/CGuiho/runx/actions/runs/30769897784), successful.
+- Publication: [run 30770011393](https://github.com/CGuiho/runx/actions/runs/30770011393), successful.
+- Public release: non-draft, non-prerelease, exactly 11 authored assets.
+- Independent download: all ten checksum-listed payloads and all 11 GitHub
+  asset digests matched; Windows AMD64 reported 0.10.0 and passed help-tree
+  smoke; npm latest reported 0.10.0.
+- Production boundary: no production action occurred.
 
 ## Dependencies And Context
 
@@ -91,30 +105,8 @@ commits, with no duplicate release and no production deployment.
 - Cross-build success is build-only evidence for foreign targets; only matching
   runners or hardware establish runtime execution.
 
-## Before Starting
-
-- Read repository and parent instructions, TODO/specs, release decisions,
-  `mirror.yaml`, changelog, workflows, release tooling, and required skills.
-- Fetch safely, preserve existing work, and stop on dirty overlap or unsafe
-  divergence.
-
-## While Working
-
-- Use explicit-path commits, plain pushes, and Mirror for the version commit
-  and tag.
-- Keep the task in testing until remote publication and asset verification are
-  complete.
-- Record passed, failed, skipped, and build-only checks without overstating
-  foreign runtime support.
-
-## After Finishing
-
-- Materialize final release evidence in the linked validation report.
-- Archive this task only after the release, workflows, assets, checksums,
-  native smoke, branch/tag ancestry, and no-production boundary are verified.
-
 ## References
 
-- [TODO.md](../../TODO.md)
-- [RunX Go rewrite RFC](../rfc/runx-go-rewrite-rfc.md)
-- [Release validation](../validation/runx-0.10.0-release.md)
+- [TODO.md](../../../TODO.md)
+- [RunX Go rewrite RFC](../../rfc/runx-go-rewrite-rfc.md)
+- [Release validation](../../validation/runx-0.10.0-release.md)
