@@ -60,6 +60,13 @@ RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.
 
+For `confirm: always`, an interactive human receives a safe-default prompt and
+an exact retry such as `runx run --yes cli-compile-host`. Noninteractive and
+JSON runs fail closed with that retry instead of waiting for input. Treat an
+interactive `y` or `yes` response and a retry with `--yes` as equivalent
+authorization boundaries; never provide either without the developer's
+explicit authorization for that command.
+
 ## Maintain Catalogs
 
 - Use manifest v2 with one top-level `namespace`; never add legacy `project` or

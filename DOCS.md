@@ -133,8 +133,14 @@ without RunX reinterpretation. POSIX shells use positional parameters,
 PowerShell uses JSON-backed splatting, and cmd uses environment-backed argument
 transport. Child values are never interpolated into generated shell source.
 
-`confirm: always` requires `--yes` before the selector. Child process exit codes
-are preserved.
+For `confirm: always`, an interactive text invocation prints the exact
+`runx run --yes <selector>` retry and asks `Are you sure? [y/N]`. Only `y` or
+`yes`, case-insensitively, authorizes execution; Enter, EOF, and every other
+answer decline without spawning. Noninteractive and JSON invocations never
+prompt and fail closed with the same exact retry. The retry preserves RunX
+options, the selected identity, the child delimiter, and child arguments.
+Supplying `--yes` before the selector bypasses the prompt. Child process exit
+codes are preserved.
 
 ## Agent Resources
 

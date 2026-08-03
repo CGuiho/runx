@@ -3,11 +3,14 @@ package cmd
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"io"
 	"os"
 	"path/filepath"
 	"regexp"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -157,7 +160,18 @@ func newRunCommand(deps Dependencies) *cobra.Command {
 			childArgs = childArgs[1:]
 		}
 		if selected.Confirm == "always" && !yes {
-			return withExitCode(2, fmt.Errorf("command %s requires --yes before the selector", selected.UID))
+			retry := confirmationRetry(command, flags, dryRun, args[0], childArgs)
+			if flags.format == "text" && deps.IsTerminal(command.InOrStdin()) {
+				approved, promptErr := promptForConfirmation(command, selected.UID, retry)
+				if promptErr != nil {
+					return withExitCode(2, fmt.Errorf("could not read confirmation: %w", promptErr))
+				}
+				if !approved {
+					return withExitCode(2, fmt.Errorf("command %s was not authorized; to run without prompting: %s", selected.UID, retry))
+				}
+			} else {
+				return withExitCode(2, fmt.Errorf("command %s requires confirmation; rerun exactly: %s", selected.UID, retry))
+			}
 		}
 		plan := struct {
 			UID       string   `json:"uid"`
@@ -196,6 +210,94 @@ func newRunCommand(deps Dependencies) *cobra.Command {
 	command.Flags().BoolVar(&yes, "yes", false, "Approve a confirmation-gated command.")
 	command.Flags().SetInterspersed(false)
 	return command
+}
+
+func promptForConfirmation(command *cobra.Command, uid, retry string) (bool, error) {
+	fmt.Fprintf(command.ErrOrStderr(), "Command %s requires confirmation.\nTo skip this prompt, run:\n  %s\nAre you sure? [y/N]: ", uid, retry)
+	answer, err := readConfirmationAnswer(command.InOrStdin())
+	if err != nil {
+		return false, err
+	}
+	answer = strings.ToLower(strings.TrimSpace(answer))
+	return answer == "y" || answer == "yes", nil
+}
+
+func readConfirmationAnswer(reader io.Reader) (string, error) {
+	var answer strings.Builder
+	buffer := []byte{0}
+	for {
+		count, err := reader.Read(buffer)
+		if count > 0 {
+			switch buffer[0] {
+			case '\n':
+				return answer.String(), nil
+			case '\r':
+			default:
+				if answer.Len() < 64 {
+					answer.WriteByte(buffer[0])
+				}
+			}
+		}
+		if err != nil {
+			if errors.Is(err, io.EOF) {
+				return answer.String(), nil
+			}
+			return "", err
+		}
+		if count == 0 {
+			return "", io.ErrNoProgress
+		}
+	}
+}
+
+func confirmationRetry(command *cobra.Command, flags catalogFlags, dryRun bool, selector string, childArgs []string) string {
+	parts := []string{"runx", "run"}
+	for _, item := range []struct {
+		name  string
+		value string
+	}{
+		{"cwd", flags.cwd},
+		{"config", flags.config},
+		{"format", flags.format},
+	} {
+		if command.Flags().Changed(item.name) {
+			parts = append(parts, "--"+item.name, quoteRetryArgument(item.value))
+		}
+	}
+	if command.Flags().Changed("verbose") {
+		if flags.verbose {
+			parts = append(parts, "--verbose")
+		} else {
+			parts = append(parts, "--verbose=false")
+		}
+	}
+	if command.Flags().Changed("dry-run") {
+		if dryRun {
+			parts = append(parts, "--dry-run")
+		} else {
+			parts = append(parts, "--dry-run=false")
+		}
+	}
+	parts = append(parts, "--yes", quoteRetryArgument(selector))
+	if len(childArgs) > 0 {
+		parts = append(parts, "--")
+		for _, argument := range childArgs {
+			parts = append(parts, quoteRetryArgument(argument))
+		}
+	}
+	return strings.Join(parts, " ")
+}
+
+func quoteRetryArgument(value string) string {
+	if value != "" && strings.IndexFunc(value, func(character rune) bool {
+		return !((character >= 'a' && character <= 'z') ||
+			(character >= 'A' && character <= 'Z') ||
+			(character >= '0' && character <= '9') ||
+			strings.ContainsRune("_-./\\:@%+=,", character))
+	}) == -1 {
+		return value
+	}
+	return strconv.Quote(value)
 }
 
 func newInitCommand(deps Dependencies) *cobra.Command {
