@@ -11,7 +11,7 @@ files:
   mirror-automatic-push.md: Defines automatic Mirror release pushes with a synchronized protected-main gate.
   npm-trusted-publishing.md: Defines the accepted npm OIDC publishing workflow and protected-branch patch-release trial.
   no-argument-welcome-window.md: Replaces the legacy one-line greeting with a deterministic welcome and validated cached notice.
-  run-argument-ownership.md: Defines exact and numeric selector resolution, the selector boundary, child-token ownership, confirmation, dry-run behavior, and shell-safe transport.
+  run-argument-ownership.md: Defines exact and numeric selector resolution, the selector boundary, child-token ownership, safe-default interactive confirmation with exact retries, dry-run behavior, and shell-safe transport.
   manifest-v2-composition.md: Replaces split groups and project.name with recursive commands, namespaces, reciprocal mounts, and bounded GitHub loading.
   windows-self-upgrade.md: Defines synchronous Windows executable replacement, verification, rollback, and cleanup.
 documents:
@@ -22,7 +22,7 @@ documents:
   mirror-automatic-push.md: Accepted release-policy decision for Mirror push=true and protected delivery ordering.
   npm-trusted-publishing.md: Decision record for GitHub Actions npm trusted publishing and the first automated patch release.
   no-argument-welcome-window.md: Approved RunX bare-invocation welcome decision.
-  run-argument-ownership.md: Approved RunX selector-resolution and run argument-boundary decision.
+  run-argument-ownership.md: Approved RunX selector-resolution, confirmation, and run argument-boundary decision.
   manifest-v2-composition.md: Accepted RunX manifest v2 composition decision.
   windows-self-upgrade.md: Accepted design for synchronous and recoverable Windows native self-upgrade.
 tags:

@@ -14,6 +14,7 @@ import (
 	"github.com/CGuiho/runx/embed"
 	"github.com/CGuiho/runx/pkg/maintenance"
 	"github.com/CGuiho/runx/pkg/update"
+	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
 
@@ -34,6 +35,7 @@ type Dependencies struct {
 	Getwd      func() (string, error)
 	HomeDir    func() (string, error)
 	Spawn      func(string, ...string) error
+	IsTerminal func(io.Reader) bool
 }
 
 type exitError struct {
@@ -57,7 +59,7 @@ func DefaultDependencies() Dependencies {
 		In: os.Stdin, Out: os.Stdout, Err: os.Stderr,
 		HTTPClient: &http.Client{Timeout: 15 * time.Second}, Now: time.Now,
 		Executable: os.Executable, Getwd: os.Getwd, HomeDir: os.UserHomeDir,
-		Spawn: update.SpawnUpdateWorker,
+		Spawn: update.SpawnUpdateWorker, IsTerminal: isTerminalReader,
 	}
 }
 
@@ -207,7 +209,18 @@ func normalizeDependencies(deps Dependencies) Dependencies {
 	if deps.Spawn == nil {
 		deps.Spawn = defaults.Spawn
 	}
+	if deps.IsTerminal == nil {
+		deps.IsTerminal = defaults.IsTerminal
+	}
 	return deps
+}
+
+func isTerminalReader(reader io.Reader) bool {
+	file, ok := reader.(*os.File)
+	if !ok {
+		return false
+	}
+	return isatty.IsTerminal(file.Fd()) || isatty.IsCygwinTerminal(file.Fd())
 }
 
 func scheduleLifecycle(command *cobra.Command, deps Dependencies, info BuildInfo) {

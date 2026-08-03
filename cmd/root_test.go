@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"encoding/json"
+	"io"
 	"os"
 	"path/filepath"
 	"strings"
@@ -16,10 +17,14 @@ import (
 )
 
 func executeTest(t *testing.T, cwd string, args ...string) (string, string, error) {
+	return executeTestWithInput(t, cwd, "", false, args...)
+}
+
+func executeTestWithInput(t *testing.T, cwd, input string, terminal bool, args ...string) (string, string, error) {
 	t.Helper()
 	var stdout, stderr bytes.Buffer
 	home := t.TempDir()
-	deps := Dependencies{In: strings.NewReader(""), Out: &stdout, Err: &stderr, Getwd: func() (string, error) { return cwd, nil }, HomeDir: func() (string, error) { return home, nil }, Executable: func() (string, error) { return filepath.Join(cwd, "runx.exe"), nil }, Spawn: func(string, ...string) error { return nil }}
+	deps := Dependencies{In: strings.NewReader(input), Out: &stdout, Err: &stderr, Getwd: func() (string, error) { return cwd, nil }, HomeDir: func() (string, error) { return home, nil }, Executable: func() (string, error) { return filepath.Join(cwd, "runx.exe"), nil }, Spawn: func(string, ...string) error { return nil }, IsTerminal: func(io.Reader) bool { return terminal }}
 	root := NewRootCommand(deps, BuildInfo{Version: "1.2.3", Commit: "abc", Date: "2026-01-01T00:00:00Z", Target: "runx-windows-amd64"})
 	root.SetArgs(args)
 	err := root.Execute()
@@ -234,6 +239,68 @@ func TestCatalogCommandsReadRealManifest(t *testing.T) {
 	_, _, err = executeTest(t, cwd, "run", "--dry-run", "--", "-1")
 	require.Error(t, err)
 	assert.Equal(t, 3, ExitCode(err))
+}
+
+func TestRunPromptsForInteractiveConfirmation(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+	for _, answer := range []string{"y\n", "YES\r\n"} {
+		out, prompt, err := executeTestWithInput(t, cwd, answer, true, "run", "--dry-run", "danger-command")
+		require.NoError(t, err)
+		assert.Contains(t, prompt, "Command danger-command requires confirmation.")
+		assert.Contains(t, prompt, "runx run --dry-run --yes danger-command")
+		assert.Contains(t, prompt, "Are you sure? [y/N]:")
+		assert.Contains(t, out, "uid: danger-command")
+	}
+}
+
+func TestRunConfirmationDeclinesSafely(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+	for _, answer := range []string{"\n", "n\n", "no\n", "unexpected\n", ""} {
+		out, prompt, err := executeTestWithInput(t, cwd, answer, true, "run", "--dry-run", "danger-command")
+		require.Error(t, err)
+		assert.Equal(t, 2, ExitCode(err))
+		assert.Contains(t, err.Error(), "command danger-command was not authorized")
+		assert.Contains(t, err.Error(), "runx run --dry-run --yes danger-command")
+		assert.Contains(t, prompt, "Are you sure? [y/N]:")
+		assert.Empty(t, out)
+	}
+}
+
+func TestRunConfirmationNeverPromptsNonInteractiveOrJSONInput(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+
+	for _, test := range []struct {
+		args     []string
+		terminal bool
+		retry    string
+	}{
+		{[]string{"run", "danger-command"}, false, "runx run --yes danger-command"},
+		{[]string{"run", "--format", "json", "danger-command"}, true, "runx run --format json --yes danger-command"},
+	} {
+		out, prompt, err := executeTestWithInput(t, cwd, "yes\n", test.terminal, test.args...)
+		require.Error(t, err)
+		assert.Equal(t, 2, ExitCode(err))
+		assert.Contains(t, err.Error(), "requires confirmation; rerun exactly:")
+		assert.Contains(t, err.Error(), test.retry)
+		assert.Empty(t, out)
+		assert.Empty(t, prompt)
+	}
+}
+
+func TestRunConfirmationRetryPreservesChildArguments(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+	_, prompt, err := executeTestWithInput(t, cwd, "n\n", true, "run", "--dry-run", "danger-command", "--", "--force", "two words")
+	require.Error(t, err)
+	assert.Contains(t, prompt, `runx run --dry-run --yes danger-command -- --force "two words"`)
+
+	out, prompt, err := executeTestWithInput(t, cwd, "", true, "run", "--dry-run", "--yes", "danger-command")
+	require.NoError(t, err)
+	assert.Empty(t, prompt)
+	assert.Contains(t, out, "uid: danger-command")
 }
 
 func TestListTextAlignsColumns(t *testing.T) {

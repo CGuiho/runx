@@ -37,11 +37,20 @@ Forwarded arguments travel as an immutable array. Shell adapters use positional
 arguments or fixed environment-backed expansion; they never concatenate raw
 child values into executable source.
 
+A `confirm: always` command prompts only for interactive text input. The prompt
+defaults to no and accepts only `y` or `yes`, case-insensitively. It also prints
+an exact retry with `--yes` in RunX-owned position before the selector.
+Noninteractive and JSON invocations never read a response or block; they fail
+closed and report that same retry. The retry retains explicitly supplied RunX
+options and uses `--` before preserved child arguments.
+
 ## Consequences
 
 - RunX options such as `--yes` and `--dry-run` must precede the selector.
 - Numeric index selection preserves the selected command's confirmation policy
-  and never bypasses `--yes`.
+  and never bypasses confirmation.
+- `--yes` bypasses the prompt only when it appears before the selector.
+- Enter, `n`, `no`, EOF, and unrecognized responses decline without spawning.
 - Existing examples using post-selector RunX options are updated without an
   alias or compatibility parser.
 - Text and JSON dry runs expose the forwarded array separately from the trusted

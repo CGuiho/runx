@@ -83,6 +83,12 @@ the child and is forwarded without reinterpretation. The numeric `IDX` printed
 by `runx list` is convenient for interactive use; prefer stable UIDs for
 automation because indexes belong to the current resolved listing.
 
+Commands marked `confirm: always` ask `Are you sure? [y/N]` in an interactive
+terminal and show the exact command that skips the prompt, such as
+`runx run --yes cli-compile-host`. Enter or any answer other than `y` or `yes`
+declines. Noninteractive and JSON invocations never prompt; they fail closed
+with the same exact retry command.
+
 ## Manifest v2
 
 ```yaml
