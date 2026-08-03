@@ -177,6 +177,24 @@ metadata, use download progress, verify binary and skill archive checksums,
 replace transactionally, install both global skill copies, reconcile existing
 project instructions, and verify the installed version.
 
+RunX 0.8 uses the retired Bun release contract and cannot discover current
+native releases. When its updater reports that 0.8 is already current, migrate
+with the unpinned direct installer rather than its pinned 0.8 recovery command:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
+hash -r
+runx --version
+```
+
+```powershell
+irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
+runx --version
+```
+
+Restart an existing shell if it still resolves the old executable. Git Bash can
+load the installer-managed path immediately with `source ~/.bashrc`.
+
 `scripts/runx-bin.mjs` is a Node-compatible npm bootstrap. It downloads the
 package version's native artifact and checksum manifest into
 `~/.guiho/runx/npm/<version>/`, verifies SHA-256, and delegates stdio,

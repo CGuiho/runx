@@ -43,6 +43,30 @@ to the persistent user `Path`, the current PowerShell process, and Git Bash's
 `~/.bashrc` without duplicating entries. An existing Git Bash session can load
 the change immediately with `source ~/.bashrc`.
 
+### Migrate From RunX 0.8
+
+RunX 0.8 uses the retired Bun release contract and cannot discover current
+native releases. If `runx upgrade` reports that 0.8 is already up to date, use
+the unpinned installer instead of the pinned 0.8 recovery command.
+
+Linux and macOS:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
+hash -r
+runx --version
+```
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
+runx --version
+```
+
+Restart an existing shell if it still resolves the old executable. In Git Bash,
+`source ~/.bashrc` loads the installer-managed path without restarting.
+
 ## Start
 
 ```bash

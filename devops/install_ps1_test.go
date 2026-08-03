@@ -89,6 +89,28 @@ func TestREADMEPublishesSimplifiedPowerShellBootstrap(t *testing.T) {
 	}
 }
 
+func TestREADMEDocumentsLegacyNativeMigration(t *testing.T) {
+	readme, err := os.ReadFile(filepath.Join("..", "README.md"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	text := string(readme)
+	for _, expected := range []string{
+		"### Migrate From RunX 0.8",
+		"curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash",
+		"irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex",
+		"hash -r",
+		"runx --version",
+	} {
+		if !strings.Contains(text, expected) {
+			t.Errorf("README legacy migration guidance does not contain %q", expected)
+		}
+	}
+	if strings.Contains(text, "--version '0.8.0'") {
+		t.Fatal("README legacy migration guidance still recommends the pinned 0.8 installer")
+	}
+}
+
 func quotePowerShellLiteral(value string) string {
 	return strings.ReplaceAll(value, "'", "''")
 }
