@@ -1,21 +1,6 @@
----
-name: RunX
-purpose: Introduce the native RunX command-catalog CLI and its safe operating contract.
-description: Installation, manifest-v2 workflow, command discovery, execution, agent resources, upgrades, and Go release targets.
-created: 2026-07-12
-owner: runx
-flags: []
-tags:
-  - cli
-  - go
-  - cobra
-keywords:
-  - runx
-  - runx.yaml
-  - command catalog
----
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
-# RunX
+# GUIHO RunX
 
 RunX is a native Go/Cobra CLI for documented, language-agnostic command
 catalogs. A project owns one explicit `runx.yaml`; RunX validates and describes
