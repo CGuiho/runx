@@ -15,6 +15,17 @@ owner: runx
 
 # Changelog
 
+## 0.11.0 - 2026-08-07
+
+### Added
+
+- Interactive confirmation for `confirm: always` commands: `runx run` without
+  `--yes` now prompts `Are you sure? [y/N]` on a terminal instead of failing
+  with a `--yes`-required error. Only `y` or `yes`, case-insensitively,
+  authorizes execution; Enter, EOF, and every other answer decline without
+  spawning. Noninteractive and JSON invocations still fail closed and print
+  the exact `runx run --yes <selector>` retry.
+
 ## 0.10.1 - 2026-08-03
 
 ### Changed
