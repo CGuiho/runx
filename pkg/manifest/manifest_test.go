@@ -112,3 +112,173 @@ commands:
 	}
 	assert.Len(t, catalog.Children, 1)
 }
+
+func TestUIDCanEqualIDAcrossCommandsAndResolvesByUID(t *testing.T) {
+	directory := t.TempDir()
+	path := filepath.Join(directory, "runx.yaml")
+	content := `version: "2.0.0"
+namespace: app
+scripts:
+  directory: .scripts
+commands:
+  - group: cli
+    summary: CLI commands.
+    commands:
+      - uid: cli-test
+        id: test
+        summary: Test the CLI.
+        description: Run the CLI test suite.
+        command: go test ./cmd
+  - group: go
+    summary: Go commands.
+    commands:
+      - uid: test
+        id: test
+        summary: Test Go.
+        description: Run the Go test suite.
+        command: go test ./...
+`
+	require.NoError(t, os.WriteFile(path, []byte(content), 0o644))
+
+	parsed, err := manifest.ParseManifestBytes([]byte(content))
+	require.NoError(t, err)
+	indexed, err := manifest.IndexManifest(parsed, path)
+	require.NoError(t, err)
+	assert.Equal(t, "test", indexed["test"].UID, "the exact UID must win over the ambiguous ID shorthand")
+
+	catalog, err := manifest.Load(context.Background(), manifest.LoadOptions{CWD: directory})
+	require.NoError(t, err)
+	selected, ok := catalog.Resolve("test")
+	require.True(t, ok)
+	assert.Equal(t, "test", selected.UID)
+	assert.Equal(t, "go/test", selected.Selector)
+	selected, ok = catalog.Resolve("cli/test")
+	require.True(t, ok)
+	assert.Equal(t, "cli-test", selected.UID)
+	selected, ok = catalog.Resolve("go/test")
+	require.True(t, ok)
+	assert.Equal(t, "test", selected.UID)
+	selected, ok = catalog.Resolve("1")
+	require.True(t, ok)
+	assert.Equal(t, "cli-test", selected.UID)
+	selected, ok = catalog.Resolve("2")
+	require.True(t, ok)
+	assert.Equal(t, "test", selected.UID)
+}
+
+func TestAmbiguousIDShorthandDoesNotResolveWithoutUID(t *testing.T) {
+	directory := t.TempDir()
+	content := `version: "2.0.0"
+namespace: app
+scripts:
+  directory: scripts
+commands:
+  - group: cli
+    summary: CLI commands.
+    commands:
+      - uid: cli-test
+        id: test
+        summary: Test the CLI.
+        description: Run the CLI test suite.
+        command: go test ./cmd
+  - group: go
+    summary: Go commands.
+    commands:
+      - uid: go-test
+        id: test
+        summary: Test Go.
+        description: Run the Go test suite.
+        command: go test ./...
+`
+	require.NoError(t, os.WriteFile(filepath.Join(directory, "runx.yaml"), []byte(content), 0o644))
+	catalog, err := manifest.Load(context.Background(), manifest.LoadOptions{CWD: directory})
+	require.NoError(t, err)
+	_, ok := catalog.Resolve("test")
+	assert.False(t, ok, "an ambiguous unqualified ID must not select an arbitrary command")
+}
+
+func TestCompositionRejectsTrueIdentityCollisions(t *testing.T) {
+	tests := []struct {
+		name    string
+		content string
+	}{
+		{
+			name: "duplicate UID",
+			content: `version: "2.0.0"
+namespace: app
+scripts:
+  directory: scripts
+commands:
+  - group: cli
+    summary: CLI commands.
+    commands:
+      - uid: same
+        id: test
+        summary: Test the CLI.
+        description: Run the CLI test suite.
+        command: go test ./cmd
+  - group: go
+    summary: Go commands.
+    commands:
+      - uid: same
+        id: verify
+        summary: Verify Go.
+        description: Run the Go verification suite.
+        command: go test ./...
+`,
+		},
+		{
+			name: "UID collides with canonical selector",
+			content: `version: "2.0.0"
+namespace: app
+scripts:
+  directory: scripts
+commands:
+  - uid: top
+    id: one
+    summary: Top command.
+    description: Run the top command.
+    command: echo top
+  - group: nested
+    summary: Nested commands.
+    commands:
+      - uid: one
+        id: two
+        summary: Nested command.
+        description: Run the nested command.
+        command: echo nested
+`,
+		},
+		{
+			name: "ID collides with canonical selector",
+			content: `version: "2.0.0"
+namespace: app
+scripts:
+  directory: scripts
+commands:
+  - uid: top
+    id: one
+    summary: Top command.
+    description: Run the top command.
+    command: echo top
+  - group: nested
+    summary: Nested commands.
+    commands:
+      - uid: nested-command
+        id: one
+        summary: Nested command.
+        description: Run the nested command.
+        command: echo nested
+`,
+		},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			directory := t.TempDir()
+			require.NoError(t, os.WriteFile(filepath.Join(directory, "runx.yaml"), []byte(test.content), 0o644))
+			_, err := manifest.Load(context.Background(), manifest.LoadOptions{CWD: directory})
+			require.Error(t, err)
+		})
+	}
+}

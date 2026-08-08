@@ -33,13 +33,14 @@ type loadedCatalog struct {
 }
 
 type loadState struct {
-	active     map[string]bool
-	commands   []ResolvedCommand
-	groups     []Group
-	children   []Child
-	identities map[string]int
-	idOwners   map[string][]int
-	client     *http.Client
+	active    map[string]bool
+	commands  []ResolvedCommand
+	groups    []Group
+	children  []Child
+	uids      map[string]int
+	selectors map[string]int
+	idOwners  map[string][]int
+	client    *http.Client
 }
 
 func ResolveConfigPath(cwd, explicit, home string) (string, error) {
@@ -95,7 +96,7 @@ func Load(ctx context.Context, opts LoadOptions) (*Catalog, error) {
 		client = &http.Client{Timeout: 10 * time.Second}
 	}
 	state := &loadState{
-		active: map[string]bool{}, identities: map[string]int{}, idOwners: map[string][]int{}, client: client,
+		active: map[string]bool{}, uids: map[string]int{}, selectors: map[string]int{}, idOwners: map[string][]int{}, client: client,
 	}
 	if root.manifest.Parent != "" {
 		if err := validateDeclaredParent(ctx, root, state); err != nil {
@@ -106,13 +107,18 @@ func Load(ctx context.Context, opts LoadOptions) (*Catalog, error) {
 		return nil, err
 	}
 
-	lookup := map[string]int{}
-	for identity, index := range state.identities {
-		lookup[identity] = index
-	}
+	ids := map[string]int{}
 	for id, owners := range state.idOwners {
 		if len(owners) == 1 {
-			lookup[id] = owners[0]
+			// Exact UIDs and canonical selectors own their keys. Do not let a
+			// unique ID shorthand overwrite either identity class.
+			if _, exists := state.uids[id]; exists {
+				continue
+			}
+			if _, exists := state.selectors[id]; exists {
+				continue
+			}
+			ids[id] = owners[0]
 		}
 	}
 	for index := range state.commands {
@@ -121,7 +127,7 @@ func Load(ctx context.Context, opts LoadOptions) (*Catalog, error) {
 	return &Catalog{
 		Version: root.manifest.Version, Namespace: root.manifest.Namespace, Scripts: root.manifest.Scripts,
 		Parent: root.manifest.Parent, Path: root.path, Commands: state.commands, Groups: state.groups,
-		Children: state.children, lookup: lookup,
+		Children: state.children, uids: state.uids, selectors: state.selectors, ids: ids,
 	}, nil
 }
 
@@ -236,17 +242,26 @@ func registerCommand(catalog loadedCatalog, entry Command, prefix []string, stat
 		return fmt.Errorf("command %s has a cwd outside its catalog directory", entry.UID)
 	}
 	index := len(state.commands)
-	owner := selector
-	for _, identity := range []string{entry.UID, selector} {
-		if prior, ok := state.identities[identity]; ok && prior != index {
-			return fmt.Errorf("command identity %q conflicts with another command", identity)
-		}
-		if owners := state.idOwners[identity]; len(owners) > 0 {
-			return fmt.Errorf("command identity %q conflicts with a command ID shorthand", identity)
-		}
-		state.identities[identity] = index
+	if prior, ok := state.uids[entry.UID]; ok && prior != index {
+		return fmt.Errorf("command UID %q conflicts with another command", entry.UID)
 	}
-	_ = owner
+	if prior, ok := state.selectors[entry.UID]; ok && prior != index {
+		return fmt.Errorf("command UID %q conflicts with a canonical selector", entry.UID)
+	}
+	if prior, ok := state.selectors[selector]; ok && prior != index {
+		return fmt.Errorf("command selector %q conflicts with another command", selector)
+	}
+	if prior, ok := state.uids[selector]; ok && prior != index {
+		return fmt.Errorf("command selector %q conflicts with a command UID", selector)
+	}
+	if owners := state.idOwners[selector]; len(owners) > 0 {
+		return fmt.Errorf("command selector %q conflicts with a command ID shorthand", selector)
+	}
+	if prior, ok := state.selectors[entry.ID]; ok && prior != index {
+		return fmt.Errorf("command ID %q conflicts with a canonical selector", entry.ID)
+	}
+	state.uids[entry.UID] = index
+	state.selectors[selector] = index
 	state.idOwners[entry.ID] = append(state.idOwners[entry.ID], index)
 	shell := entry.Shell
 	if shell == "" {
@@ -395,7 +410,7 @@ func validateDeclaredParent(ctx context.Context, child loadedCatalog, state *loa
 	for _, reference := range references {
 		resolved, _, resolveErr := resolveReference(parent, reference)
 		if resolveErr == nil && resolved == child.path {
-			validation := &loadState{active: map[string]bool{}, identities: map[string]int{}, idOwners: map[string][]int{}, client: state.client}
+			validation := &loadState{active: map[string]bool{}, uids: map[string]int{}, selectors: map[string]int{}, idOwners: map[string][]int{}, client: state.client}
 			return expand(ctx, parent, nil, validation, 0)
 		}
 	}
@@ -415,7 +430,7 @@ func collectReferences(entries []Command, output *[]string) {
 // applying the v2 validation and selector rules to a single local catalog.
 func IndexManifest(manifest *Manifest, catalogPath string) (map[string]ResolvedCommand, error) {
 	base, _ := filepath.Abs(catalogPath)
-	state := &loadState{active: map[string]bool{}, identities: map[string]int{}, idOwners: map[string][]int{}}
+	state := &loadState{active: map[string]bool{}, uids: map[string]int{}, selectors: map[string]int{}, idOwners: map[string][]int{}}
 	loaded := loadedCatalog{manifest: *manifest, path: base, source: SourceLocal, basePath: filepath.Dir(base)}
 	if err := expand(context.Background(), loaded, nil, state, 0); err != nil {
 		return nil, err
@@ -428,6 +443,9 @@ func IndexManifest(manifest *Manifest, catalogPath string) (map[string]ResolvedC
 	}
 	for id, owners := range state.idOwners {
 		if len(owners) == 1 {
+			if _, exists := result[id]; exists {
+				continue
+			}
 			result[id] = state.commands[owners[0]]
 		}
 	}
