@@ -48,6 +48,8 @@ documents:
   runx-0.10.0-release.md: Release validation and independent publication evidence for RunX 0.10.0.
   runx-0.10.1-release.md: Release validation and independent publication evidence for RunX 0.10.1.
   runx-0.11.0-confirmation.md: Integration validation and protected release-boundary evidence for RunX PR #38.
+  runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
+  runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
 tags:
   - validation
 keywords:
