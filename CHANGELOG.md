@@ -15,6 +15,19 @@ owner: runx
 
 # Changelog
 
+## Unreleased
+
+### Changed
+
+- `runx init` now emits `.scripts` as the default `scripts.directory` while
+  preserving explicitly configured manifest directories.
+
+### Fixed
+
+- Manifest resolution now allows a globally unique UID to equal another
+  command's group-scoped ID, resolves exact UIDs before canonical selectors or
+  unambiguous ID shorthands, and leaves duplicate unqualified IDs ambiguous.
+
 ## 0.11.0 - 2026-08-07
 
 ### Added

@@ -53,9 +53,12 @@ runx run [RunX options] <uid-or-selector-or-index> [--] <child arguments...>
 
 Listing, describing, checking, help, agent operations, and dry runs must never
 execute a manifest command. Preserve the child command's exact exit code.
-Exact UID, selector, or unique-ID matches take precedence over numeric `IDX`
-fallback. Numeric indexes belong to the current resolved listing and must not
-replace stable UIDs in automation.
+Resolution is deterministic: exact global UID, canonical group-scoped
+selector, then an unqualified ID shorthand only when that ID has one owner.
+A UID may equal another command's ID and still wins exact lookup. Duplicate
+unqualified IDs remain ambiguous and fail instead of selecting arbitrarily.
+Numeric indexes are considered only after identity resolution, belong to the
+current resolved listing, and must not replace stable UIDs in automation.
 RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.
@@ -77,8 +80,12 @@ explicit authorization for that command.
 - Use only relative paths or full HTTPS GitHub blob/raw URLs for `runx` and
   `parent`. A mounted child must declare the exact reciprocal parent. The mount
   group name may rename the child namespace.
-- Keep sibling command/group names, global UIDs, and full selectors unique.
+- Keep sibling command/group names, global UIDs, and full selectors unique. IDs
+  are scoped by their containing group; use the full selector when an ID is
+  repeated. An ID that equals a UID is allowed because exact UID lookup wins.
 - Keep UIDs stable and never reuse one for materially different behavior.
+- `runx init` writes `.scripts` as the default `scripts.directory`; preserve an
+  explicitly configured directory value.
 - Use `confirm: always` for destructive, release, deployment, migration, and
   production-impacting operations.
 - Do not place secrets in `runx.yaml`.

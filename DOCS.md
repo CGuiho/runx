@@ -110,12 +110,18 @@ Relative foreign references cannot escape their GitHub owner/repository/ref.
 Foreign reads have a 10-second client deadline, a one-MiB limit, cycle
 protection, and a maximum graph depth of 32.
 
-UIDs, canonical selectors, and unique ID shorthands share one collision domain.
-Canonical selectors use slash-separated group paths. Exact identities resolve
-before a canonical positive-decimal `IDX` fallback. Numeric indexes refer to
-the current resolved `runx list` order and are intended for interactive use;
-stable UIDs remain the automation contract. Command and scripts paths are
-containment-validated before `check`, `list`, or `describe` succeeds.
+`runx init` writes `.scripts` as the default `scripts.directory`; an explicitly
+configured directory remains unchanged. Canonical selectors use slash-separated
+group paths. UIDs are globally unique, canonical selectors are unique, and
+unqualified ID shorthands are available only when their ID has one owner. A UID
+may equal another command's group-scoped ID: exact UID lookup wins before a
+canonical selector or unique ID shorthand. Duplicate unqualified IDs remain
+ambiguous and fail instead of selecting an arbitrary command. Exact textual
+identities resolve before a canonical positive-decimal `IDX` fallback. Numeric
+indexes refer to the current resolved `runx list` order and are intended for
+interactive use; stable UIDs remain the automation contract. Command and
+scripts paths are containment-validated before `check`, `list`, or `describe`
+succeeds.
 
 YAML uses `go.yaml.in/yaml/v3` with `KnownFields(true)`. Multiple documents and
 unknown fields are rejected before semantic validation.

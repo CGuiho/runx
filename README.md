@@ -68,6 +68,12 @@ the child and is forwarded without reinterpretation. The numeric `IDX` printed
 by `runx list` is convenient for interactive use; prefer stable UIDs for
 automation because indexes belong to the current resolved listing.
 
+Selectors resolve in a deterministic order: exact global UID, canonical
+group-scoped selector, then an unqualified ID shorthand only when that ID has a
+single owner. A UID may equal another command's ID; the UID still wins. Duplicate
+unqualified IDs remain ambiguous and fail instead of selecting an arbitrary
+command.
+
 Commands marked `confirm: always` ask `Are you sure? [y/N]` in an interactive
 terminal and show the exact command that skips the prompt, such as
 `runx run --yes cli-compile-host`. Enter or any answer other than `y` or `yes`
@@ -80,7 +86,7 @@ with the same exact retry command.
 version: "2.0.0"
 namespace: "example"
 scripts:
-  directory: "scripts"
+  directory: ".scripts"
 commands:
   - uid: "test-command"
     id: "test"
@@ -90,8 +96,11 @@ commands:
     confirm: "never"
 ```
 
+`runx init` writes `.scripts` as the default scripts directory. An explicitly
+configured `scripts.directory` value is preserved unchanged.
+
 Manifests are strictly decoded: unknown fields, invalid identifiers, unsafe
-paths, invalid shells, duplicate identities, non-reciprocal child catalogs,
+paths, duplicate UIDs or canonical selectors, non-reciprocal child catalogs,
 and unsupported manifest versions fail closed. Configuration precedence is:
 
 1. `--config <path>`;

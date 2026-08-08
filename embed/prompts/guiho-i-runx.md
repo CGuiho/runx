@@ -20,9 +20,12 @@ owner: runx-prompts
 Load the `guiho-s-runx` skill. From the intended project directory, run
 `runx check --format json`, then `runx list --format json`. Prefer a stable UID,
 inspect unfamiliar work with `runx describe <uid>`, and run
-`runx run --dry-run <uid>` before execution. RunX options belong before the
-selector; every token after it is forwarded to the child. Never add `--yes` unless the
-developer explicitly authorizes the confirmation-gated command.
+`runx run --dry-run <uid-or-selector-or-index>` before execution. RunX options
+belong before the selector; every token after it is forwarded to the child.
+Resolve exact global UIDs before canonical selectors or unique unqualified ID
+shorthands. A UID may equal another command's ID; duplicate unqualified IDs
+remain ambiguous and must fail. Never add `--yes` unless the developer
+explicitly authorizes the confirmation-gated command.
 
 When editing catalogs, use manifest v2: required `namespace`, recursive
 `commands`, command `id` leaves, group `group` nodes, and explicit reciprocal
