@@ -29,7 +29,7 @@ owner: runx
 | in progress | 0 |
 | testing | 2 |
 | stopped | 0 |
-| completed | 14 |
+| completed | 15 |
 
 ## Tasks
 
@@ -216,3 +216,18 @@ owner: runx
   - GitHub PR [CGuiho/runx#29](https://github.com/CGuiho/runx/pull/29) - Fix Windows installer PATH setup.
   - GitHub PR [CGuiho/runx#31](https://github.com/CGuiho/runx/pull/31) - Align list output and resolve numeric indexes.
 - Release: [RunX 0.10.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.10.0)
+
+### 16. Integrate RunX Pull Request 38
+
+- Status: completed
+- Created: `2026-08-08T12:56:02Z`
+- Updated: `2026-08-08T12:56:02Z`
+- Outcome: PR #38 merged its changelog-only 0.11.0 confirmation note into protected `main` after exact-head implementation review, validation, CI, mergeability, and reachability gates passed.
+- Review: [docs/reviews/implementation/runx-0.11.0-confirmation-review.md](docs/reviews/implementation/runx-0.11.0-confirmation-review.md)
+- Validation: [docs/validation/runx-0.11.0-confirmation.md](docs/validation/runx-0.11.0-confirmation.md)
+- External:
+  - GitHub PR [CGuiho/runx#38](https://github.com/CGuiho/runx/pull/38) - Record the interactive confirmation changelog.
+  - GitHub issue [CGuiho/runx#37](https://github.com/CGuiho/runx/issues/37) - Closed by the merged PR linkage.
+- Integration: merge commit [`3a140e1528c8edbbb5e2d5842c841a3b436df1dd`](https://github.com/CGuiho/runx/commit/3a140e1528c8edbbb5e2d5842c841a3b436df1dd); source branch deleted after main reachability was verified.
+- Release: Deferred; no version tag or GitHub Release was created under the user's merge-only authorization.
+- Question ledger: No repository question-ledger file exists and no unresolved questions were recorded for this changelog-only integration.
