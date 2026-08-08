@@ -18,6 +18,7 @@ files:
   unicode-help-tree-review.md: Accepts the Unicode nested and aligned help tree plus explicit legacy ASCII regression coverage for GitHub issue 17.
   runx-0.6.0-cli-experience-review.md: Accepts the welcome, safe child forwarding, simple installer, publishing gate removal, tests, assets, and release readiness for issues 23 through 25.
   manifest-v2-composition-review.md: Reviews issue 26 recursive decoding, graph identity, reciprocity, foreign loading, CLI integration, migration, and release readiness.
+  runx-0.11.0-confirmation-review.md: Materializes the accepted exact-head implementation review for merged PR #38.
 documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
@@ -33,6 +34,7 @@ documents:
   unicode-help-tree-review.md: Accepted implementation review for the RunX Unicode help tree.
   runx-0.6.0-cli-experience-review.md: Accepted implementation review for the RunX 0.6.0 CLI experience.
   manifest-v2-composition-review.md: Approved implementation review for RunX manifest v2 composition.
+  runx-0.11.0-confirmation-review.md: Accepted implementation review evidence for RunX PR #38.
 tags:
   - reviews
   - implementation
