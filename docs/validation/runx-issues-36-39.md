@@ -45,11 +45,19 @@ integration and remained valid.
 - Pull request: [CGuiho/runx#40](https://github.com/CGuiho/runx/pull/40), closed and merged.
 - GitHub comparison of main to the merge SHA: identical (ahead 0, behind 0).
 - Issues [#36](https://github.com/CGuiho/runx/issues/36) and [#39](https://github.com/CGuiho/runx/issues/39) were closed by the merged PR linkage.
-- The exact merged remote branch codex/issues-36-39 was scheduled for deletion only after main reachability was established; final branch state is recorded with this integration.
+- The exact merged remote branch codex/issues-36-39 was deleted after main reachability was established; a fresh branch search returned no match. The associated local isolated worktree C:\\GUIHO\\runx\\.temp\\issues-36-39 and its linked-worktree metadata were removed after confirming the worktree was clean.
 
 ## Release And Production Boundary
 
-- No version tag or GitHub Release was created.
+- No version tag or GitHub Release was created. The clean Mirror config check passed and mirror version plan minor proposed @guiho/runx/v0.11.0; apply/tag/push/release actions were explicitly deferred.
 - The tag-only publish workflow was not triggered by this merge.
 - No production deployment, promotion, traffic change, DNS change, database migration, secret mutation, or equivalent live behavior change occurred.
 - Question ledger: docs/questions/issues-36-39/plan-unit-1.md remains linked in XDocs and records no unresolved material question after review and validation.
+
+## Documentation Materialization
+
+- Review evidence: commit 7fd1a17cd419bbf2e79351f5c9770adb89edf490.
+- Validation evidence: commit bfc32a2062699781b13eaff407e9bacaa9e6d6b3.
+- XDocs indexes: commits 996b32e0784edfc939a340a26b0aa87f52a33ea6 and 05925b898fbd9aa0c538b310662ca865e8df0d36.
+- TODO integration record: commit 85eecaf72b1647198e9acfcb609678e897f24813.
+- Final main comparison is identical to 85eecaf72b1647198e9acfcb609678e897f24813 (ahead 0, behind 0).
