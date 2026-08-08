@@ -102,9 +102,12 @@ fields and multiple YAML documents.
 Local and GitHub child catalogs require reciprocal parents. Foreign catalogs
 are HTTPS GitHub blob/raw resources, limited to one MiB and ten seconds, and
 cannot escape an owner/repository/ref through relative references. Graph depth
-is limited to 32 and cycles fail closed. UID, selector, and unique ID shorthand
-collisions are validated across the composed graph. Command cwd and scripts
-paths must remain contained by their catalog base.
+is limited to 32 and cycles fail closed. UIDs remain globally unique and
+canonical selectors remain unique across the composed graph. IDs are scoped by
+their containing group; an unqualified ID shorthand is available only when it
+has one owner. Exact UIDs resolve before canonical selectors or ID shorthands,
+so a UID may equal another command's ID without ambiguity. Command cwd and
+scripts paths must remain contained by their catalog base.
 
 ### Output And Execution
 

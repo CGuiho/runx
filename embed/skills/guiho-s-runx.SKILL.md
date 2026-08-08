@@ -25,7 +25,8 @@ metadata:
 2. Run `runx list --format json`.
 3. Prefer a stable UID for automation.
 4. Run `runx describe <uid>` before unfamiliar work.
-5. Run `runx run --dry-run <uid>` before any mutation or high-impact command.
+5. Run `runx run --dry-run <uid-or-selector-or-index>` before any mutation or
+   high-impact command.
 
 RunX manifests are trusted executable code. A group name is not a safety
 boundary. Never add `--yes` unless the developer explicitly authorizes the
@@ -46,11 +47,16 @@ It does not search parent directories.
 Use only:
 
 ```text
-runx run [RunX options] <uid> [--] <child arguments...>
+runx run [RunX options] <uid-or-selector-or-index> [--] <child arguments...>
 ```
 
 Listing, describing, checking, help, agent operations, and dry runs must never
 execute a manifest command. Preserve the child command's exact exit code.
+Resolve selectors in this order: exact global UID, canonical group-scoped
+selector, then an unqualified ID shorthand with one owner. A UID may equal
+another command's ID; exact UID lookup wins. Duplicate unqualified IDs remain
+ambiguous and must fail instead of selecting arbitrarily. Numeric indexes are
+considered only after identity resolution.
 RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.
@@ -65,8 +71,12 @@ being interpreted as a RunX flag.
 - Use only relative paths or full HTTPS GitHub blob/raw URLs for `runx` and
   `parent`. A mounted child must declare the exact reciprocal parent. The mount
   group name may rename the child namespace.
-- Keep sibling command/group names, global UIDs, and full selectors unique.
+- Keep sibling command/group names, global UIDs, and full selectors unique. IDs
+  are scoped by their containing group; use the full selector when an ID is
+  repeated. An ID that equals a UID is allowed because exact UID lookup wins.
 - Keep UIDs stable and never reuse one for materially different behavior.
+- `runx init` writes `.scripts` as the default `scripts.directory`; preserve an
+  explicitly configured directory value.
 - Use `confirm: always` for destructive, release, deployment, migration, and
   production-impacting operations.
 - Do not place secrets in `runx.yaml`.

@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/CGuiho/runx/pkg/maintenance"
+	"github.com/CGuiho/runx/pkg/manifest"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/stretchr/testify/assert"
@@ -373,8 +374,25 @@ func TestAgentResourcesAndInit(t *testing.T) {
 	out, _, err = executeTest(t, newProject, "init", "--format", "json")
 	require.NoError(t, err)
 	assert.Contains(t, out, "created")
-	_, err = os.Stat(filepath.Join(newProject, "runx.yaml"))
+	initPath := filepath.Join(newProject, "runx.yaml")
+	_, err = os.Stat(initPath)
 	require.NoError(t, err)
+	initData, err := os.ReadFile(initPath)
+	require.NoError(t, err)
+	assert.Contains(t, string(initData), "directory: \".scripts\"")
+	parsed, err := manifest.ParseManifestBytes(initData)
+	require.NoError(t, err)
+	assert.Equal(t, ".scripts", parsed.Scripts.Directory)
+
+	configured := `version: "2.0.0"
+namespace: configured
+scripts:
+  directory: custom-scripts
+commands: []
+`
+	configuredManifest, err := manifest.ParseManifestBytes([]byte(configured))
+	require.NoError(t, err)
+	assert.Equal(t, "custom-scripts", configuredManifest.Scripts.Directory)
 }
 
 func TestEveryPublicScopeSupportsDeveloperContext(t *testing.T) {

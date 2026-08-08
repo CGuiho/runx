@@ -23,6 +23,9 @@ Manifest major version 2 removes `project` and top-level `groups`. Every file
 has one identifier-safe `namespace`, one relative `scripts.directory`, an
 optional explicit `parent`, and one recursive `commands` list.
 
+`runx init` emits `.scripts` as the default scripts directory. A manifest that
+sets `scripts.directory` explicitly retains that value.
+
 A list entry is either a command with stable `uid` and local `id`, or a group
 with `group`, `summary`, and exactly one of nested `commands` or `runx`.
 
@@ -65,11 +68,15 @@ commands:
 
 - Command IDs, group names, and mounted namespace aliases are unique among
   siblings. The manifest namespace cannot equal a top-level command or group.
-- UIDs, canonical selectors, and unique ID shorthands share one selection-key
-  collision domain across the composed graph. Aliases owned by the same command
-  may match; different commands may never shadow one another.
+- UIDs remain globally unique and canonical selectors remain unique across the
+  composed graph. Local command IDs are scoped by their containing group and
+  become unqualified shorthands only when they have one owner. A UID may equal
+  another command's ID; exact UID lookup wins before canonical selectors or ID
+  shorthands. Duplicate unqualified IDs remain ambiguous and fail rather than
+  selecting an arbitrary command.
 - Full selectors follow the recursive mount/group path, such as
-  `worker-alias/build/compile`; a unique UID or command ID remains selectable.
+  `worker-alias/build/compile`; an exact UID or unambiguous command ID remains
+  selectable.
 - Local child commands resolve `cwd` from their own catalog directory. Foreign
   commands resolve from the local mount root because a URL has no local cwd.
 - Cycles, depth beyond 32, non-GitHub URLs, absolute filesystem references,
