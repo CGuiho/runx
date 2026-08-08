@@ -324,7 +324,7 @@ func newInitCommand(deps Dependencies) *cobra.Command {
 			return withExitCode(5, err)
 		}
 		namespace := normalizeNamespace(filepath.Base(filepath.Dir(path)))
-		content := fmt.Sprintf("version: \"2.0.0\"\n\nnamespace: %q\n\nscripts:\n  directory: \"scripts\"\n\ncommands: []\n", namespace)
+		content := fmt.Sprintf("version: \"2.0.0\"\n\nnamespace: %q\n\nscripts:\n  directory: \".scripts\"\n\ncommands: []\n", namespace)
 		if _, err := manifest.ParseManifestBytes([]byte(content)); err != nil {
 			return withExitCode(3, err)
 		}
