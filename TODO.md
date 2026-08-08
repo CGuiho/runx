@@ -29,7 +29,7 @@ owner: runx
 | in progress | 0 |
 | testing | 2 |
 | stopped | 0 |
-| completed | 15 |
+| completed | 16 |
 
 ## Tasks
 
@@ -231,3 +231,21 @@ owner: runx
 - Integration: merge commit [`3a140e1528c8edbbb5e2d5842c841a3b436df1dd`](https://github.com/CGuiho/runx/commit/3a140e1528c8edbbb5e2d5842c841a3b436df1dd); source branch deleted after main reachability was verified.
 - Release: Deferred; no version tag or GitHub Release was created under the user's merge-only authorization.
 - Question ledger: No repository question-ledger file exists and no unresolved questions were recorded for this changelog-only integration.
+
+### 17. Fix RunX Issues 36 And 39
+
+- Status: completed
+- Created: `2026-08-08T15:00:00+02:00`
+- Updated: `2026-08-08T22:50:59Z`
+- Outcome: RunX now resolves exact global UIDs before canonical selectors and unique unqualified ID shorthands, preserves ambiguity failures and numeric-index fallback, and emits `.scripts` as the current Go `runx init` default while preserving explicit directories.
+- Spec: [docs/todo/issues-36-39.md](docs/todo/issues-36-39.md)
+- Implementation: [docs/todo/issues-36-39-implementation.md](docs/todo/issues-36-39-implementation.md)
+- Review: [docs/reviews/implementation/runx-issues-36-39-review.md](docs/reviews/implementation/runx-issues-36-39-review.md)
+- Validation: [docs/validation/runx-issues-36-39.md](docs/validation/runx-issues-36-39.md)
+- Questions: [docs/questions/issues-36-39/plan-unit-1.md](docs/questions/issues-36-39/plan-unit-1.md)
+- External:
+  - GitHub PR [CGuiho/runx#40](https://github.com/CGuiho/runx/pull/40) - Fix RunX selector identities and init defaults.
+  - GitHub issue [CGuiho/runx#36](https://github.com/CGuiho/runx/issues/36) - Closed by the merged PR linkage.
+  - GitHub issue [CGuiho/runx#39](https://github.com/CGuiho/runx/issues/39) - Closed by the merged PR linkage.
+- Integration: merge commit [`e3aed59680c4eea4d18597c3ccd8754daa77830e`](https://github.com/CGuiho/runx/commit/e3aed59680c4eea4d18597c3ccd8754daa77830e); main reachability was verified before cleanup.
+- Release: Deferred; no version tag or GitHub Release was created under the user's merge-only authorization.
