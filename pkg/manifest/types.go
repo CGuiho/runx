@@ -80,11 +80,22 @@ type Catalog struct {
 	Commands  []ResolvedCommand `json:"commands"`
 	Groups    []Group           `json:"groups"`
 	Children  []Child           `json:"children"`
-	lookup    map[string]int
+	uids      map[string]int
+	selectors map[string]int
+	ids       map[string]int
 }
 
 func (catalog *Catalog) Resolve(selector string) (ResolvedCommand, bool) {
-	if index, ok := catalog.lookup[selector]; ok {
+	// A UID is the stable global automation key. Resolve it before canonical
+	// selectors and unqualified ID shorthands so a UID may safely equal an ID
+	// owned by another command without making lookup nondeterministic.
+	if index, ok := catalog.uids[selector]; ok {
+		return catalog.Commands[index], true
+	}
+	if index, ok := catalog.selectors[selector]; ok {
+		return catalog.Commands[index], true
+	}
+	if index, ok := catalog.ids[selector]; ok {
 		return catalog.Commands[index], true
 	}
 	numericIndex, err := strconv.Atoi(selector)
