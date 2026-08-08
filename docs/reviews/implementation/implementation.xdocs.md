@@ -35,6 +35,7 @@ documents:
   runx-0.6.0-cli-experience-review.md: Accepted implementation review for the RunX 0.6.0 CLI experience.
   manifest-v2-composition-review.md: Approved implementation review for RunX manifest v2 composition.
   runx-0.11.0-confirmation-review.md: Accepted implementation review evidence for RunX PR #38.
+  runx-issues-36-39-review.md: Accepted implementation review evidence for RunX PR #40.
 tags:
   - reviews
   - implementation
