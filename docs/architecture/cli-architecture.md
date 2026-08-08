@@ -34,7 +34,10 @@ effective working directory's `runx.yaml`, then
 rejects unknown fields and validates the typed manifest-v2 graph before
 `list`, `describe`, `check`, or `run` can use it. Local and bounded GitHub child
 catalogs require reciprocal parent declarations; graph depth, document size,
-cycles, identifiers, selectors, and UIDs are validated deterministically.
+cycles, identifiers, selectors, and UIDs are validated deterministically. UIDs
+resolve before canonical selectors and unambiguous group-scoped ID shorthands;
+a UID may equal another command's ID, while duplicate ID shorthands remain
+ambiguous and fail closed.
 
 Inspection commands render stable text or JSON and never reach the executor.
 Only `run` resolves a command leaf and invokes `pkg/executor`. POSIX positional

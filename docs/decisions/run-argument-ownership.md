@@ -23,11 +23,14 @@ owner: runx-decisions
 ## Decision
 
 For `runx run`, RunX owns tokens before the selector and the selected command
-owns tokens after it. A selector may be an exact UID, canonical selector,
-unique ID shorthand, or the canonical positive-decimal `IDX` from the current
-resolved listing. Exact textual identities resolve before numeric-index
-fallback. Numeric indexes are an interactive convenience; stable UIDs remain
-the automation contract.
+owns tokens after it. A selector may be an exact UID, canonical selector, unique
+ID shorthand, or the canonical positive-decimal `IDX` from the current resolved
+listing. Resolution checks the exact global UID first, then the canonical
+selector, then an unqualified ID shorthand with one owner. A UID may equal
+another command's ID; the UID still wins. Duplicate unqualified IDs remain
+ambiguous and fail rather than selecting an arbitrary command. Exact textual
+identities resolve before numeric-index fallback. Numeric indexes are an
+interactive convenience; stable UIDs remain the automation contract.
 
 An immediate `--` after the selector is a delimiter and is not forwarded. RunX
 never reinterprets a child `-v`, `--help`, `--yes`, `--dry-run`, `--format`, or

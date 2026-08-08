@@ -50,6 +50,12 @@ stream and canceled immediately after crossing one MiB.
 V1 manifests fail closed and must migrate. The previous public-group
 requirement, split `groups` map, `group` field on command leaves, and
 `project.name` are removed. Stable UIDs remain the preferred automation key.
+
+UIDs are globally unique and canonical selectors are unique across the
+composed graph. Command IDs remain scoped to their containing group. A UID may
+equal another command's ID because exact global UID lookup has precedence over
+canonical selectors and unqualified ID shorthands. Duplicate unqualified IDs
+remain ambiguous and fail instead of selecting an arbitrary command.
 This decision supersedes the manifest-shape portions of the alpha and
 interactive-init decisions; it does not change execution confirmation, shell
 safety, CLI technology, release assets, or issue 22.
