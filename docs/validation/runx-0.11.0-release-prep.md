@@ -1,7 +1,7 @@
 ---
 name: RunX 0.11.0 Release Preparation Integration Validation
-purpose: Preserve exact-head validation, protected merge, main reachability, and deferred publication evidence for RunX PR #41.
-description: Records the ready validation gate, successful merge, reachable source state, release boundary, and durable evidence for the RunX 0.11.0 preparation.
+purpose: Preserve exact-head validation, protected merge, main reachability, and final publication evidence for RunX 0.11.0.
+description: Records the ready validation gate, successful merge, reachable source state, canonical tag, successful publication workflow, asset verification, and durable evidence for the RunX 0.11.0 release.
 created: 2026-08-09
 flags:
   - ready
@@ -22,13 +22,13 @@ keywords:
 owner: runx-validation
 ---
 
-# RunX 0.11.0 Release Preparation Integration Validation
+# RunX 0.11.0 Release Preparation and Publication Validation
 
 ## Verdict
 
-Ready for the pull-request integrator at exact head
+The preparation gate was ready for the pull-request integrator at exact head
 `5126294b3ecc74b6d606c8b4159b03d01ea9de6f`; the gate was reobserved before
-merge and remained valid.
+merge and remained valid. Final publication verification is complete below.
 
 ## Immutable Validation Evidence
 
@@ -49,40 +49,45 @@ merge and remained valid.
 ## Merge Evidence
 
 - Merge result: [`4ed75572acb32d35be12d36e1e760671300f2733`](https://github.com/CGuiho/runx/commit/4ed75572acb32d35be12d36e1e760671300f2733).
-- `origin/main` is exactly that merge commit in the clean release clone, and
-  the PR merge commit is an ancestor of `main`.
+- The PR merge commit is an ancestor of the release source `main` commit
+  `e2b86336ebd95bc6bf25d395f518a1dce66132e1`.
 - The merged PR is closed, no open PR remains, and issues #36 and #39 are
   closed with completed state reasons.
 - No implementation correction or production mutation occurred.
 
-## Release And Production Boundary
+## Historical Protected-Credential Attempt
 
-- `mirror version current` remains `0.10.1`; `mirror version plan minor`
-  selects canonical tag `@guiho/runx/v0.11.0`.
-- `@guiho/runx/v0.11.0` has not been created; the tag-only publication
-  workflow has not run. Mirror apply is the only authorized tag/push path.
-- GitHub Release assets, independent remote checksums, npm latest, and
-  downloaded post-publication smoke remain pending until the protected Mirror
-  release succeeds.
-- On final `main` `e2b86336ebd95bc6bf25d395f518a1dce66132e1`, the exact
-  `mirror version apply minor --yes` command was attempted. After a local
-  OpenSSL transport correction, Mirror reached the protected tag push but Git
-  Credential Manager failed to persist credentials with `wincredman` because
-  no TTY was available. The failed local tag was removed and OpenSSL
-  `ls-remote` confirmed no remote `@guiho/runx/v0.11.0` tag; consequently no
-  GitHub Release, workflow publication, or npm mutation occurred.
+- An earlier attempt from the pre-credential clean clone reached the protected
+  Mirror tag push but could not persist `wincredman` credentials. Its local tag
+  was removed and no remote tag or release remained. This historical blocker is
+  retained in PR #43's merged evidence; it did not bypass the canonical path.
 - No deployment, promotion, traffic, DNS, database, secret, or other
   production-infrastructure mutation occurred.
 
-## Cleanup Boundary
+## Final Publication Verification
 
-The two exact merged release branches remain remotely visible because the
-authenticated Git push required for branch deletion is unavailable in this
-environment. No unmerged or arbitrary branch was touched; deletion can resume
-after Git credentials are restored.
+- Clean final clone was synchronized to release source `main`
+  `e2b86336ebd95bc6bf25d395f518a1dce66132e1`; `mirror config check` passed,
+  `mirror version current` was `0.10.1`, and `mirror version plan minor`
+  selected `@guiho/runx/v0.11.0`.
+- The only apply command was `mirror version apply minor --yes`; Mirror reported
+  `applied: true` and created/pushed annotated tag object
+  `51edf2e95849ca636fb05a4a6cfe161176a02314`, peeling to
+  `e2b86336ebd95bc6bf25d395f518a1dce66132e1`.
+- Tag-only workflow [31295252704](https://github.com/CGuiho/runx/actions/runs/31295252704) completed successfully. The [GitHub release](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%2Fv0.11.0) is non-draft and non-prerelease with exactly 11 assets.
+- Independent download contained the exact 11 expected names; all ten
+  payload hashes matched `checksums.txt` and each corresponding GitHub asset
+  digest. Windows AMD64 download reported `0.11.0` for `--version`, while
+  `--help` and `--help-tree` exited 0. `npm.cmd view @guiho/runx@latest version`
+  returned `0.11.0`.
+- No unmerged or arbitrary branch was touched. Merged release-prep,
+  integration, and blocker branches were deleted after main reachability was
+  verified.
+- No deployment, promotion, traffic, DNS, database, secret, or other
+  production-infrastructure mutation occurred.
 
 ## Handoff
 
-This integration record hands the immutable review, validation, merge, and
-release-boundary evidence to the final validation reporter. No unresolved
-question-ledger item exists for this release-preparation change.
+This record hands the immutable review, validation, merge, publication, and
+production-boundary evidence to the completion ledger. No unresolved
+question-ledger item exists for this release.

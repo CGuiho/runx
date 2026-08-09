@@ -252,13 +252,15 @@ owner: runx
 
 ### 18. Publish RunX 0.11.0
 
-- Status: testing
+- Status: completed
 - Priority: highest
 - Created: `2026-08-09T00:00:00+02:00`
-- Updated: `2026-08-09T07:00:00+02:00`
+- Updated: `2026-08-09T08:00:00+02:00`
 - Outcome: Publish the externally visible interactive-confirmation capability and compatible selector/init corrections as the Mirror-managed 0.11.0 release.
-- Spec: [docs/todo/release-runx-0.11.0.md](docs/todo/release-runx-0.11.0.md)
+- Spec: [docs/todo/done/release-runx-0.11.0.md](docs/todo/done/release-runx-0.11.0.md)
 - Review: [docs/reviews/implementation/runx-0.11.0-release-prep-review.md](docs/reviews/implementation/runx-0.11.0-release-prep-review.md)
 - Validation: [docs/validation/runx-0.11.0-release-prep.md](docs/validation/runx-0.11.0-release-prep.md)
-- Integration: merge commit [`4ed75572acb32d35be12d36e1e760671300f2733`](https://github.com/CGuiho/runx/commit/4ed75572acb32d35be12d36e1e760671300f2733); publication remains pending the authorized Mirror workflow.
-- Publication attempt: Mirror reached the protected tag push after the OpenSSL transport correction but Git Credential Manager could not persist `wincredman` credentials; no remote tag/release was created and the failed local tag was removed.
+- Integration: merge commit [`4ed75572acb32d35be12d36e1e760671300f2733`](https://github.com/CGuiho/runx/commit/4ed75572acb32d35be12d36e1e760671300f2733).
+- Release: [`@guiho/runx/v0.11.0`](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%2Fv0.11.0), sourced from [`e2b86336ebd95bc6bf25d395f518a1dce66132e1`](https://github.com/CGuiho/runx/commit/e2b86336ebd95bc6bf25d395f518a1dce66132e1); publish workflow [31295252704](https://github.com/CGuiho/runx/actions/runs/31295252704) succeeded.
+- Acceptance: non-draft, non-prerelease release with exactly 11 assets; independent checksums and GitHub digests matched, downloaded Windows AMD64 version/help/help-tree smoke passed, and npm latest is `0.11.0`.
+- Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
