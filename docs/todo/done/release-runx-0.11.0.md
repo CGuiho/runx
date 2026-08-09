@@ -5,9 +5,10 @@ description: Records the minor-release decision, Mirror plan and apply, full Go 
 created: 2026-08-09
 flags:
   - release
-  - testing
+  - completed
 tags:
   - todo
+  - done
   - release
   - mirror
 keywords:
@@ -15,7 +16,7 @@ keywords:
   - interactive confirmation
   - selector identities
   - init defaults
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # Publish RunX 0.11.0
@@ -23,8 +24,8 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `18. Publish RunX 0.11.0`
-- Status: testing
-- Index: [TODO.md](../../TODO.md)
+- Status: completed
+- Index: [TODO.md](../../../TODO.md)
 
 ## Decision
 
@@ -57,42 +58,28 @@ included in the same release boundary.
 
 ## Acceptance Signals
 
-- `main` is clean and synchronized at `e2b86336ebd95bc6bf25d395f518a1dce66132e1`.
-- Prior tag `@guiho/runx/v0.10.1` is an ancestor and no `0.11.0` tag/release exists.
-- Mirror config is valid and `mirror version plan minor` selects
-  `@guiho/runx/v0.11.0`.
+- Release source `main` was clean and synchronized at
+  [`e2b86336ebd95bc6bf25d395f518a1dce66132e1`](https://github.com/CGuiho/runx/commit/e2b86336ebd95bc6bf25d395f518a1dce66132e1) before the tag apply; the archived documentation commits follow that source.
+- Prior tag `@guiho/runx/v0.10.1` is an ancestor and Mirror config is valid;
+  `mirror version plan minor` selected `@guiho/runx/v0.11.0`.
 - Go formatting, tidy, tests, vet, build, native smoke, XDocs, and exact
-  11-artifact verification pass.
-- Publication completes with a non-draft, non-prerelease release containing
-  exactly eight binaries, the skill ZIP, instruction Markdown, and checksums.
-- Independent asset digests and checksum downloads match; npm latest is 0.11.0.
+  11-artifact verification passed.
+- The annotated tag object is `51edf2e95849ca636fb05a4a6cfe161176a02314`
+  and peels to the release source commit above.
+- Publication workflow [31295252704](https://github.com/CGuiho/runx/actions/runs/31295252704) succeeded after the authorized package/source environment approval.
+- The [GitHub release](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%2Fv0.11.0) is non-draft and non-prerelease with exactly 11 assets: eight binaries, the skill ZIP, instruction Markdown, and checksums.
+- Independent downloaded SHA-256 values match `checksums.txt` and every GitHub asset digest; downloaded Windows AMD64 `--version` reported `0.11.0`, `--help` and `--help-tree` exited 0; npm latest is `0.11.0`.
+- No deployment, promotion, traffic, DNS, database, secret, or other
+  production-infrastructure mutation occurred.
 
 ## Validation Record
 
 Preparation integration is complete at merge commit
 [`4ed75572acb32d35be12d36e1e760671300f2733`](https://github.com/CGuiho/runx/commit/4ed75572acb32d35be12d36e1e760671300f2733).
 The immutable implementation review is recorded at
-[docs/reviews/implementation/runx-0.11.0-release-prep-review.md](../reviews/implementation/runx-0.11.0-release-prep-review.md)
+[docs/reviews/implementation/runx-0.11.0-release-prep-review.md](../../reviews/implementation/runx-0.11.0-release-prep-review.md)
 and the ready validation at
-[docs/validation/runx-0.11.0-release-prep.md](../validation/runx-0.11.0-release-prep.md).
+[docs/validation/runx-0.11.0-release-prep.md](../../validation/runx-0.11.0-release-prep.md).
 
-The final publication record remains to be completed after the tag-triggered
-workflow and independent download verification. It must record the final main
-SHA, annotated tag object and peeled source target, workflow URLs/status,
-release URL/assets, npm evidence, Windows AMD64 version/help smoke, and the
-production-boundary result.
-
-## Publication Attempt
-
-On final `main` `e2b86336ebd95bc6bf25d395f518a1dce66132e1`, the exact authorized
-command `mirror version apply minor --yes` was attempted. Mirror first hit the
-Windows Schannel credential boundary during remote tag inspection. A
-repository-local OpenSSL setting allowed the canonical command to reach the
-protected tag push, which then failed because Git Credential Manager could not
-persist credentials with `wincredman` and no interactive TTY was available.
-The local tag created by that failed Mirror attempt was removed; OpenSSL
-`ls-remote` confirmed that `@guiho/runx/v0.11.0` does not exist remotely, so no
-GitHub Release, package publication, or tag-triggered workflow was created.
-
-Publication is blocked pending a valid Git credential for the protected Mirror
-push. No production infrastructure action occurred.
+The completion ledger records the release URL, workflow, tag object and peeled
+source target, asset/checksum verification, npm evidence, and native smoke.
