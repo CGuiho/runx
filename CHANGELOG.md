@@ -17,6 +17,19 @@ owner: runx
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.11.0 - 2026-08-09
+
+### Added
+
+- Interactive confirmation for `confirm: always` commands: `runx run` without
+  `--yes` now prompts `Are you sure? [y/N]` on a terminal instead of failing
+  with a `--yes`-required error. Only `y` or `yes`, case-insensitively,
+  authorizes execution; Enter, EOF, and every other answer decline without
+  spawning. Noninteractive and JSON invocations still fail closed and print
+  the exact `runx run --yes <selector>` retry.
+
 ### Changed
 
 - `runx init` now emits `.scripts` as the default `scripts.directory` while
@@ -27,17 +40,6 @@ owner: runx
 - Manifest resolution now allows a globally unique UID to equal another
   command's group-scoped ID, resolves exact UIDs before canonical selectors or
   unambiguous ID shorthands, and leaves duplicate unqualified IDs ambiguous.
-
-## 0.11.0 - 2026-08-07
-
-### Added
-
-- Interactive confirmation for `confirm: always` commands: `runx run` without
-  `--yes` now prompts `Are you sure? [y/N]` on a terminal instead of failing
-  with a `--yes`-required error. Only `y` or `yes`, case-insensitively,
-  authorizes execution; Enter, EOF, and every other answer decline without
-  spawning. Noninteractive and JSON invocations still fail closed and print
-  the exact `runx run --yes <selector>` retry.
 
 ## 0.10.1 - 2026-08-03
 
