@@ -64,8 +64,22 @@ merge and remained valid.
 - GitHub Release assets, independent remote checksums, npm latest, and
   downloaded post-publication smoke remain pending until the protected Mirror
   release succeeds.
+- On final `main` `e2b86336ebd95bc6bf25d395f518a1dce66132e1`, the exact
+  `mirror version apply minor --yes` command was attempted. After a local
+  OpenSSL transport correction, Mirror reached the protected tag push but Git
+  Credential Manager failed to persist credentials with `wincredman` because
+  no TTY was available. The failed local tag was removed and OpenSSL
+  `ls-remote` confirmed no remote `@guiho/runx/v0.11.0` tag; consequently no
+  GitHub Release, workflow publication, or npm mutation occurred.
 - No deployment, promotion, traffic, DNS, database, secret, or other
   production-infrastructure mutation occurred.
+
+## Cleanup Boundary
+
+The two exact merged release branches remain remotely visible because the
+authenticated Git push required for branch deletion is unavailable in this
+environment. No unmerged or arbitrary branch was touched; deletion can resume
+after Git credentials are restored.
 
 ## Handoff
 

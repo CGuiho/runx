@@ -57,7 +57,7 @@ included in the same release boundary.
 
 ## Acceptance Signals
 
-- `main` is clean and synchronized at `71117e5715c7c5095429dd482e6ad4f809853b1d`.
+- `main` is clean and synchronized at `e2b86336ebd95bc6bf25d395f518a1dce66132e1`.
 - Prior tag `@guiho/runx/v0.10.1` is an ancestor and no `0.11.0` tag/release exists.
 - Mirror config is valid and `mirror version plan minor` selects
   `@guiho/runx/v0.11.0`.
@@ -81,3 +81,18 @@ workflow and independent download verification. It must record the final main
 SHA, annotated tag object and peeled source target, workflow URLs/status,
 release URL/assets, npm evidence, Windows AMD64 version/help smoke, and the
 production-boundary result.
+
+## Publication Attempt
+
+On final `main` `e2b86336ebd95bc6bf25d395f518a1dce66132e1`, the exact authorized
+command `mirror version apply minor --yes` was attempted. Mirror first hit the
+Windows Schannel credential boundary during remote tag inspection. A
+repository-local OpenSSL setting allowed the canonical command to reach the
+protected tag push, which then failed because Git Credential Manager could not
+persist credentials with `wincredman` and no interactive TTY was available.
+The local tag created by that failed Mirror attempt was removed; OpenSSL
+`ls-remote` confirmed that `@guiho/runx/v0.11.0` does not exist remotely, so no
+GitHub Release, package publication, or tag-triggered workflow was created.
+
+Publication is blocked pending a valid Git credential for the protected Mirror
+push. No production infrastructure action occurred.
