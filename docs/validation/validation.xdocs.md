@@ -25,6 +25,7 @@ files:
   runx-0.10.0-release.md: Records live unreleased-PR ancestry, SemVer, Go/XDocs checks, Mirror effects, workflow publication, exact assets, checksums, and native smoke evidence.
   runx-0.10.1-release.md: Records the live post-0.10.0 boundary, patch SemVer, full Go/XDocs validation, Mirror publication, exact assets, checksums, npm, and native smoke evidence.
   runx-0.11.0-confirmation.md: Preserves exact-head validation, merge, reachability, cleanup, and deferred release evidence for PR #38.
+  runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -48,7 +49,6 @@ documents:
   runx-0.10.0-release.md: Release validation and independent publication evidence for RunX 0.10.0.
   runx-0.10.1-release.md: Release validation and independent publication evidence for RunX 0.10.1.
   runx-0.11.0-confirmation.md: Integration validation and protected release-boundary evidence for RunX PR #38.
-  runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
   runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
 tags:
   - validation
