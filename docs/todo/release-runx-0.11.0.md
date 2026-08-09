@@ -69,7 +69,15 @@ included in the same release boundary.
 
 ## Validation Record
 
-To be completed after the tag-triggered workflow and independent download
-verification. Record the final main SHA, annotated tag object and peeled source
-target, workflow URLs/status, release URL/assets, npm evidence, Windows AMD64
-version/help smoke, and production-boundary result here.
+Preparation integration is complete at merge commit
+[`4ed75572acb32d35be12d36e1e760671300f2733`](https://github.com/CGuiho/runx/commit/4ed75572acb32d35be12d36e1e760671300f2733).
+The immutable implementation review is recorded at
+[docs/reviews/implementation/runx-0.11.0-release-prep-review.md](../reviews/implementation/runx-0.11.0-release-prep-review.md)
+and the ready validation at
+[docs/validation/runx-0.11.0-release-prep.md](../validation/runx-0.11.0-release-prep.md).
+
+The final publication record remains to be completed after the tag-triggered
+workflow and independent download verification. It must record the final main
+SHA, annotated tag object and peeled source target, workflow URLs/status,
+release URL/assets, npm evidence, Windows AMD64 version/help smoke, and the
+production-boundary result.

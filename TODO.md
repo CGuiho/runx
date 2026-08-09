@@ -258,3 +258,6 @@ owner: runx
 - Updated: `2026-08-09T00:00:00+02:00`
 - Outcome: Publish the externally visible interactive-confirmation capability and compatible selector/init corrections as the Mirror-managed 0.11.0 release.
 - Spec: [docs/todo/release-runx-0.11.0.md](docs/todo/release-runx-0.11.0.md)
+- Review: [docs/reviews/implementation/runx-0.11.0-release-prep-review.md](docs/reviews/implementation/runx-0.11.0-release-prep-review.md)
+- Validation: [docs/validation/runx-0.11.0-release-prep.md](docs/validation/runx-0.11.0-release-prep.md)
+- Integration: merge commit [`4ed75572acb32d35be12d36e1e760671300f2733`](https://github.com/CGuiho/runx/commit/4ed75572acb32d35be12d36e1e760671300f2733); publication remains pending the authorized Mirror workflow.
