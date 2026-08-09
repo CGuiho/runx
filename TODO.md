@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 2 |
+| testing | 3 |
 | stopped | 0 |
 | completed | 16 |
 
@@ -249,3 +249,12 @@ owner: runx
   - GitHub issue [CGuiho/runx#39](https://github.com/CGuiho/runx/issues/39) - Closed by the merged PR linkage.
 - Integration: merge commit [`e3aed59680c4eea4d18597c3ccd8754daa77830e`](https://github.com/CGuiho/runx/commit/e3aed59680c4eea4d18597c3ccd8754daa77830e); main reachability was verified before cleanup.
 - Release: Deferred; no version tag or GitHub Release was created under the user's merge-only authorization.
+
+### 18. Publish RunX 0.11.0
+
+- Status: testing
+- Priority: highest
+- Created: `2026-08-09T00:00:00+02:00`
+- Updated: `2026-08-09T00:00:00+02:00`
+- Outcome: Publish the externally visible interactive-confirmation capability and compatible selector/init corrections as the Mirror-managed 0.11.0 release.
+- Spec: [docs/todo/release-runx-0.11.0.md](docs/todo/release-runx-0.11.0.md)
