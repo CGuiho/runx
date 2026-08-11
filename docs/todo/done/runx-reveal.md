@@ -4,7 +4,7 @@ purpose: Define the expected outcome, constraints, and completion signals for TO
 description: Specifies exact command revelation, selector parity, no-execution safety, documentation, validation, and minor-release acceptance.
 created: "2026-08-11"
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - cli
@@ -14,7 +14,7 @@ keywords:
   - issue 47
   - selector
   - no spawn
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # Add RunX Reveal
@@ -22,9 +22,9 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `21. Add RunX Reveal`
-- Status: testing
-- Index: [TODO.md](../../TODO.md)
-- Parent coordination: [GUIHO root TODO](../../../guiho/TODO.md)
+- Status: completed
+- Index: [TODO.md](../../../TODO.md)
+- Parent coordination: [GUIHO root TODO](../../../../guiho/TODO.md)
 
 ## Outcome
 
@@ -76,12 +76,12 @@ command for the user to copy and run, without spawning or confirming it.
 
 ## Related Files
 
-- [Feature brainstorm](../brainstorm/runx-reveal.md)
-- [Implementation plan](../plans/runx-reveal.md)
-- [Plan review](../reviews/plans/runx-reveal-review.md)
-- [Question ledger](../questions/runx-reveal/plan-unit-1.md)
+- [Feature brainstorm](../../brainstorm/runx-reveal.md)
+- [Implementation plan](../../plans/runx-reveal.md)
+- [Plan review](../../reviews/plans/runx-reveal-review.md)
+- [Question ledger](../../questions/runx-reveal/plan-unit-1.md)
 - [Implementation note](runx-reveal-implementation.md)
-- [Run argument ownership](../decisions/run-argument-ownership.md)
+- [Run argument ownership](../../decisions/run-argument-ownership.md)
 
 ## Dependencies And Context
 
@@ -124,3 +124,10 @@ command for the user to copy and run, without spawning or confirming it.
 
 `runx reveal` is a new public capability, so the required target is `minor`.
 Mirror, not manual version edits or tags, owns the transition.
+
+## Final Acceptance
+
+PR #50 and evidence PR #53 reached protected main. Mirror published
+`@guiho/runx/v0.12.0` with exactly 11 assets through successful workflow
+31474091754. The downloaded Windows AMD64 binary matched its checksum, reported
+0.12.0, and revealed the exact GUIHO Core command without execution.

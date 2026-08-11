@@ -4,7 +4,7 @@ purpose: Fix the Windows shell boundary that changes MSYS path arguments when a 
 description: Defines issue 47 follow-up behavior for caller-aware shell:auto resolution, explicit-shell precedence, safe fallback, tests, and patch delivery.
 created: "2026-08-11"
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - windows
@@ -15,7 +15,7 @@ keywords:
   - MSYSTEM
   - cmd.exe
   - issue 47
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # Respect Git Bash For Windows Automatic Shell Execution
@@ -61,3 +61,11 @@ contexts keep the existing `cmd.exe` default. Explicit `shell: cmd`,
 
 - [GitHub issue 47](https://github.com/CGuiho/runx/issues/47)
 - [RunX 0.12.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.12.0)
+
+## Final Acceptance
+
+PR #55 reached protected main after exact-head review and CI. Mirror published
+`@guiho/runx/v0.12.1` through successful workflow 31476981185 with exactly 11
+assets and npm latest 0.12.1. The downloaded Windows AMD64 binary matched its
+checksum and the non-secret Git Bash automatic-shell probe produced
+`C:/GUIHO`. Issue 47 is closed as completed.

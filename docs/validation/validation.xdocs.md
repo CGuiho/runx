@@ -30,6 +30,7 @@ files:
   runx-0.11.1-confirm-opt-in.md: Integration validation and protected release-boundary evidence for RunX PR #46.
   runx-0.11.1-release.md: Final publication, artifact, checksum, native smoke, and npm validation for RunX 0.11.1.
   runx-reveal.md: Exact-head review, Go, XDocs, cross-build, CI, merge, and 0.12.0 release-readiness evidence for PR #50.
+  runx-0.12.1-shell-auto-release.md: Records final 0.12.0 reveal and 0.12.1 Git Bash automatic-shell publication evidence.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -58,6 +59,7 @@ documents:
   runx-0.11.1-confirm-opt-in.md: Integration validation and protected release-boundary evidence for RunX PR #46.
   runx-0.11.1-release.md: Final publication and independent release validation for RunX 0.11.1.
   runx-reveal.md: Integration validation and minor-release handoff for the RunX reveal command.
+  runx-0.12.1-shell-auto-release.md: Final release, asset, npm, native checksum, reveal, and Git Bash path-probe acceptance for issue 47.
 tags:
   - validation
 keywords:
@@ -71,6 +73,9 @@ keywords:
   - 0.11.1
   - windows self-upgrade
   - upgrade reliability
+  - runx reveal
+  - Git Bash
+  - 0.12.1
 flags: []
 status: stable
 ---

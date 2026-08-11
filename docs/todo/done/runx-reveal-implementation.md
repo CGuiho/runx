@@ -4,7 +4,7 @@ purpose: Record execution progress, decisions, validation evidence, and delivery
 description: Tracks the RX-REVEAL-1 implementation of the non-executing reveal command and its documentation and release handoff.
 created: "2026-08-11"
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - implementation
@@ -13,7 +13,7 @@ keywords:
   - runx reveal
   - RX-REVEAL-1
   - issue 47
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # RunX Reveal Implementation Note
@@ -27,9 +27,9 @@ command exactly once on stdout, and never invokes execution or confirmation.
 ## Links
 
 - Task: [runx-reveal.md](runx-reveal.md)
-- Plan: [../plans/runx-reveal.md](../plans/runx-reveal.md)
-- Plan review: [../reviews/plans/runx-reveal-review.md](../reviews/plans/runx-reveal-review.md)
-- Question ledger: [../questions/runx-reveal/plan-unit-1.md](../questions/runx-reveal/plan-unit-1.md)
+- Plan: [../../plans/runx-reveal.md](../../plans/runx-reveal.md)
+- Plan review: [../../reviews/plans/runx-reveal-review.md](../../reviews/plans/runx-reveal-review.md)
+- Question ledger: [../../questions/runx-reveal/plan-unit-1.md](../../questions/runx-reveal/plan-unit-1.md)
 
 ## Decisions
 
@@ -147,3 +147,10 @@ Implementation review and validation must bind their evidence to the exact
 PR head. Ready PR #50 targets `main`, references issue 47 without closing it,
 and now includes the no-rewrite merge of origin/main `00789a4`. Mirror
 application, merge, release, and worktree cleanup remain integration-gated.
+
+## Final Acceptance
+
+Exact-head review and validation accepted the Luna implementation, PR #50 and
+evidence PR #53 reached main, and RunX 0.12.0 published successfully with the
+standard 11 assets. Public Windows AMD64 checksum, version, and reveal smoke
+passed. Issue 47 remained open only for the separately completed shell fix.

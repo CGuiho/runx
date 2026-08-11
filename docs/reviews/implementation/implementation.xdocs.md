@@ -22,6 +22,7 @@ files:
   runx-0.11.0-release-prep-review.md: Materializes the accepted exact-head implementation review for merged PR #41.
   runx-0.11.1-confirm-opt-in-review.md: Materializes the accepted exact-head implementation review for merged PR #46.
   runx-reveal-review.md: Materializes the accepted exact-head implementation review for merged PR #50.
+  runx-windows-git-bash-auto-shell-review.md: Accepts issue 47 caller-aware Windows shell:auto resolution at the exact merged PR #55 head.
 documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
@@ -42,6 +43,7 @@ documents:
   runx-0.11.0-release-prep-review.md: Accepted implementation review evidence for RunX PR #41.
   runx-0.11.1-confirm-opt-in-review.md: Accepted implementation review evidence for RunX PR #46.
   runx-reveal-review.md: Accepted implementation review evidence for the RunX reveal command in PR #50.
+  runx-windows-git-bash-auto-shell-review.md: Accepted implementation review evidence for the Windows Git Bash automatic-shell correction in PR #55.
 tags:
   - reviews
   - implementation
@@ -52,6 +54,8 @@ keywords:
   - scripts directory
   - implementation review
   - windows self-upgrade
+  - Git Bash
+  - shell auto
 flags: []
 status: stable
 ---
