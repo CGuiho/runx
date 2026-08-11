@@ -1,10 +1,10 @@
 ---
 subject: guiho-s-runx
-description: Agent workflow for safe RunX catalog work, deterministic UID/canonical/ID selector resolution, interactive numeric-index selection, user-requested confirmation, bare-command bootstrap, automatic resource maintenance, and verified native upgrade/list/recovery operations.
+description: Agent workflow for safe RunX catalog work, deterministic UID/canonical/ID selector resolution, exact non-executing command revelation, interactive numeric-index selection, user-requested confirmation, bare-command bootstrap, automatic resource maintenance, and verified native upgrade/list/recovery operations.
 parent: runx-skills
 children: []
 files:
-  SKILL.md: RFC-aligned RunX catalog inspection, deterministic UID/canonical/ID and numeric selector guidance, opt-in confirmation rules for explicitly requested never/always values, execution safety, YAML precedence, agent, init, and upgrade guidance.
+  SKILL.md: RFC-aligned RunX catalog inspection and exact-command revelation, deterministic UID/canonical/ID and numeric selector guidance, opt-in confirmation rules for explicitly requested never/always values, safe-default prompt and explicit confirmation rules, execution safety, YAML precedence, agent, init, and upgrade guidance.
 documents:
   SKILL.md: RunX-specific command execution and verified native self-upgrade workflow.
 tags:

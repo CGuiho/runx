@@ -152,6 +152,7 @@ func TestLiveHelpTreeAndDocs(t *testing.T) {
 	assert.Contains(t, out, "COMMAND TREE")
 	assert.Contains(t, out, "├── list")
 	assert.Contains(t, out, "describe <uid-or-selector-or-index>")
+	assert.Contains(t, out, "reveal <uid-or-selector-or-index>")
 	assert.Contains(t, out, "run [options] <uid-or-selector-or-index> [--] [child arguments...]")
 	assert.Contains(t, out, "└── -v, --version")
 	assert.NotContains(t, out, "â”œ")
@@ -166,6 +167,9 @@ func TestLiveHelpTreeAndDocs(t *testing.T) {
 	out, _, err = executeTest(t, cwd, "describe", "--help-docs")
 	require.NoError(t, err)
 	assert.Contains(t, out, "# runx describe")
+	out, _, err = executeTest(t, cwd, "reveal", "--help-docs")
+	require.NoError(t, err)
+	assert.Contains(t, out, "# runx reveal")
 	out, _, err = executeTest(t, cwd, "run", "--help-tree-depth", "1")
 	require.NoError(t, err)
 	assert.Contains(t, out, "runx run")
@@ -187,6 +191,9 @@ func TestOnlyApprovedShortAliases(t *testing.T) {
 	}
 	walk(root)
 	assert.Equal(t, "v", seen["runx:version"])
+	reveal, _, err := root.Find([]string{"reveal"})
+	require.NoError(t, err)
+	assert.Empty(t, reveal.Aliases)
 	for key, value := range seen {
 		if key != "runx:version" && !strings.HasSuffix(key, ":help") {
 			t.Fatalf("unexpected short alias %s=%s", key, value)
@@ -213,6 +220,22 @@ func TestCatalogCommandsReadRealManifest(t *testing.T) {
 	out, _, err = executeTest(t, cwd, "describe", "1", "--format", "json")
 	require.NoError(t, err)
 	assert.Contains(t, out, `"uid": "hello-command"`)
+	for _, selector := range []string{"hello-command", "tools/danger", "hello", "1"} {
+		out, _, err = executeTest(t, cwd, "reveal", selector)
+		require.NoError(t, err, selector)
+		expected := "echo hello\n"
+		if selector == "tools/danger" {
+			expected = "echo danger\n"
+		}
+		assert.Equal(t, expected, out, selector)
+	}
+	out, prompt, err := executeTest(t, cwd, "reveal", "danger-command")
+	require.NoError(t, err)
+	assert.Equal(t, "echo danger\n", out)
+	assert.Empty(t, prompt)
+	_, _, err = executeTest(t, cwd, "reveal", "missing-command")
+	require.Error(t, err)
+	assert.Equal(t, 3, ExitCode(err))
 	out, _, err = executeTest(t, cwd, "run", "--dry-run", "hello-command", "--", "--hostile", "$HOME")
 	require.NoError(t, err)
 	assert.Contains(t, out, "[0] \"--hostile\"")
@@ -342,11 +365,38 @@ func TestInspectionNeverExecutesConfiguredCommand(t *testing.T) {
 	require.NoError(t, err)
 	updated := strings.Replace(string(data), `command: "echo hello"`, `command: powershell.exe -NoProfile -Command Set-Content`+" "+marker+` spawned`, 1)
 	require.NoError(t, os.WriteFile(path, []byte(updated), 0o644))
-	for _, args := range [][]string{{"check"}, {"list"}, {"describe", "hello-command"}, {"run", "--dry-run", "hello-command"}} {
+	for _, args := range [][]string{{"check"}, {"list"}, {"describe", "hello-command"}, {"reveal", "hello-command"}, {"run", "--dry-run", "hello-command"}} {
 		_, _, err := executeTest(t, cwd, args...)
 		require.NoError(t, err)
 		_, statErr := os.Stat(marker)
 		assert.True(t, os.IsNotExist(statErr))
+	}
+}
+
+func TestRevealSupportsCatalogLocationAndDiagnostics(t *testing.T) {
+	cwd := t.TempDir()
+	path := writeManifest(t, cwd)
+	other := t.TempDir()
+	out, stderr, err := executeTest(t, other, "reveal", "--cwd", cwd, "--config", path, "--verbose", "hello-command")
+	require.NoError(t, err)
+	assert.Equal(t, "echo hello\n", out)
+	assert.Contains(t, stderr, "configuration file loaded: "+path)
+}
+
+func TestRevealRejectsUnsupportedOptionsAndChildArguments(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+	for _, args := range [][]string{
+		{"reveal", "--format", "text", "hello-command"},
+		{"reveal", "--yes", "hello-command"},
+		{"reveal", "--dry-run", "hello-command"},
+		{"reveal", "hello-command", "extra"},
+		{"reveal", "hello-command", "--", "extra"},
+	} {
+		out, _, err := executeTest(t, cwd, args...)
+		require.Error(t, err, args)
+		assert.Equal(t, 2, ExitCode(err), args)
+		assert.Empty(t, out, args)
 	}
 }
 

@@ -170,7 +170,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	root.PersistentFlags().BoolVar(&helpDocs, "help-docs", false, "Emit Markdown documentation for this command.")
 
 	root.AddCommand(
-		newListCommand(deps), newDescribeCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps),
+		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps),
 		newAgentCommand(deps), newUpgradeCommand(deps, info), newUninstallCommand(deps), newUpdateWorkerCommand(deps, info),
 		newMaintenanceWorkerCommand(deps),
 	)

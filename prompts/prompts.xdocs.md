@@ -5,7 +5,7 @@ parent: runx
 children: []
 files: {}
 documents:
-  guiho-i-runx.md: Raw prompt for safe RunX catalog inspection and execution.
+  guiho-i-runx.md: Raw prompt for safe RunX catalog inspection, exact-command revelation, and execution.
 tags:
   - prompts
   - agents

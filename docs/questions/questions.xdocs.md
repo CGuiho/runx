@@ -4,6 +4,7 @@ description: Provisional question ledgers for unattended RunX plan execution.
 parent: runx-docs
 children:
   - runx-questions-issues-36-39
+  - runx-questions-reveal
 files: {}
 documents: {}
 tags:
@@ -14,6 +15,7 @@ keywords:
   - plan executor
   - issue 36
   - issue 39
+  - runx reveal
 flags: []
 status: stable
 ---

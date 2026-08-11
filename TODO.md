@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 2 |
+| testing | 3 |
 | stopped | 0 |
 | completed | 19 |
 
@@ -295,3 +295,17 @@ owner: runx
 - Mirror: Patch plan `@guiho/runx/v0.11.1` passed; only `mirror version apply patch --yes` was run, producing the annotated tag and successful [Publish workflow 31469968479](https://github.com/CGuiho/runx/actions/runs/31469968479).
 - Release: [`@guiho/runx/v0.11.1`](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.11.1) is non-draft/non-prerelease with exactly 11 assets; independent checksums/digests, downloaded Windows AMD64 smoke, and npm latest `0.11.1` passed.
 - Production boundary: only authorized repository source/package publication used `production`; no deployment, promotion, traffic, DNS, database, secret, or other infrastructure mutation occurred.
+
+### 21. Add RunX Reveal
+
+- Status: testing
+- Created: `2026-08-11T07:01:35Z`
+- Updated: `2026-08-11T07:20:00Z`
+- Outcome: RunX resolves a catalog command through the same selector identities as `runx run` and prints its exact command for copy-and-paste without executing it.
+- Spec: [docs/todo/runx-reveal.md](docs/todo/runx-reveal.md)
+- Related files:
+  - [docs/brainstorm/runx-reveal.md](docs/brainstorm/runx-reveal.md) - Captured user intent and current Windows shell-boundary evidence.
+  - [docs/plans/runx-reveal.md](docs/plans/runx-reveal.md) - Approved implementation, validation, integration, and minor-release plan.
+  - [docs/reviews/plans/runx-reveal-review.md](docs/reviews/plans/runx-reveal-review.md) - Ready-for-execution plan review.
+- Implementation: [docs/todo/runx-reveal-implementation.md](docs/todo/runx-reveal-implementation.md)
+- External: GitHub issue [CGuiho/runx#47](https://github.com/CGuiho/runx/issues/47)

@@ -4,8 +4,8 @@
 
 RunX is a native Go/Cobra CLI for documented, language-agnostic command
 catalogs. A project owns one explicit `runx.yaml`; RunX validates and describes
-catalog commands without executing them, and only `runx run` starts a configured
-command.
+catalog commands without executing them, `runx reveal` prints one exact command
+for copy-and-paste, and only `runx run` starts a configured command.
 
 ## Install
 
@@ -59,9 +59,16 @@ runx init
 runx check --format json
 runx list --format json
 runx describe <uid-or-selector-or-index>
+runx reveal <uid-or-selector-or-index>
 runx run --dry-run <uid-or-selector-or-index>
 runx run --yes <uid-or-selector-or-index> -- <child arguments...>
 ```
+
+`runx reveal` accepts one selector plus the catalog location flags `--cwd`,
+`--config`, and `--verbose`. It resolves the same UID, canonical selector,
+unique shorthand, and numeric index as `runx run`, then writes only the exact
+stored command and one trailing newline to stdout. It never executes or asks
+for confirmation; diagnostics remain on stderr.
 
 RunX options precede the selector. Every token after the selector belongs to
 the child and is forwarded without reinterpretation. The numeric `IDX` printed
