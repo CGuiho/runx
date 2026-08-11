@@ -26,9 +26,13 @@ type catalogFlags struct {
 }
 
 func addCatalogFlags(command *cobra.Command, flags *catalogFlags) {
+	addCatalogLocationFlags(command, flags)
+	command.Flags().StringVar(&flags.format, "format", "text", "Select output format: text or json.")
+}
+
+func addCatalogLocationFlags(command *cobra.Command, flags *catalogFlags) {
 	command.Flags().StringVar(&flags.cwd, "cwd", "", "Use this effective working directory.")
 	command.Flags().StringVar(&flags.config, "config", "", "Use this runx.yaml configuration file.")
-	command.Flags().StringVar(&flags.format, "format", "text", "Select output format: text or json.")
 	command.Flags().BoolVar(&flags.verbose, "verbose", false, "Enable diagnostics.")
 }
 
@@ -140,6 +144,25 @@ func newDescribeCommand(deps Dependencies) *cobra.Command {
 		return nil
 	}}
 	addCatalogFlags(command, &flags)
+	return command
+}
+
+func newRevealCommand(deps Dependencies) *cobra.Command {
+	var flags catalogFlags
+	flags.format = "text"
+	command := &cobra.Command{Use: "reveal <uid-or-selector-or-index>", Short: "Print one catalog command without execution.", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
+		catalog, err := loadCatalog(command, deps, flags)
+		if err != nil {
+			return err
+		}
+		selected, ok := catalog.Resolve(args[0])
+		if !ok {
+			return withExitCode(3, fmt.Errorf("command %q was not found", args[0]))
+		}
+		_, err = fmt.Fprint(command.OutOrStdout(), selected.Command, "\n")
+		return err
+	}}
+	addCatalogLocationFlags(command, &flags)
 	return command
 }
 
