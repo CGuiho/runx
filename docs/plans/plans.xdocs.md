@@ -16,6 +16,7 @@ files:
   runx-0.6.0-cli-experience.md: Sequences issues 23 through 25 from implementation through validation, versioning, public acceptance, and closure.
   manifest-v2-composition.md: Sequences issue 26 recursive catalogs from schema through migration, release, public acceptance, and closure.
   runx-reveal.md: Sequences issue 47 reveal implementation, exact-head gates, protected integration, and the next minor release.
+  windows-git-bash-auto-shell.md: Fixes issue 47 caller-aware Windows shell:auto behavior and sequences its protected patch delivery.
   windows-self-upgrade.md: Sequences synchronous Windows replacement, rollback coverage, validation, issue closure, and patch delivery.
   upgrade-reliability-implementation.md: Sequences release discovery, streamed progress, transactional replacement, recovery, installers, and validation.
 documents:
@@ -31,6 +32,7 @@ documents:
   runx-0.6.0-cli-experience.md: Approved executable plan for RunX 0.6.0 CLI experience work.
   manifest-v2-composition.md: Executing plan for RunX manifest v2 composition.
   runx-reveal.md: Approved executable plan for exact non-executing command revelation and minor publication.
+  windows-git-bash-auto-shell.md: Approved executable plan for preserving Git Bash caller semantics during Windows automatic shell execution.
   windows-self-upgrade.md: Approved executable plan for fixing Windows native self-upgrade and delivering its patch.
   upgrade-reliability-implementation.md: Approved executable plan for GitHub issues 12 and 13.
 tags:
@@ -46,6 +48,8 @@ keywords:
   - agent namespace
   - fourteen release assets
   - windows self-upgrade
+  - Git Bash
+  - shell auto
 flags: []
 status: stable
 ---

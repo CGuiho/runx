@@ -23,6 +23,7 @@ files:
   issues-36-39.md: Defines the combined GitHub issue 36 identity-resolution and issue 39 init-default outcome.
   runx-reveal.md: Defines issue 47 exact command revelation, selector parity, no-spawn safety, validation, and minor-release acceptance.
   runx-reveal-implementation.md: Records RX-REVEAL-1 implementation progress, decisions, validation evidence, and delivery handoff.
+  windows-git-bash-auto-shell.md: Defines issue 47 caller-aware Windows shell:auto behavior, regression coverage, and patch-release acceptance.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   bounded-update-worker.md: Task specification for the bounded RunX update worker audit prompted by XDocs issue 14.
@@ -43,6 +44,7 @@ documents:
   issues-36-39-implementation.md: Execution progress, validation evidence, and handoff for RunX issues 36 and 39.
   runx-reveal.md: In-progress task specification for the RunX reveal command and deferred Windows shell investigation.
   runx-reveal-implementation.md: Execution progress and handoff record for the RunX reveal command.
+  windows-git-bash-auto-shell.md: In-progress task specification for preserving Git Bash path semantics through Windows automatic shell execution.
 tags:
   - todo
 keywords:
@@ -50,6 +52,8 @@ keywords:
   - RFC 0034
   - CLI migration
   - tasks
+  - Git Bash
+  - shell auto
 flags: []
 status: stable
 ---
