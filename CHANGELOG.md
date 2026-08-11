@@ -17,6 +17,10 @@ owner: runx
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.12.1 - 2026-08-11
+
 ### Fixed
 
 - On Windows, `shell: auto` now honors a verified Git Bash/MSYS caller by
