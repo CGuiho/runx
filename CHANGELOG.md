@@ -17,7 +17,13 @@ owner: runx
 
 ## Unreleased
 
-No unreleased changes.
+### Added
+
+- Added non-executing `runx reveal <uid-or-selector-or-index>` to resolve the
+  same UID, canonical selector, unique shorthand, and numeric index as `runx
+  run`, then print the exact stored command plus one newline. Reveal accepts
+  `--cwd`, `--config`, and `--verbose`, never prompts or spawns, and keeps
+  diagnostics on stderr.
 
 ## 0.11.0 - 2026-08-09
 
