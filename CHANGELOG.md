@@ -17,7 +17,12 @@ owner: runx
 
 ## Unreleased
 
-No unreleased changes.
+### Fixed
+
+- Made the bundled RunX agent skill treat manifest confirmation as opt-in:
+  agents omit `confirm` by default and add only the explicitly requested
+  `never` or `always` value for a specific command, without inferring
+  confirmation from destructive or production-impacting behavior.
 
 ## 0.11.0 - 2026-08-09
 
