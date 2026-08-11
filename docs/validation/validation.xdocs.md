@@ -53,6 +53,7 @@ documents:
   runx-0.11.0-confirmation.md: Integration validation and protected release-boundary evidence for RunX PR #38.
   runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
   runx-0.11.0-release-prep.md: Integration validation and protected release-boundary evidence for RunX PR #41.
+  runx-0.11.1-confirm-opt-in.md: Integration validation and protected release-boundary evidence for RunX PR #46.
 tags:
   - validation
 keywords:
