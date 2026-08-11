@@ -12,6 +12,7 @@ files:
   rfc-0034-cli-compliance-migration-review.md: Reviews the full breaking RunX RFC 0034 migration for sequencing, command/agent coverage, distribution, validation, and approval gates.
   windows-self-upgrade-review.md: Reviews synchronous replacement, rollback, regression coverage, issue closure, and patch delivery.
   upgrade-reliability-implementation-review.md: Reviews execution readiness for complete release discovery, transactional upgrades, recovery, installers, and validation.
+  runx-reveal-review.md: Reviews exact output scope, delegated ownership, selector/no-spawn tests, integration gates, and minor-release safety.
 documents:
   automatic-agent-maintenance-review.md: Ready-for-execution review for automatic agent maintenance.
   citty-cli-migration-review.md: Ready-for-execution review of the full Citty CLI migration plan.
@@ -21,6 +22,7 @@ documents:
   rfc-0034-cli-compliance-migration-review.md: Ready-for-execution review of the complete RFC 0034 migration plan.
   windows-self-upgrade-review.md: Ready-for-execution review of the Windows native self-upgrade fix plan.
   upgrade-reliability-implementation-review.md: Ready-for-execution review for GitHub issues 12 and 13.
+  runx-reveal-review.md: Ready-for-execution review of the RunX reveal implementation and release plan.
 tags:
   - reviews
   - plans
