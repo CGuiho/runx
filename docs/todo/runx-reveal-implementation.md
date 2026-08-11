@@ -50,13 +50,16 @@ command exactly once on stdout, and never invokes execution or confirmation.
 - 2026-08-11 — The initial plain `git push` attempt failed with
   `schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`; the root
   context retried with its authorized GitHub credentials and published
-  `codex/runx-reveal` through head `9b3db9a`.
+  `codex/runx-reveal` through head `9b3db9a`, then corrected the delivery note
+  and published head `6cbe047`.
 - 2026-08-11 — After PR #50 exposed an advanced `main`, fetched
   `origin/main` at `00789a4` and merged it without rewriting this branch. The
   merge preserves PR #46 confirmation-policy implementation, review, and
   release-preparation evidence while retaining the reveal command and tests.
   TODO task 21 records reveal delivery because main already owns tasks 19 and
   20 for confirmation policy and its patch release.
+- 2026-08-11 - Committed the merge as `6e400a0` (parents `6cbe047` and
+  `00789a4`) and indexed the merged PR46 validation descriptor in `bc4375a`.
 
 ## Validation Evidence
 
@@ -75,11 +78,28 @@ command exactly once on stdout, and never invokes execution or confirmation.
 - `mirror config check` — passed; `mirror version plan minor` — `0.11.0` to
   `0.12.0`, tag `@guiho/runx/v0.12.0`.
 
+Post-merge exact-head validation at `6e400a0`:
+
+- `gofmt -l main.go cmd pkg embed devops` - clean; `git diff --check` - clean.
+- `go mod tidy` followed by `git diff --exit-code -- go.mod go.sum` - clean.
+- `go test -count=1 ./cmd` - passed; `go test -count=1 ./...` - passed.
+- `go vet ./...` - passed; `go build ./...` - passed.
+- `go run devops/build-binaries.go --version 0.12.0 --commit
+  6e400a0008c307dd5901026a73afebeb06f3e22b --build-date
+  2026-08-11T00:00:00Z` - eight binaries and three supporting artifacts.
+- `go run devops/verify-release-assets.go` - exactly 11 assets and every
+  SHA-256 checksum verified.
+- Strict XDocs metadata for `cmd`, `skills/guiho-s-runx`, `prompts`,
+  `docs/todo`, and `.` - passed; `xdocs tree` - complete; `xdocs doctor
+  --warnings-as-errors` - zero errors and warnings.
+- `mirror config check` - passed; `mirror version plan minor` - `0.11.0` to
+  `0.12.0`, tag `@guiho/runx/v0.12.0`.
+
 No production mutation or Mirror apply occurred.
 
 ## Handoff
 
 Implementation review and validation must bind their evidence to the exact
-PR head. The PR targets `main`, references issue 47 without closing it,
-and leaves Mirror application, merge, release, and worktree cleanup to the
-integration gates. Ready PR creation is the next delivery action.
+PR head. Ready PR #50 targets `main`, references issue 47 without closing it,
+and now includes the no-rewrite merge of origin/main `00789a4`. Mirror
+application, merge, release, and worktree cleanup remain integration-gated.
