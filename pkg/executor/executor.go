@@ -35,26 +35,51 @@ type ShellExecution struct {
 	Script  string
 }
 
+type shellResolutionDeps struct {
+	goos     string
+	getenv   func(string) string
+	lookPath func(string) (string, error)
+}
+
 func BuildShellExecution(shell, command string, args []string) (ShellExecution, error) {
+	return buildShellExecution(shell, command, args, shellResolutionDeps{
+		goos:     runtime.GOOS,
+		getenv:   os.Getenv,
+		lookPath: exec.LookPath,
+	})
+}
+
+func buildShellExecution(shell, command string, args []string, deps shellResolutionDeps) (ShellExecution, error) {
+	if deps.goos == "" {
+		deps.goos = runtime.GOOS
+	}
+	if deps.getenv == nil {
+		deps.getenv = os.Getenv
+	}
+	if deps.lookPath == nil {
+		deps.lookPath = exec.LookPath
+	}
+
+	resolvedProgram := ""
 	if shell == "" || shell == "auto" {
-		if runtime.GOOS == "windows" {
-			shell = "cmd"
-		} else {
-			shell = "sh"
-		}
+		shell, resolvedProgram = resolveAutomaticShell(deps)
 	}
 	switch shell {
 	case "bash", "sh":
 		argv := []string{"-lc", command + ` "$@"`, "runx-child"}
 		argv = append(argv, args...)
-		return ShellExecution{Program: shell, Args: argv}, nil
+		program := shell
+		if resolvedProgram != "" {
+			program = resolvedProgram
+		}
+		return ShellExecution{Program: program, Args: argv}, nil
 	case "powershell":
 		payload, err := json.Marshal(args)
 		if err != nil {
 			return ShellExecution{}, err
 		}
 		program := "pwsh"
-		if runtime.GOOS == "windows" {
+		if deps.goos == "windows" {
 			program = "powershell.exe"
 		}
 		script := `$runxForwarded = @(ConvertFrom-Json -InputObject $env:RUNX_FORWARDED_ARGUMENTS_JSON); & { ` + command + ` @runxForwarded }; exit $LASTEXITCODE`
@@ -72,6 +97,38 @@ func BuildShellExecution(shell, command string, args []string) (ShellExecution, 
 	default:
 		return ShellExecution{}, fmt.Errorf("unsupported shell %q", shell)
 	}
+}
+
+func resolveAutomaticShell(deps shellResolutionDeps) (shell, program string) {
+	if deps.goos != "windows" {
+		return "sh", ""
+	}
+	if !isMSYSCaller(deps.getenv("MSYSTEM")) {
+		return "cmd", ""
+	}
+
+	bash, err := deps.lookPath("bash")
+	if err != nil || strings.TrimSpace(bash) == "" || isWindowsSystemBashLauncher(bash) {
+		return "cmd", ""
+	}
+	return "bash", bash
+}
+
+func isMSYSCaller(marker string) bool {
+	marker = strings.ToUpper(strings.TrimSpace(marker))
+	if marker == "" {
+		return false
+	}
+	return marker == "MSYS" || marker == "MSYS2" || strings.HasPrefix(marker, "MINGW") || strings.HasPrefix(marker, "UCRT") || strings.HasPrefix(marker, "CLANG")
+}
+
+func isWindowsSystemBashLauncher(path string) bool {
+	path = strings.ToLower(strings.TrimSpace(strings.ReplaceAll(path, "/", "\\")))
+	path = strings.TrimRight(path, "\\")
+	return strings.HasSuffix(path, `\windows\system32\bash.exe`) ||
+		strings.HasSuffix(path, `\windows\sysnative\bash.exe`) ||
+		strings.HasSuffix(path, `\windows\system32\wsl.exe`) ||
+		strings.HasSuffix(path, `\windows\sysnative\wsl.exe`)
 }
 
 func ExecuteCommand(opts ExecutionOptions) (*ExecutionResult, error) {
