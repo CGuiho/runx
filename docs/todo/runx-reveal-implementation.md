@@ -62,6 +62,9 @@ command exactly once on stdout, and never invokes execution or confirmation.
   `00789a4`) and indexed the merged PR46 validation descriptor in `bc4375a`.
 - 2026-08-11 - Addressed independent review findings in `8ada893` (plan and
   review history) and `ed6b96a` (unsupported reveal option/argument tests).
+- 2026-08-11 - Root context completed the final no-ff history-only merge of
+  `origin/main` `c84f643` (public `@guiho/runx/v0.11.1`) as `da614c3`, with
+  parents including prior reveal head `9d3f2ff`; the tree is unchanged.
 
 ## Validation Evidence
 
@@ -110,6 +113,18 @@ Review-correction validation at `ed6b96a`:
 - Strict XDocs metadata for plans, plan reviews, `cmd`, `docs/todo`, and `.`
   - passed; `xdocs tree` - complete; `xdocs doctor --warnings-as-errors` -
   zero errors and warnings.
+
+Final integration validation at `da614c3`:
+
+- `go test -count=1 ./cmd -run TestReveal` - passed; `go test -count=1 ./...`
+  - passed.
+- `go vet ./...` - passed; `go build ./...` - passed.
+- `gofmt -l main.go cmd pkg embed devops`, `git diff --check`, and
+  `go mod tidy` followed by the `go.mod`/`go.sum` clean-diff check - clean.
+- Strict XDocs metadata for `cmd`, `skills/guiho-s-runx`, `prompts`,
+  `docs/plans`, `docs/reviews/plans`, `docs/todo`, and `.` - passed;
+  `xdocs tree` - complete; `xdocs doctor --warnings-as-errors` - zero errors
+  and warnings.
 
 ## Handoff
 
