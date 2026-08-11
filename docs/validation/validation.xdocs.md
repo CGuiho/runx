@@ -29,6 +29,7 @@ files:
   runx-0.11.0-release-prep.md: Integration validation and protected release-boundary evidence for RunX PR #41.
   runx-0.11.1-confirm-opt-in.md: Integration validation and protected release-boundary evidence for RunX PR #46.
   runx-0.11.1-release.md: Final publication, artifact, checksum, native smoke, and npm validation for RunX 0.11.1.
+  runx-reveal.md: Exact-head review, Go, XDocs, cross-build, CI, merge, and 0.12.0 release-readiness evidence for PR #50.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -56,6 +57,7 @@ documents:
   runx-0.11.0-release-prep.md: Integration validation and protected release-boundary evidence for RunX PR #41.
   runx-0.11.1-confirm-opt-in.md: Integration validation and protected release-boundary evidence for RunX PR #46.
   runx-0.11.1-release.md: Final publication and independent release validation for RunX 0.11.1.
+  runx-reveal.md: Integration validation and minor-release handoff for the RunX reveal command.
 tags:
   - validation
 keywords:

@@ -21,6 +21,7 @@ files:
   runx-0.11.0-confirmation-review.md: Materializes the accepted exact-head implementation review for merged PR #38.
   runx-0.11.0-release-prep-review.md: Materializes the accepted exact-head implementation review for merged PR #41.
   runx-0.11.1-confirm-opt-in-review.md: Materializes the accepted exact-head implementation review for merged PR #46.
+  runx-reveal-review.md: Materializes the accepted exact-head implementation review for merged PR #50.
 documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
@@ -40,6 +41,7 @@ documents:
   runx-issues-36-39-review.md: Accepted implementation review evidence for RunX PR #40.
   runx-0.11.0-release-prep-review.md: Accepted implementation review evidence for RunX PR #41.
   runx-0.11.1-confirm-opt-in-review.md: Accepted implementation review evidence for RunX PR #46.
+  runx-reveal-review.md: Accepted implementation review evidence for the RunX reveal command in PR #50.
 tags:
   - reviews
   - implementation
