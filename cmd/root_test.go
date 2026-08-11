@@ -383,6 +383,23 @@ func TestRevealSupportsCatalogLocationAndDiagnostics(t *testing.T) {
 	assert.Contains(t, stderr, "configuration file loaded: "+path)
 }
 
+func TestRevealRejectsUnsupportedOptionsAndChildArguments(t *testing.T) {
+	cwd := t.TempDir()
+	writeManifest(t, cwd)
+	for _, args := range [][]string{
+		{"reveal", "--format", "text", "hello-command"},
+		{"reveal", "--yes", "hello-command"},
+		{"reveal", "--dry-run", "hello-command"},
+		{"reveal", "hello-command", "extra"},
+		{"reveal", "hello-command", "--", "extra"},
+	} {
+		out, _, err := executeTest(t, cwd, args...)
+		require.Error(t, err, args)
+		assert.Equal(t, 2, ExitCode(err), args)
+		assert.Empty(t, out, args)
+	}
+}
+
 func TestStrictUnknownFieldFailsWithConfigExit(t *testing.T) {
 	cwd := t.TempDir()
 	require.NoError(t, os.WriteFile(filepath.Join(cwd, "runx.yaml"), []byte("version: \"2.0.0\"\nnamespace: demo\nscripts:\n  directory: scripts\nunknown: true\ncommands: []\n"), 0o644))
