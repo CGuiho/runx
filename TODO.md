@@ -26,8 +26,8 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
-| testing | 3 |
+| in progress | 0 |
+| testing | 4 |
 | stopped | 0 |
 | completed | 19 |
 
@@ -314,11 +314,12 @@ owner: runx
 
 ### 22. Respect Git Bash For Windows Automatic Shell Execution
 
-- Status: in progress
+- Status: testing
 - Priority: highest
 - Created: `2026-08-11`
 - Updated: `2026-08-11`
 - Outcome: On Windows, `shell: auto` preserves a verified Git Bash/MSYS caller's path semantics while retaining `cmd.exe` as the safe fallback and keeping every explicit shell authoritative.
 - Spec: [docs/todo/windows-git-bash-auto-shell.md](docs/todo/windows-git-bash-auto-shell.md)
 - Plan: [docs/plans/windows-git-bash-auto-shell.md](docs/plans/windows-git-bash-auto-shell.md)
+- Implementation: [docs/todo/windows-git-bash-auto-shell-implementation.md](docs/todo/windows-git-bash-auto-shell-implementation.md)
 - External: GitHub issue [CGuiho/runx#47](https://github.com/CGuiho/runx/issues/47)

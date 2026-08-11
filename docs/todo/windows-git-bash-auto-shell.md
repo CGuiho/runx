@@ -4,7 +4,7 @@ purpose: Fix the Windows shell boundary that changes MSYS path arguments when a 
 description: Defines issue 47 follow-up behavior for caller-aware shell:auto resolution, explicit-shell precedence, safe fallback, tests, and patch delivery.
 created: "2026-08-11"
 flags:
-  - in-progress
+  - testing
 tags:
   - todo
   - windows
