@@ -17,6 +17,10 @@ owner: runx
 
 ## Unreleased
 
+No unreleased changes.
+
+## 0.12.0 - 2026-08-11
+
 ### Added
 
 - Added non-executing `runx reveal <uid-or-selector-or-index>` to resolve the
