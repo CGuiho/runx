@@ -25,8 +25,10 @@ metadata:
 2. Run `runx list --format json`.
 3. Prefer a stable UID for automation. The numeric `IDX` from the current
    `runx list` output is available for interactive use.
-4. Run `runx describe <uid-or-selector-or-index>` before unfamiliar work.
-5. Run `runx run --dry-run <uid-or-selector-or-index>` before any mutation or
+4. Run `runx reveal <uid-or-selector-or-index>` when you need the exact stored
+   command for copy-and-paste; reveal never executes or confirms it.
+5. Run `runx describe <uid-or-selector-or-index>` before unfamiliar work.
+6. Run `runx run --dry-run <uid-or-selector-or-index>` before any mutation or
    high-impact command.
 
 RunX manifests are trusted executable code. A group name is not a safety
@@ -45,14 +47,16 @@ It does not search parent directories.
 
 ## Execute
 
-Use only:
+Use either:
 
 ```text
+runx reveal [--cwd <path>] [--config <path>] [--verbose] <uid-or-selector-or-index>
 runx run [RunX options] <uid-or-selector-or-index> [--] <child arguments...>
 ```
 
-Listing, describing, checking, help, agent operations, and dry runs must never
-execute a manifest command. Preserve the child command's exact exit code.
+Listing, revealing, describing, checking, help, agent operations, and dry runs
+must never execute a manifest command. Preserve the child command's exact exit
+code.
 Resolution is deterministic: exact global UID, canonical group-scoped
 selector, then an unqualified ID shorthand only when that ID has one owner.
 A UID may equal another command's ID and still wins exact lookup. Duplicate
@@ -62,6 +66,16 @@ current resolved listing, and must not replace stable UIDs in automation.
 RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.
+
+Reveal is the non-executing exact-command form:
+
+```text
+runx reveal [--cwd <path>] [--config <path>] [--verbose] <uid-or-selector-or-index>
+```
+
+It accepts exactly one selector, resolves it through the same catalog identity
+rules, and writes only the stored command plus one trailing newline to stdout.
+It does not accept `--format`, child arguments, `--yes`, or `--dry-run`.
 
 For `confirm: always`, an interactive human receives a safe-default prompt and
 an exact retry such as `runx run --yes cli-compile-host`. Noninteractive and
