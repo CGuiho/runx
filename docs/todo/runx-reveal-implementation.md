@@ -60,6 +60,8 @@ command exactly once on stdout, and never invokes execution or confirmation.
   20 for confirmation policy and its patch release.
 - 2026-08-11 - Committed the merge as `6e400a0` (parents `6cbe047` and
   `00789a4`) and indexed the merged PR46 validation descriptor in `bc4375a`.
+- 2026-08-11 - Addressed independent review findings in `8ada893` (plan and
+  review history) and `ed6b96a` (unsupported reveal option/argument tests).
 
 ## Validation Evidence
 
@@ -96,6 +98,18 @@ Post-merge exact-head validation at `6e400a0`:
   `0.12.0`, tag `@guiho/runx/v0.12.0`.
 
 No production mutation or Mirror apply occurred.
+
+Review-correction validation at `ed6b96a`:
+
+- `go test -count=1 ./cmd -run TestReveal` - passed, including rejection of
+  `--format`, `--yes`, `--dry-run`, and extra child arguments.
+- `go test -count=1 ./...` - passed; `go vet ./...` - passed; `go build ./...`
+  - passed.
+- `gofmt -l main.go cmd pkg embed devops`, `git diff --check`, and
+  `go mod tidy` followed by the `go.mod`/`go.sum` clean-diff check - clean.
+- Strict XDocs metadata for plans, plan reviews, `cmd`, `docs/todo`, and `.`
+  - passed; `xdocs tree` - complete; `xdocs doctor --warnings-as-errors` -
+  zero errors and warnings.
 
 ## Handoff
 
