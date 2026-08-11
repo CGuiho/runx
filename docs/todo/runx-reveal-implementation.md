@@ -47,6 +47,11 @@ command exactly once on stdout, and never invokes execution or confirmation.
   review, TODO, question ledger, and required CLI/documentation skills.
 - 2026-08-11T07:20:00Z — Moved TODO task 19 to `testing` before final
   formatting, test, build, XDocs, and Mirror-plan validation.
+- 2026-08-11 — Plain `git push` was attempted for the clean feature branch but
+  failed with `schannel: AcquireCredentialsHandle failed:
+  SEC_E_NO_CREDENTIALS`; the escalated retry was rejected by external-state
+  risk review. The branch remains local at head `55e9ebb` until publication
+  credentials are restored.
 
 ## Validation Evidence
 
@@ -72,4 +77,4 @@ No production mutation or Mirror apply occurred.
 Implementation review and validation must bind their evidence to the exact
 PR head. The PR targets `main`, references issue 47 without closing it,
 and leaves Mirror application, merge, release, and worktree cleanup to the
-integration gates.
+integration gates. PR creation is pending the push blocker above.
