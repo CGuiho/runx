@@ -308,4 +308,6 @@ owner: runx
   - [docs/plans/runx-reveal.md](docs/plans/runx-reveal.md) - Approved implementation, validation, integration, and minor-release plan.
   - [docs/reviews/plans/runx-reveal-review.md](docs/reviews/plans/runx-reveal-review.md) - Ready-for-execution plan review.
 - Implementation: [docs/todo/runx-reveal-implementation.md](docs/todo/runx-reveal-implementation.md)
+- Review: [docs/reviews/implementation/runx-reveal-review.md](docs/reviews/implementation/runx-reveal-review.md)
+- Validation: [docs/validation/runx-reveal.md](docs/validation/runx-reveal.md)
 - External: GitHub issue [CGuiho/runx#47](https://github.com/CGuiho/runx/issues/47)
