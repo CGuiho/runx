@@ -20,6 +20,8 @@ owner: runx-prompts
 Load the `guiho-s-runx` skill. From the intended project directory, run
 `runx check --format json`, then `runx list --format json`. Prefer a stable UID,
 inspect unfamiliar work with `runx describe <uid>`, and run
+`runx reveal <uid-or-selector-or-index>` when you need the exact stored command
+for copy-and-paste; it never executes or confirms the command. Run
 `runx run --dry-run <uid-or-selector-or-index>` before execution. RunX options
 belong before the selector; every token after it is forwarded to the child.
 Resolve exact global UIDs before canonical selectors or unique unqualified ID
