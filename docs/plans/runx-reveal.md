@@ -29,7 +29,7 @@ effort owns all implementation code and implementation-side documentation.
 ## Traceability
 
 - [Feature brainstorm](../brainstorm/runx-reveal.md)
-- [TODO task 19 specification](../todo/runx-reveal.md)
+- [TODO task 21 specification](../todo/runx-reveal.md)
 - [GitHub issue 47](https://github.com/CGuiho/runx/issues/47)
 - [Run argument ownership decision](../decisions/run-argument-ownership.md)
 
@@ -44,7 +44,9 @@ without any configured-command execution or confirmation path.
 ### Ownership And Isolation
 
 - Repository: `C:\GUIHO\runx`.
-- Approved base: `8beb28d1690c050bc7345cdbf77da2bb143909e9`.
+- Initial planning base: `8beb28d1690c050bc7345cdbf77da2bb143909e9`.
+  Before final validation, current `origin/main` at `00789a4` was merged
+  without rewriting this branch in merge commit `6e400a0`.
 - Branch: `codex/runx-reveal`.
 - Worktree: `C:\GUIHO\runx\.temp\runx-reveal-47`.
 - Implementation agent: GPT-5.6 Luna, maximum reasoning effort.
@@ -112,7 +114,7 @@ without any configured-command execution or confirmation path.
 
 ### Delivery And Gates
 
-1. Set task 19 to `testing` before final validation without changing the exact
+1. Set task 21 to `testing` before final validation without changing the exact
    review head afterward.
 2. Commit smallest coherent changes with explicit paths and push the branch.
 3. Open a ready PR against `main`, referencing issue 47 without closing the

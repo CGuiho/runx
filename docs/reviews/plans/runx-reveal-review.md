@@ -29,7 +29,7 @@ No blocker, high, medium, or low findings remain.
 
 ## Traceability And Scope
 
-- The plan traces to the accepted feature brainstorm, TODO task 19, issue 47,
+- The plan traces to the accepted feature brainstorm, TODO task 21, issue 47,
   and the existing selector/argument ownership decision.
 - The exact first-release contract is sealed: reuse catalog resolution, accept
   one selector, print the exact stored command plus newline, and never execute
@@ -69,8 +69,9 @@ No blocker, high, medium, or low findings remain.
 
 ## First Executable Unit
 
-Execute RX-REVEAL-1 on `codex/runx-reveal` from planning base
-`8beb28d1690c050bc7345cdbf77da2bb143909e9`.
+Execute RX-REVEAL-1 on `codex/runx-reveal` from initial planning base
+`8beb28d1690c050bc7345cdbf77da2bb143909e9`; current `origin/main` at
+`00789a4` was later merged without rewriting the branch in `6e400a0`.
 
 ## Recommended Next Skill
 
