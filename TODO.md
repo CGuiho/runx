@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 2 |
+| testing | 3 |
 | stopped | 0 |
 | completed | 17 |
 
@@ -264,3 +264,17 @@ owner: runx
 - Release: [`@guiho/runx/v0.11.0`](https://github.com/CGuiho/runx/releases/tag/%40guiho%2Frunx%2Fv0.11.0), sourced from [`e2b86336ebd95bc6bf25d395f518a1dce66132e1`](https://github.com/CGuiho/runx/commit/e2b86336ebd95bc6bf25d395f518a1dce66132e1); publish workflow [31295252704](https://github.com/CGuiho/runx/actions/runs/31295252704) succeeded.
 - Acceptance: non-draft, non-prerelease release with exactly 11 assets; independent checksums and GitHub digests matched, downloaded Windows AMD64 version/help/help-tree smoke passed, and npm latest is `0.11.0`.
 - Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
+
+### 19. Make RunX Confirmation Opt-In In The Agent Skill
+
+- Status: testing
+- Created: `2026-08-11T08:40:53+02:00`
+- Updated: `2026-08-11T08:44:42+02:00`
+- Outcome: The RunX agent skill adds manifest confirmation only when the user explicitly requests `confirm: never` or `confirm: always` for that specific command, with omission resolving to `never`.
+- Spec: [docs/todo/confirm-opt-in-skill.md](docs/todo/confirm-opt-in-skill.md)
+- Related files:
+  - [skills/guiho-s-runx/SKILL.md](skills/guiho-s-runx/SKILL.md) - Canonical bundled agent policy.
+  - [embed/skills/guiho-s-runx.SKILL.md](embed/skills/guiho-s-runx.SKILL.md) - Embedded runtime copy.
+  - [skills/guiho-s-runx/guiho-s-runx.xdocs.md](skills/guiho-s-runx/guiho-s-runx.xdocs.md) - Skill descriptor semantics.
+- Implementation: [docs/todo/confirm-opt-in-skill-implementation.md](docs/todo/confirm-opt-in-skill-implementation.md)
+- Mirror: Patch candidate `0.11.1`; version application, tag creation, and release publication are deferred to the post-merge integrator.
