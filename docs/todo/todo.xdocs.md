@@ -21,9 +21,6 @@ files:
   simplified-install-command.md: Defines GitHub issue 24 exact public curl bootstrap acceptance.
   forward-command-arguments.md: Defines GitHub issue 25 argument ownership, safe forwarding, and dry-run acceptance.
   issues-36-39.md: Defines the combined GitHub issue 36 identity-resolution and issue 39 init-default outcome.
-  confirm-opt-in-skill.md: Defines the task 19 confirmation opt-in policy and patch-release handoff.
-  confirm-opt-in-skill-implementation.md: Records task 19 implementation progress, validation evidence, and PR handoff.
-  release-runx-0.11.1.md: Defines the task 20 patch-release scope, Mirror decision, validation gates, and publication boundary.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   bounded-update-worker.md: Task specification for the bounded RunX update worker audit prompted by XDocs issue 14.
@@ -42,9 +39,6 @@ documents:
   forward-command-arguments.md: Task specification for safe child argument forwarding.
   issues-36-39.md: In-progress task specification for RunX issues 36 and 39.
   issues-36-39-implementation.md: Execution progress, validation evidence, and handoff for RunX issues 36 and 39.
-  confirm-opt-in-skill.md: Testing task specification for task 19 confirmation opt-in policy.
-  confirm-opt-in-skill-implementation.md: Testing implementation record for task 19 confirmation opt-in policy.
-  release-runx-0.11.1.md: Testing release task specification for RunX 0.11.1 publication.
 tags:
   - todo
 keywords:

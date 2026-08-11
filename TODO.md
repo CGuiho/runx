@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 4 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 17 |
+| completed | 19 |
 
 ## Tasks
 
@@ -267,29 +267,31 @@ owner: runx
 
 ### 19. Make RunX Confirmation Opt-In In The Agent Skill
 
-- Status: testing
+- Status: completed
 - Created: `2026-08-11T08:40:53+02:00`
-- Updated: `2026-08-11T08:44:42+02:00`
+- Updated: `2026-08-11T10:00:00+02:00`
 - Outcome: The RunX agent skill adds manifest confirmation only when the user explicitly requests `confirm: never` or `confirm: always` for that specific command, with omission resolving to `never`.
-- Spec: [docs/todo/confirm-opt-in-skill.md](docs/todo/confirm-opt-in-skill.md)
+- Spec: [docs/todo/done/confirm-opt-in-skill.md](docs/todo/done/confirm-opt-in-skill.md)
 - Related files:
   - [skills/guiho-s-runx/SKILL.md](skills/guiho-s-runx/SKILL.md) - Canonical bundled agent policy.
   - [embed/skills/guiho-s-runx.SKILL.md](embed/skills/guiho-s-runx.SKILL.md) - Embedded runtime copy.
   - [skills/guiho-s-runx/guiho-s-runx.xdocs.md](skills/guiho-s-runx/guiho-s-runx.xdocs.md) - Skill descriptor semantics.
-- Implementation: [docs/todo/confirm-opt-in-skill-implementation.md](docs/todo/confirm-opt-in-skill-implementation.md)
+- Implementation: [docs/todo/done/confirm-opt-in-skill-implementation.md](docs/todo/done/confirm-opt-in-skill-implementation.md)
 - Review: [docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md](docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md)
 - Validation: [docs/validation/runx-0.11.1-confirm-opt-in.md](docs/validation/runx-0.11.1-confirm-opt-in.md)
 - Integration: merge commit [37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8](https://github.com/CGuiho/runx/commit/37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8) reached `main`; immutable review/validation evidence was materialized by protected docs PR #48 merge [93dc2f201045003b64360e2b214a6f7c86c176e6](https://github.com/CGuiho/runx/commit/93dc2f201045003b64360e2b214a6f7c86c176e6).
-- Mirror: Patch candidate `0.11.1`; version application, tag creation, and release publication remain pending final release validation.
+- Mirror: Patch `0.11.1` applied with annotated tag object `7d17153b44185f4215079f2e792effee87f36e9f`, peeled source `c84f6432d1e4a1169a356600265d0c583515371b`; final release evidence is recorded in [docs/validation/runx-0.11.1-release.md](docs/validation/runx-0.11.1-release.md).
 
 ### 20. Publish RunX 0.11.1
 
-- Status: testing
+- Status: completed
 - Priority: highest
 - Created: `2026-08-11`
-- Updated: `2026-08-11`
+- Updated: `2026-08-11T10:00:00+02:00`
 - Outcome: Publish the compatible confirmation-policy correction as the Mirror-managed `0.11.1` patch release after clean-clone validation, exact 11-asset publication, independent checksums/digests, native Windows AMD64 smoke, and npm latest verification.
-- Spec: [docs/todo/release-runx-0.11.1.md](docs/todo/release-runx-0.11.1.md)
+- Spec: [docs/todo/done/release-runx-0.11.1.md](docs/todo/done/release-runx-0.11.1.md)
 - Review: [docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md](docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md)
-- Validation: [docs/validation/runx-0.11.1-confirm-opt-in.md](docs/validation/runx-0.11.1-confirm-opt-in.md)
-- Mirror: Patch plan `@guiho/runx/v0.11.1` passed; apply/tag/publish remain pending this release-prep merge.
+- Validation: [docs/validation/runx-0.11.1-release.md](docs/validation/runx-0.11.1-release.md)
+- Mirror: Patch plan `@guiho/runx/v0.11.1` passed; only `mirror version apply patch --yes` was run, producing the annotated tag and successful [Publish workflow 31469968479](https://github.com/CGuiho/runx/actions/runs/31469968479).
+- Release: [`@guiho/runx/v0.11.1`](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.11.1) is non-draft/non-prerelease with exactly 11 assets; independent checksums/digests, downloaded Windows AMD64 smoke, and npm latest `0.11.1` passed.
+- Production boundary: only authorized repository source/package publication used `production`; no deployment, promotion, traffic, DNS, database, secret, or other infrastructure mutation occurred.
