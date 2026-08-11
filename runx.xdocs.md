@@ -1,6 +1,6 @@
 ---
 subject: runx
-description: Native Go/Cobra command-catalog CLI with strict manifest v2, safe execution, bare-invocation agent bootstrap, verified upgrades, installers, and release automation.
+description: Native Go/Cobra command-catalog CLI with strict manifest v2, exact non-executing command revelation, safe execution, bare-invocation agent bootstrap, verified upgrades, installers, and release automation.
 parent: null
 children:
   - runx-cmd
@@ -48,7 +48,7 @@ status: stable
 ---
 
 RunX production behavior is owned by one testable Cobra command tree and focused
-Go packages. Structured manifest validation, command execution, idempotent
+Go packages. Structured manifest validation, exact command revelation, command execution, idempotent
 bare-invocation agent bootstrap, cached lifecycle workers, agent resources,
 verified upgrades, installers, and the standard
 11-artifact release matrix are enforced by Go tests and workflows.
