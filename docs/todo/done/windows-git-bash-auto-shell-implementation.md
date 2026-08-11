@@ -4,7 +4,7 @@ purpose: Record RX-SHELL-1 implementation choices, regression coverage, validati
 description: Tracks caller-aware Windows shell:auto resolution and its safe fallback contract without changing configured commands or explicit shells.
 created: "2026-08-11"
 flags:
-  - testing
+  - completed
 tags:
   - todo
   - implementation
@@ -16,7 +16,7 @@ keywords:
   - MSYSTEM
   - shell auto
   - issue 47
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # RunX Windows Git Bash Automatic Shell Implementation
@@ -77,13 +77,20 @@ non-Windows automatic selection, and recognized/unrecognized markers.
 
 ## Delivery Boundary
 
-Task 22 remains in `testing` while independent review, exact-head validation,
-protected integration, and the Mirror-managed `0.12.1` release remain outside
-this implementation unit. No GitHub mutation, push, tag, release, or issue
-closure is performed here. Environment and key paths remain opaque.
+Task 22 completed after independent review, exact-head validation, protected
+integration, and the Mirror-managed `0.12.1` release. Environment and key
+paths remained opaque throughout.
 
 ## References
 
 - [Task specification](./windows-git-bash-auto-shell.md)
-- [Implementation plan](../plans/windows-git-bash-auto-shell.md)
+- [Implementation plan](../../plans/windows-git-bash-auto-shell.md)
 - [GitHub issue 47](https://github.com/CGuiho/runx/issues/47)
+
+## Final Acceptance
+
+PR #55 merged at `a297aa25b94d83d11d361a0fab0b5415bdd1ba20`.
+Release-note PR #56 produced release source
+`2c96e8aec1052b35c6fb4061eba5a6b54405bbcb`. RunX 0.12.1 published with
+exactly 11 assets; the downloaded Windows AMD64 checksum/version and released
+Git Bash path probe passed, npm latest is 0.12.1, and issue 47 is closed.

@@ -11,6 +11,10 @@ files:
   confirm-opt-in-skill.md: Completed task 19 confirmation opt-in policy and release acceptance record.
   confirm-opt-in-skill-implementation.md: Completed task 19 implementation, review, validation, and release handoff record.
   release-runx-0.11.1.md: Completed task 20 Mirror-managed 0.11.1 publication record.
+  runx-reveal.md: Completed task 21 exact command revelation and 0.12.0 release acceptance record.
+  runx-reveal-implementation.md: Completed task 21 Luna implementation, review, integration, and release handoff record.
+  windows-git-bash-auto-shell.md: Completed task 22 caller-aware Windows shell:auto specification and 0.12.1 acceptance record.
+  windows-git-bash-auto-shell-implementation.md: Completed task 22 Luna implementation, exact-head review, validation, and patch-release record.
 documents:
   done.md: Permanent completion ledger for archived RunX tasks.
   manifest-v2-composition.md: Completed task specification for RunX manifest v2 composition.
@@ -20,12 +24,18 @@ documents:
   confirm-opt-in-skill.md: Completed task specification and acceptance evidence for the RunX confirmation opt-in policy.
   confirm-opt-in-skill-implementation.md: Completed implementation and delivery record for the RunX confirmation opt-in policy.
   release-runx-0.11.1.md: Completed task specification and acceptance evidence for the Mirror-managed RunX 0.11.1 release.
+  runx-reveal.md: Completed task specification and acceptance evidence for RunX reveal and issue 47.
+  runx-reveal-implementation.md: Completed implementation and delivery record for RunX reveal.
+  windows-git-bash-auto-shell.md: Completed task specification and acceptance evidence for caller-aware Windows automatic shell execution.
+  windows-git-bash-auto-shell-implementation.md: Completed implementation and delivery record for the Windows Git Bash automatic-shell correction.
 tags:
   - todo
   - done
 keywords:
   - runx
   - completed tasks
+  - runx reveal
+  - Git Bash
 flags: []
 status: stable
 ---

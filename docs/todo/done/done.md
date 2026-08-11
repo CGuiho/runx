@@ -58,6 +58,19 @@ keywords:
 - Acceptance: release is non-draft and non-prerelease with exactly 11 assets; independent downloaded SHA-256 values matched `checksums.txt` and each GitHub digest; Windows AMD64 `--version` reported `0.11.0`, `--help` and `--help-tree` exited 0; npm latest is `0.11.0`.
 - Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
 
+## 2026-08-11 - RunX Reveal And Windows Git Bash Automatic Shell
+
+- Reveal specification: [runx-reveal.md](runx-reveal.md)
+- Reveal implementation: [runx-reveal-implementation.md](runx-reveal-implementation.md)
+- Shell-fix specification: [windows-git-bash-auto-shell.md](windows-git-bash-auto-shell.md)
+- Shell-fix implementation: [windows-git-bash-auto-shell-implementation.md](windows-git-bash-auto-shell-implementation.md)
+- Review: [runx-windows-git-bash-auto-shell-review.md](../../reviews/implementation/runx-windows-git-bash-auto-shell-review.md)
+- Validation: [runx-0.12.1-shell-auto-release.md](../../validation/runx-0.12.1-shell-auto-release.md)
+- Integration: [PR #50](https://github.com/CGuiho/runx/pull/50), [PR #53](https://github.com/CGuiho/runx/pull/53), [PR #55](https://github.com/CGuiho/runx/pull/55), and [PR #56](https://github.com/CGuiho/runx/pull/56).
+- Final releases: [RunX 0.12.0](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.12.0) and [RunX 0.12.1](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.12.1).
+- Acceptance: exactly 11 assets per release, public checksums/native smoke, npm latest 0.12.1, exact reveal output, corrected non-secret Git Bash path probe, and closed issue [#47](https://github.com/CGuiho/runx/issues/47).
+- Production boundary: source/package publication only; no application or infrastructure mutation.
+
 ## 2026-08-11 - RunX Confirmation Opt-In Skill
 
 - Specification: [confirm-opt-in-skill.md](confirm-opt-in-skill.md)

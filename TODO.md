@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 4 |
+| testing | 2 |
 | stopped | 0 |
-| completed | 19 |
+| completed | 21 |
 
 ## Tasks
 
@@ -298,28 +298,34 @@ owner: runx
 
 ### 21. Add RunX Reveal
 
-- Status: testing
+- Status: completed
 - Created: `2026-08-11T07:01:35Z`
 - Updated: `2026-08-11T07:20:00Z`
 - Outcome: RunX resolves a catalog command through the same selector identities as `runx run` and prints its exact command for copy-and-paste without executing it.
-- Spec: [docs/todo/runx-reveal.md](docs/todo/runx-reveal.md)
+- Spec: [docs/todo/done/runx-reveal.md](docs/todo/done/runx-reveal.md)
 - Related files:
   - [docs/brainstorm/runx-reveal.md](docs/brainstorm/runx-reveal.md) - Captured user intent and current Windows shell-boundary evidence.
   - [docs/plans/runx-reveal.md](docs/plans/runx-reveal.md) - Approved implementation, validation, integration, and minor-release plan.
   - [docs/reviews/plans/runx-reveal-review.md](docs/reviews/plans/runx-reveal-review.md) - Ready-for-execution plan review.
-- Implementation: [docs/todo/runx-reveal-implementation.md](docs/todo/runx-reveal-implementation.md)
+- Implementation: [docs/todo/done/runx-reveal-implementation.md](docs/todo/done/runx-reveal-implementation.md)
 - Review: [docs/reviews/implementation/runx-reveal-review.md](docs/reviews/implementation/runx-reveal-review.md)
 - Validation: [docs/validation/runx-reveal.md](docs/validation/runx-reveal.md)
 - External: GitHub issue [CGuiho/runx#47](https://github.com/CGuiho/runx/issues/47)
+- Integration: PR [#50](https://github.com/CGuiho/runx/pull/50) merged as [`cccc87348da130df90665e954f48bad9bd652ceb`](https://github.com/CGuiho/runx/commit/cccc87348da130df90665e954f48bad9bd652ceb); evidence PR [#53](https://github.com/CGuiho/runx/pull/53) merged as [`7baa214c5514c39fdc5af8118925ffde015be5ae`](https://github.com/CGuiho/runx/commit/7baa214c5514c39fdc5af8118925ffde015be5ae).
+- Release: [`@guiho/runx/v0.12.0`](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.12.0), successful Publish workflow [31474091754](https://github.com/CGuiho/runx/actions/runs/31474091754), exactly 11 assets.
 
 ### 22. Respect Git Bash For Windows Automatic Shell Execution
 
-- Status: testing
+- Status: completed
 - Priority: highest
 - Created: `2026-08-11`
 - Updated: `2026-08-11`
 - Outcome: On Windows, `shell: auto` preserves a verified Git Bash/MSYS caller's path semantics while retaining `cmd.exe` as the safe fallback and keeping every explicit shell authoritative.
-- Spec: [docs/todo/windows-git-bash-auto-shell.md](docs/todo/windows-git-bash-auto-shell.md)
+- Spec: [docs/todo/done/windows-git-bash-auto-shell.md](docs/todo/done/windows-git-bash-auto-shell.md)
 - Plan: [docs/plans/windows-git-bash-auto-shell.md](docs/plans/windows-git-bash-auto-shell.md)
-- Implementation: [docs/todo/windows-git-bash-auto-shell-implementation.md](docs/todo/windows-git-bash-auto-shell-implementation.md)
+- Implementation: [docs/todo/done/windows-git-bash-auto-shell-implementation.md](docs/todo/done/windows-git-bash-auto-shell-implementation.md)
 - External: GitHub issue [CGuiho/runx#47](https://github.com/CGuiho/runx/issues/47)
+- Review: [docs/reviews/implementation/runx-windows-git-bash-auto-shell-review.md](docs/reviews/implementation/runx-windows-git-bash-auto-shell-review.md)
+- Validation: [docs/validation/runx-0.12.1-shell-auto-release.md](docs/validation/runx-0.12.1-shell-auto-release.md)
+- Integration: PR [#55](https://github.com/CGuiho/runx/pull/55) merged as [`a297aa25b94d83d11d361a0fab0b5415bdd1ba20`](https://github.com/CGuiho/runx/commit/a297aa25b94d83d11d361a0fab0b5415bdd1ba20).
+- Release: [`@guiho/runx/v0.12.1`](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.12.1), successful Publish workflow [31476981185](https://github.com/CGuiho/runx/actions/runs/31476981185), exactly 11 assets, npm latest `0.12.1`, and downloaded Windows Git Bash smoke passed.
