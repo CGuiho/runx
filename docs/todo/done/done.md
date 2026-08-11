@@ -57,3 +57,23 @@ keywords:
 - Workflow: [Publish 31295252704](https://github.com/CGuiho/runx/actions/runs/31295252704), successful after the authorized production-environment approval for package/source publication.
 - Acceptance: release is non-draft and non-prerelease with exactly 11 assets; independent downloaded SHA-256 values matched `checksums.txt` and each GitHub digest; Windows AMD64 `--version` reported `0.11.0`, `--help` and `--help-tree` exited 0; npm latest is `0.11.0`.
 - Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
+
+## 2026-08-11 - RunX Confirmation Opt-In Skill
+
+- Specification: [confirm-opt-in-skill.md](confirm-opt-in-skill.md)
+- Implementation: [confirm-opt-in-skill-implementation.md](confirm-opt-in-skill-implementation.md)
+- Review: [runx-0.11.1-confirm-opt-in-review.md](../../reviews/implementation/runx-0.11.1-confirm-opt-in-review.md)
+- Validation: [runx-0.11.1-confirm-opt-in.md](../../validation/runx-0.11.1-confirm-opt-in.md)
+- Integration: [CGuiho/runx#46](https://github.com/CGuiho/runx/pull/46), merge commit [37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8](https://github.com/CGuiho/runx/commit/37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8).
+- Final acceptance release: [@guiho/runx/v0.11.1](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.11.1), with final evidence in [runx-0.11.1-release.md](../../validation/runx-0.11.1-release.md).
+- Production boundary: only authorized source/package publication occurred; no infrastructure mutation.
+
+## 2026-08-11 - RunX 0.11.1 Release
+
+- Specification: [release-runx-0.11.1.md](release-runx-0.11.1.md)
+- Preparation: [CGuiho/runx#49](https://github.com/CGuiho/runx/pull/49), merge commit [00789a4a8225bdae8fd4e78f418834af8d3662db](https://github.com/CGuiho/runx/commit/00789a4a8225bdae8fd4e78f418834af8d3662db).
+- Validation: [runx-0.11.1-release.md](../../validation/runx-0.11.1-release.md).
+- Final acceptance release: [@guiho/runx/v0.11.1](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.11.1), sourced from [c84f6432d1e4a1169a356600265d0c583515371b](https://github.com/CGuiho/runx/commit/c84f6432d1e4a1169a356600265d0c583515371b).
+- Workflow: [Publish 31469968479](https://github.com/CGuiho/runx/actions/runs/31469968479), successful after the authorized package/source environment approval.
+- Acceptance: non-draft/non-prerelease release with exactly 11 assets, independent checksums and GitHub digests, downloaded Windows AMD64 version/help/help-tree smoke, and npm latest `0.11.1`.
+- Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
