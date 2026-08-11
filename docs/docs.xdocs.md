@@ -3,6 +3,7 @@ subject: runx-docs
 description: Durable requirements, architecture, decisions, plans, task specifications, and validation records for RunX.
 parent: runx
 children:
+  - runx-brainstorm
   - runx-requirements
   - runx-rfc
   - runx-architecture
