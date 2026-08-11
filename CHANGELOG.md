@@ -17,7 +17,12 @@ owner: runx
 
 ## Unreleased
 
-No unreleased changes.
+### Fixed
+
+- On Windows, `shell: auto` now honors a verified Git Bash/MSYS caller by
+  resolving and using its Bash executable, while rejecting the System32/WSL
+  `bash.exe` launcher and retaining `cmd.exe` as the safe fallback. Explicit
+  shells and non-Windows automatic selection remain unchanged.
 
 ## 0.12.0 - 2026-08-11
 

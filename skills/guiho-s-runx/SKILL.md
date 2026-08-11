@@ -77,6 +77,12 @@ RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.
 
+On Windows, `shell: auto` uses the resolved Git Bash executable only when the
+inherited `MSYSTEM` marker proves a Git Bash/MSYS caller and the executable is
+not the System32/WSL `bash.exe` launcher. It falls back to `cmd.exe` when that
+evidence or resolution is missing. Explicit `cmd`, `powershell`, `bash`, and
+`sh` values remain authoritative; non-Windows `auto` remains `sh`.
+
 Reveal is the non-executing exact-command form:
 
 ```text

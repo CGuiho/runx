@@ -104,6 +104,11 @@ The root fields are:
 A command leaf requires `uid`, `id`, `summary`, `description`, and `command`.
 Optional fields are `cwd`, `shell`, `tags`, and `confirm`. Shell is `auto`,
 `bash`, `sh`, `powershell`, or `cmd`; confirmation is `never` or `always`.
+On Windows, `shell: auto` selects the resolved `bash` executable only when the
+inherited `MSYSTEM` marker identifies a Git Bash/MSYS caller and the executable
+is not the Windows System32/WSL launcher. Otherwise it uses `cmd.exe`; on
+non-Windows platforms it uses `sh`. Explicit shell values always bypass this
+caller inference, and configured command text and paths are passed unchanged.
 
 A group requires `group`, `summary`, and exactly one of nested `commands` or a
 `runx` child reference. Child catalogs must declare the reciprocal parent.
