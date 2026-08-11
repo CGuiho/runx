@@ -35,6 +35,7 @@ the same compatible architecture.
 runx
 ├── list
 ├── describe <uid-or-selector-or-index>
+├── reveal <uid-or-selector-or-index>
 ├── run [options] <uid-or-selector-or-index> [--] [child arguments...]
 ├── check
 ├── init
@@ -128,10 +129,18 @@ unknown fields are rejected before semantic validation.
 
 ## Inspection And Execution
 
-`check`, `list`, `describe`, help, agent operations, and `run --dry-run` never
-spawn a configured command. `--format json` emits one stable JSON document to
-stdout; diagnostics use stderr. Human `list` output uses padded columns so the
-`IDX`, `UID`, `SELECTOR`, and `SUMMARY` fields align across supported terminals.
+`check`, `list`, `describe`, `reveal`, help, agent operations, and `run --dry-run`
+never spawn a configured command. `--format json` emits one stable JSON document
+to stdout; diagnostics use stderr. Human `list` output uses padded columns so
+the `IDX`, `UID`, `SELECTOR`, and `SUMMARY` fields align across supported
+terminals.
+
+`runx reveal <uid-or-selector-or-index>` accepts exactly one selector and the
+catalog location/diagnostic flags `--cwd`, `--config`, and `--verbose`. It
+reuses the catalog resolver used by `runx run` and writes the selected manifest
+command verbatim followed by one newline to stdout. Reveal does not accept
+`--format`, child arguments, `--yes`, or `--dry-run`, and never executes or
+confirms the selected command.
 
 Only `runx run` executes a selected command. RunX-owned options precede the
 selector. Flag parsing stops at the selector and every later token is forwarded
