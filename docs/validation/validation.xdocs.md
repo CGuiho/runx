@@ -27,6 +27,7 @@ files:
   runx-0.11.0-confirmation.md: Preserves exact-head validation, merge, reachability, cleanup, and deferred release evidence for PR #38.
   runx-issues-36-39.md: Integration validation and protected release-boundary evidence for RunX PR #40.
   runx-0.11.0-release-prep.md: Integration validation and protected release-boundary evidence for RunX PR #41.
+  runx-0.11.1-confirm-opt-in.md: Integration validation and protected release-boundary evidence for RunX PR #46.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -61,6 +62,8 @@ keywords:
   - scripts directory
   - tests
   - summary
+  - confirm
+  - 0.11.1
   - windows self-upgrade
   - upgrade reliability
 flags: []
