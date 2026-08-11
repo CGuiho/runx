@@ -65,6 +65,9 @@ command exactly once on stdout, and never invokes execution or confirmation.
 - 2026-08-11 - Root context completed the final no-ff history-only merge of
   `origin/main` `c84f643` (public `@guiho/runx/v0.11.1`) as `da614c3`, with
   parents including prior reveal head `9d3f2ff`; the tree is unchanged.
+- 2026-08-11 - Merged the subsequently archived 0.11.1 evidence from
+  `origin/main` `eb04196` as `844c3f2`, preserving completed tasks 19 and 20,
+  reveal task 21, and all reveal descriptors.
 
 ## Validation Evidence
 
@@ -125,6 +128,18 @@ Final integration validation at `da614c3`:
   `docs/plans`, `docs/reviews/plans`, `docs/todo`, and `.` - passed;
   `xdocs tree` - complete; `xdocs doctor --warnings-as-errors` - zero errors
   and warnings.
+
+Final archive-integration validation at `844c3f2`:
+
+- `go test -count=1 ./cmd -run TestReveal` - passed; `go test -count=1 ./...`
+  - passed.
+- `go vet ./...` - passed; `go build ./...` - passed.
+- `gofmt -l main.go cmd pkg embed devops`, `git diff --check`, and
+  `go mod tidy` followed by the `go.mod`/`go.sum` clean-diff check - clean.
+- Strict XDocs metadata for `cmd`, `skills/guiho-s-runx`, `prompts`,
+  `docs/plans`, `docs/reviews/plans`, `docs/todo`, `docs/validation`, and `.`
+  - passed; `xdocs tree` - complete; `xdocs doctor --warnings-as-errors` -
+  zero errors and warnings.
 
 ## Handoff
 
