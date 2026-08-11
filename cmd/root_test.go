@@ -428,6 +428,20 @@ commands: []
 	assert.Equal(t, "custom-scripts", configuredManifest.Scripts.Directory)
 }
 
+func TestEmbeddedSkillConfirmationPolicyIsOptIn(t *testing.T) {
+	content, err := bundledSkill()
+	require.NoError(t, err)
+	normalized := strings.Join(strings.Fields(content), " ")
+	assert.Contains(t, normalized, "Manifest confirmation is opt-in.")
+	assert.Contains(t, normalized, "RunX supports only `confirm: never` and `confirm: always`")
+	assert.Contains(t, normalized, "omit the `confirm` field by default")
+	assert.Contains(t, normalized, "user explicitly asks for confirmation behavior for that specific command")
+	assert.Contains(t, normalized, "When omitted, RunX resolves confirmation to `never`.")
+	assert.Contains(t, normalized, "Do not infer or proactively add `confirm: always`")
+	assert.Contains(t, normalized, "If a command already declares `confirm: always`, still require explicit")
+	assert.NotContains(t, normalized, "Use `confirm: always` for destructive")
+}
+
 func TestEveryPublicScopeSupportsDeveloperContext(t *testing.T) {
 	cwd := t.TempDir()
 	paths := [][]string{

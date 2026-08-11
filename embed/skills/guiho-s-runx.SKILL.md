@@ -14,7 +14,7 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
 ---
 
 # GUIHO RunX
@@ -33,6 +33,16 @@ metadata:
 RunX manifests are trusted executable code. A group name is not a safety
 boundary. Never add `--yes` unless the developer explicitly authorizes the
 specific confirmation-gated command.
+
+Manifest confirmation is opt-in. RunX supports only `confirm: never` and
+`confirm: always`; omit the `confirm` field by default. Add it only when the
+user explicitly asks for confirmation behavior for that specific command, and
+use only the explicitly requested supported value. When omitted, RunX resolves
+confirmation to `never`. Do not infer or proactively add `confirm: always` for
+destructive, release, deployment, migration, or production-impacting commands.
+If a command already declares `confirm: always`, still require explicit
+authorization: an interactive `y`/`yes` response or a retry with `--yes` for
+that command.
 
 ## Configuration
 
@@ -91,8 +101,6 @@ It does not accept `--format`, child arguments, `--yes`, or `--dry-run`.
 - Keep UIDs stable and never reuse one for materially different behavior.
 - `runx init` writes `.scripts` as the default `scripts.directory`; preserve an
   explicitly configured directory value.
-- Use `confirm: always` for destructive, release, deployment, migration, and
-  production-impacting operations.
 - Do not place secrets in `runx.yaml`.
 - Run `runx check` after every change.
 

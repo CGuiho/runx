@@ -1,6 +1,6 @@
 ---
 name: Add RunX Reveal
-purpose: Define the expected outcome, constraints, and completion signals for TODO task 19.
+purpose: Define the expected outcome, constraints, and completion signals for TODO task 21.
 description: Specifies exact command revelation, selector parity, no-execution safety, documentation, validation, and minor-release acceptance.
 created: "2026-08-11"
 flags:
@@ -21,7 +21,7 @@ owner: runx-todo
 
 ## Todo Index
 
-- Task: `19. Add RunX Reveal`
+- Task: `21. Add RunX Reveal`
 - Status: testing
 - Index: [TODO.md](../../TODO.md)
 - Parent coordination: [GUIHO root TODO](../../../guiho/TODO.md)

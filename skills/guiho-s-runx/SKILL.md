@@ -14,7 +14,7 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.4.0"
+  version: "0.4.1"
 ---
 
 # GUIHO RunX
@@ -34,6 +34,16 @@ metadata:
 RunX manifests are trusted executable code. A group name is not a safety
 boundary. Never add `--yes` unless the developer explicitly authorizes the
 specific confirmation-gated command.
+
+Manifest confirmation is opt-in. RunX supports only `confirm: never` and
+`confirm: always`; omit the `confirm` field by default. Add it only when the
+user explicitly asks for confirmation behavior for that specific command, and
+use only the explicitly requested supported value. When omitted, RunX resolves
+confirmation to `never`. Do not infer or proactively add `confirm: always` for
+destructive, release, deployment, migration, or production-impacting commands.
+If a command already declares `confirm: always`, still require explicit
+authorization: an interactive `y`/`yes` response or a retry with `--yes` for
+that command.
 
 ## Configuration
 
@@ -77,7 +87,7 @@ It accepts exactly one selector, resolves it through the same catalog identity
 rules, and writes only the stored command plus one trailing newline to stdout.
 It does not accept `--format`, child arguments, `--yes`, or `--dry-run`.
 
-For `confirm: always`, an interactive human receives a safe-default prompt and
+For a command that already declares `confirm: always`, an interactive human receives a safe-default prompt and
 an exact retry such as `runx run --yes cli-compile-host`. Noninteractive and
 JSON runs fail closed with that retry instead of waiting for input. Treat an
 interactive `y` or `yes` response and a retry with `--yes` as equivalent
@@ -100,8 +110,6 @@ explicit authorization for that command.
 - Keep UIDs stable and never reuse one for materially different behavior.
 - `runx init` writes `.scripts` as the default `scripts.directory`; preserve an
   explicitly configured directory value.
-- Use `confirm: always` for destructive, release, deployment, migration, and
-  production-impacting operations.
 - Do not place secrets in `runx.yaml`.
 - Run `runx check` after every change.
 

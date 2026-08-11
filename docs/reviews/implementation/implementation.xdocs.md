@@ -20,6 +20,7 @@ files:
   manifest-v2-composition-review.md: Reviews issue 26 recursive decoding, graph identity, reciprocity, foreign loading, CLI integration, migration, and release readiness.
   runx-0.11.0-confirmation-review.md: Materializes the accepted exact-head implementation review for merged PR #38.
   runx-0.11.0-release-prep-review.md: Materializes the accepted exact-head implementation review for merged PR #41.
+  runx-0.11.1-confirm-opt-in-review.md: Materializes the accepted exact-head implementation review for merged PR #46.
 documents:
   bash-installer-review.md: Accepted implementation review for the RunX Bash installer.
   bounded-update-worker-review.md: Accepted implementation review for the bounded hidden update worker.
@@ -38,6 +39,7 @@ documents:
   runx-0.11.0-confirmation-review.md: Accepted implementation review evidence for RunX PR #38.
   runx-issues-36-39-review.md: Accepted implementation review evidence for RunX PR #40.
   runx-0.11.0-release-prep-review.md: Accepted implementation review evidence for RunX PR #41.
+  runx-0.11.1-confirm-opt-in-review.md: Accepted implementation review evidence for RunX PR #46.
 tags:
   - reviews
   - implementation

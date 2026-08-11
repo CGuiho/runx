@@ -1,6 +1,6 @@
 ---
 name: RunX Reveal Implementation Note
-purpose: Record execution progress, decisions, validation evidence, and delivery state for TODO task 19.
+purpose: Record execution progress, decisions, validation evidence, and delivery state for TODO task 21.
 description: Tracks the RX-REVEAL-1 implementation of the non-executing reveal command and its documentation and release handoff.
 created: "2026-08-11"
 flags:
@@ -45,12 +45,18 @@ command exactly once on stdout, and never invokes execution or confirmation.
 - 2026-08-11T07:12:25Z — Claimed RX-REVEAL-1 on `codex/runx-reveal` at planning
   head `22f029560d322995aaaacbfbf1152d1ebca68b98`; loaded the approved plan,
   review, TODO, question ledger, and required CLI/documentation skills.
-- 2026-08-11T07:20:00Z — Moved TODO task 19 to `testing` before final
+- 2026-08-11T07:20:00Z — Moved TODO task 21 to `testing` before final
   formatting, test, build, XDocs, and Mirror-plan validation.
 - 2026-08-11 — The initial plain `git push` attempt failed with
   `schannel: AcquireCredentialsHandle failed: SEC_E_NO_CREDENTIALS`; the root
   context retried with its authorized GitHub credentials and published
   `codex/runx-reveal` through head `9b3db9a`.
+- 2026-08-11 — After PR #50 exposed an advanced `main`, fetched
+  `origin/main` at `00789a4` and merged it without rewriting this branch. The
+  merge preserves PR #46 confirmation-policy implementation, review, and
+  release-preparation evidence while retaining the reveal command and tests.
+  TODO task 21 records reveal delivery because main already owns tasks 19 and
+  20 for confirmation policy and its patch release.
 
 ## Validation Evidence
 

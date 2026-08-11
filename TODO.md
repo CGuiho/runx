@@ -27,7 +27,7 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 3 |
+| testing | 5 |
 | stopped | 0 |
 | completed | 17 |
 
@@ -265,7 +265,36 @@ owner: runx
 - Acceptance: non-draft, non-prerelease release with exactly 11 assets; independent checksums and GitHub digests matched, downloaded Windows AMD64 version/help/help-tree smoke passed, and npm latest is `0.11.0`.
 - Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
 
-### 19. Add RunX Reveal
+### 19. Make RunX Confirmation Opt-In In The Agent Skill
+
+- Status: testing
+- Created: `2026-08-11T08:40:53+02:00`
+- Updated: `2026-08-11T08:44:42+02:00`
+- Outcome: The RunX agent skill adds manifest confirmation only when the user explicitly requests `confirm: never` or `confirm: always` for that specific command, with omission resolving to `never`.
+- Spec: [docs/todo/confirm-opt-in-skill.md](docs/todo/confirm-opt-in-skill.md)
+- Related files:
+  - [skills/guiho-s-runx/SKILL.md](skills/guiho-s-runx/SKILL.md) - Canonical bundled agent policy.
+  - [embed/skills/guiho-s-runx.SKILL.md](embed/skills/guiho-s-runx.SKILL.md) - Embedded runtime copy.
+  - [skills/guiho-s-runx/guiho-s-runx.xdocs.md](skills/guiho-s-runx/guiho-s-runx.xdocs.md) - Skill descriptor semantics.
+- Implementation: [docs/todo/confirm-opt-in-skill-implementation.md](docs/todo/confirm-opt-in-skill-implementation.md)
+- Review: [docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md](docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md)
+- Validation: [docs/validation/runx-0.11.1-confirm-opt-in.md](docs/validation/runx-0.11.1-confirm-opt-in.md)
+- Integration: merge commit [37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8](https://github.com/CGuiho/runx/commit/37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8) reached `main`; immutable review/validation evidence was materialized by protected docs PR #48 merge [93dc2f201045003b64360e2b214a6f7c86c176e6](https://github.com/CGuiho/runx/commit/93dc2f201045003b64360e2b214a6f7c86c176e6).
+- Mirror: Patch candidate `0.11.1`; version application, tag creation, and release publication remain pending final release validation.
+
+### 20. Publish RunX 0.11.1
+
+- Status: testing
+- Priority: highest
+- Created: `2026-08-11`
+- Updated: `2026-08-11`
+- Outcome: Publish the compatible confirmation-policy correction as the Mirror-managed `0.11.1` patch release after clean-clone validation, exact 11-asset publication, independent checksums/digests, native Windows AMD64 smoke, and npm latest verification.
+- Spec: [docs/todo/release-runx-0.11.1.md](docs/todo/release-runx-0.11.1.md)
+- Review: [docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md](docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md)
+- Validation: [docs/validation/runx-0.11.1-confirm-opt-in.md](docs/validation/runx-0.11.1-confirm-opt-in.md)
+- Mirror: Patch plan `@guiho/runx/v0.11.1` passed; apply/tag/publish remain pending this release-prep merge.
+
+### 21. Add RunX Reveal
 
 - Status: testing
 - Created: `2026-08-11T07:01:35Z`
