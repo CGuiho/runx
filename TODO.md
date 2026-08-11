@@ -277,4 +277,7 @@ owner: runx
   - [embed/skills/guiho-s-runx.SKILL.md](embed/skills/guiho-s-runx.SKILL.md) - Embedded runtime copy.
   - [skills/guiho-s-runx/guiho-s-runx.xdocs.md](skills/guiho-s-runx/guiho-s-runx.xdocs.md) - Skill descriptor semantics.
 - Implementation: [docs/todo/confirm-opt-in-skill-implementation.md](docs/todo/confirm-opt-in-skill-implementation.md)
-- Mirror: Patch candidate `0.11.1`; version application, tag creation, and release publication are deferred to the post-merge integrator.
+- Review: [docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md](docs/reviews/implementation/runx-0.11.1-confirm-opt-in-review.md)
+- Validation: [docs/validation/runx-0.11.1-confirm-opt-in.md](docs/validation/runx-0.11.1-confirm-opt-in.md)
+- Integration: merge commit [37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8](https://github.com/CGuiho/runx/commit/37327d5e80d405ecee6d8fa29bb9dd3bdc1302b8) reached `main`; documentation evidence is being delivered through a protected docs-only PR.
+- Mirror: Patch candidate `0.11.1`; version application, tag creation, and release publication remain pending final release validation.
