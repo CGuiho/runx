@@ -26,8 +26,8 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
-| testing | 2 |
+| in progress | 0 |
+| testing | 3 |
 | stopped | 0 |
 | completed | 17 |
 
@@ -267,13 +267,14 @@ owner: runx
 
 ### 19. Add RunX Reveal
 
-- Status: in progress
+- Status: testing
 - Created: `2026-08-11T07:01:35Z`
-- Updated: `2026-08-11T07:01:35Z`
+- Updated: `2026-08-11T07:20:00Z`
 - Outcome: RunX resolves a catalog command through the same selector identities as `runx run` and prints its exact command for copy-and-paste without executing it.
 - Spec: [docs/todo/runx-reveal.md](docs/todo/runx-reveal.md)
 - Related files:
   - [docs/brainstorm/runx-reveal.md](docs/brainstorm/runx-reveal.md) - Captured user intent and current Windows shell-boundary evidence.
   - [docs/plans/runx-reveal.md](docs/plans/runx-reveal.md) - Approved implementation, validation, integration, and minor-release plan.
   - [docs/reviews/plans/runx-reveal-review.md](docs/reviews/plans/runx-reveal-review.md) - Ready-for-execution plan review.
+- Implementation: [docs/todo/runx-reveal-implementation.md](docs/todo/runx-reveal-implementation.md)
 - External: GitHub issue [CGuiho/runx#47](https://github.com/CGuiho/runx/issues/47)

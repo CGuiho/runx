@@ -4,7 +4,7 @@ purpose: Define the expected outcome, constraints, and completion signals for TO
 description: Specifies exact command revelation, selector parity, no-execution safety, documentation, validation, and minor-release acceptance.
 created: "2026-08-11"
 flags:
-  - in-progress
+  - testing
 tags:
   - todo
   - cli
@@ -22,7 +22,7 @@ owner: runx-todo
 ## Todo Index
 
 - Task: `19. Add RunX Reveal`
-- Status: in progress
+- Status: testing
 - Index: [TODO.md](../../TODO.md)
 - Parent coordination: [GUIHO root TODO](../../../guiho/TODO.md)
 
@@ -80,6 +80,7 @@ command for the user to copy and run, without spawning or confirming it.
 - [Implementation plan](../plans/runx-reveal.md)
 - [Plan review](../reviews/plans/runx-reveal-review.md)
 - [Question ledger](../questions/runx-reveal/plan-unit-1.md)
+- [Implementation note](runx-reveal-implementation.md)
 - [Run argument ownership](../decisions/run-argument-ownership.md)
 
 ## Dependencies And Context
