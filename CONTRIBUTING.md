@@ -17,7 +17,8 @@ keywords:
 # Contributing to RunX
 
 RunX production behavior is implemented in Go. Keep changes focused and
-preserve the distinction between catalog inspection and command execution.
+preserve the distinction between catalog inspection (including exact-command
+revelation) and command execution.
 
 1. Use `gofmt` on changed Go files.
 2. Run `go mod tidy`, `go test ./...`, and `go vet ./...`.
