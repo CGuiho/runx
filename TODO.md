@@ -25,7 +25,7 @@ owner: runx
 
 | Status | Count |
 | --- | ---: |
-| todo | 0 |
+| todo | 1 |
 | in progress | 0 |
 | testing | 2 |
 | stopped | 0 |
@@ -329,3 +329,18 @@ owner: runx
 - Validation: [docs/validation/runx-0.12.1-shell-auto-release.md](docs/validation/runx-0.12.1-shell-auto-release.md)
 - Integration: PR [#55](https://github.com/CGuiho/runx/pull/55) merged as [`a297aa25b94d83d11d361a0fab0b5415bdd1ba20`](https://github.com/CGuiho/runx/commit/a297aa25b94d83d11d361a0fab0b5415bdd1ba20).
 - Release: [`@guiho/runx/v0.12.1`](https://github.com/CGuiho/runx/releases/tag/%40guiho/runx/v0.12.1), successful Publish workflow [31476981185](https://github.com/CGuiho/runx/actions/runs/31476981185), exactly 11 assets, npm latest `0.12.1`, and downloaded Windows Git Bash smoke passed.
+
+### 23. Make RunX Comply With GUIHO CLI Convention 0001
+
+- Status: todo
+- Priority: highest
+- Created: `2026-08-16T00:00:00+02:00`
+- Updated: `2026-08-16T00:00:00+02:00`
+- Outcome: RunX uses a stable launcher, immutable payloads, manifest-owned transactional lifecycle operations, separate global/project configuration, compliant agent resources, and a release-safe protocol-v1 cutover.
+- Spec: [docs/todo/guiho-convention-0001-cli-compliance-migration.md](docs/todo/guiho-convention-0001-cli-compliance-migration.md)
+- Related:
+  - [Compliance audit](docs/reviews/guiho-convention-0001-cli-compliance-audit.md)
+  - [Architecture](docs/architecture/guiho-convention-0001-cli-compliance-migration.md)
+  - [Architecture review](docs/reviews/architecture/guiho-convention-0001-cli-compliance-migration-review.md)
+  - [Implementation plan](docs/plans/guiho-convention-0001-cli-compliance-migration.md)
+  - [Plan review](docs/reviews/plans/guiho-convention-0001-cli-compliance-migration-review.md)

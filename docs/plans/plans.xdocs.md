@@ -7,6 +7,7 @@ files:
   alpha-implementation.md: Breaks the accepted alpha into implementation and validation units.
   automatic-agent-maintenance.md: Implements non-blocking automatic global skill and nearest AGENTS.md reconciliation for issue 11.
   citty-cli-migration.md: Executes the full Citty command-tree migration, compatibility validation, protected delivery, and patch release.
+  guiho-convention-0001-cli-compliance-migration.md: Sequences the stable-launcher, ownership, configuration, lifecycle, cutover, first-release, and final-hardening migration.
   interactive-init-manifest.md: Historical v1 initializer plan whose manifest shape is superseded by manifest-v2-composition.md.
   linux-installer-latest-release.md: Replaces redirect-tag parsing with latest-download aliases, regression tests the URLs, and sequences public issue verification.
   mirror-automatic-push.md: Enables automatic Mirror release pushes with a synchronized protected-main safety gate.
@@ -23,6 +24,7 @@ documents:
   alpha-implementation.md: Plan used for the initial RunX implementation.
   automatic-agent-maintenance.md: Approved automatic agent-maintenance implementation plan.
   citty-cli-migration.md: Active plan for replacing handwritten CLI parsing and routing with Citty and delivering its patch release.
+  guiho-convention-0001-cli-compliance-migration.md: Independently reviewed cohesive plan for full GUIHO CLI Convention 0001 compliance, pending explicit human gates.
   interactive-init-manifest.md: Historical initializer plan; do not use its superseded v1 manifest shape.
   linux-installer-latest-release.md: Approved implementation plan for GitHub issue 20.
   mirror-automatic-push.md: Approved plan for configuring, validating, and merging Mirror push=true without applying another release.
@@ -45,6 +47,8 @@ keywords:
   - scripts directory
   - mirror push
   - RFC 0034
+  - GUIHO CLI Convention 0001
+  - stable launcher
   - agent namespace
   - fourteen release assets
   - windows self-upgrade

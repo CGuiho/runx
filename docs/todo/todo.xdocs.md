@@ -21,6 +21,7 @@ files:
   simplified-install-command.md: Defines GitHub issue 24 exact public curl bootstrap acceptance.
   forward-command-arguments.md: Defines GitHub issue 25 argument ownership, safe forwarding, and dry-run acceptance.
   issues-36-39.md: Defines the combined GitHub issue 36 identity-resolution and issue 39 init-default outcome.
+  guiho-convention-0001-cli-compliance-migration.md: Tracks every unit and gate in the breaking GUIHO CLI Convention 0001 compliance migration.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   bounded-update-worker.md: Task specification for the bounded RunX update worker audit prompted by XDocs issue 14.
@@ -39,12 +40,15 @@ documents:
   forward-command-arguments.md: Task specification for safe child argument forwarding.
   issues-36-39.md: In-progress task specification for RunX issues 36 and 39.
   issues-36-39-implementation.md: Execution progress, validation evidence, and handoff for RunX issues 36 and 39.
+  guiho-convention-0001-cli-compliance-migration.md: Proposed task ledger for full GUIHO CLI Convention 0001 compliance.
 tags:
   - todo
 keywords:
   - runx
   - RFC 0034
   - CLI migration
+  - GUIHO CLI Convention 0001
+  - stable launcher
   - tasks
   - Git Bash
   - shell auto
