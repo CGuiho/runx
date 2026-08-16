@@ -15,9 +15,15 @@ owner: runx
 
 # Changelog
 
-## Unreleased
+## 0.12.2 - 2026-08-17
 
-No unreleased changes.
+### Changed
+
+- Documentation-only release: archived the completed `runx reveal` and
+  Windows Git Bash automatic-shell tasks, recorded the 0.12.1 implementation
+  review and validation evidence on protected `main`, and realigned the TODO
+  and XDocs indexes with the integrated release state. No user-facing runtime
+  behavior changed.
 
 ## 0.12.1 - 2026-08-11
 
