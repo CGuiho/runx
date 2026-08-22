@@ -1,0 +1,46 @@
+version: "2.0.0"
+namespace: "runx"
+scripts:
+  directory: ".scripts"
+commands:
+  - uid: runx-tooling-go-fmt
+    id: fmt
+    summary: Format Go sources.
+    description: Rewrite all first-party Go sources with gofmt.
+    command: gofmt -w main.go cmd pkg devops
+    confirm: never
+
+  - uid: runx-tooling-go-test
+    id: test
+    summary: Run the complete Go test suite.
+    description: Run every package test once without caching.
+    command: go test -count=1 ./...
+    confirm: never
+
+  - uid: runx-tooling-go-vet
+    id: vet
+    summary: Vet Go sources.
+    description: Run the standard Go vet analysis over every package.
+    command: go vet ./...
+    confirm: never
+
+  - uid: runx-tooling-go-build
+    id: build
+    summary: Compile every Go package.
+    description: Build all packages without producing release artifacts.
+    command: go build ./...
+    confirm: never
+
+  - uid: runx-tooling-tidy-check
+    id: tidy-check
+    summary: Verify go.mod and go.sum are tidy.
+    description: Fail when go mod tidy would change the module files.
+    command: go mod tidy -diff
+    confirm: never
+
+  - uid: runx-tooling-build-binaries
+    id: build-binaries
+    summary: Compile the native release asset matrix.
+    description: Build the eight-platform pure-Go release binaries plus supporting artifacts into bundle/.
+    command: go run devops/build-binaries.go --version 0.0.0-dev --commit local --build-date 1970-01-01T00:00:00Z
+    confirm: never

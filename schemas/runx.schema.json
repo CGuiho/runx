@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://github.com/CGuiho/runx/releases/download/v0.0.0/runx.schema.json",
+  "title": "RunX Project Configuration",
+  "description": "Strict project configuration for RunX. Unknown fields are rejected at runtime.",
+  "type": "object",
+  "additionalProperties": false,
+  "properties": {
+    "schema": {
+      "type": "string",
+      "description": "Version-pinned remote schema reference for editor discovery."
+    },
+    "agent": { "$ref": "#/definitions/agent" }
+  },
+  "definitions": {
+    "policy": {
+      "type": "string",
+      "enum": ["disabled", "always-ask", "always-proceed"]
+    },
+    "evolution": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "upgrade": { "$ref": "#/definitions/policy" },
+        "issues": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "bugs": { "$ref": "#/definitions/policy" },
+            "improvements": { "$ref": "#/definitions/policy" },
+            "reviews": { "$ref": "#/definitions/policy" }
+          }
+        }
+      }
+    },
+    "agent": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "evolution": { "$ref": "#/definitions/evolution" }
+      }
+    }
+  }
+}

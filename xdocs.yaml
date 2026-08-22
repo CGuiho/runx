@@ -1,0 +1,20 @@
+schema: 1
+extensions:
+  supported:
+    - .xdocs.md
+ai:
+  mode: auto
+ignore:
+  gitignore: true
+scan:
+  exclude:
+    - node_modules
+    - .git
+    - dist
+    - build
+    - library
+    - bin
+    - bundle
+    - vendor
+project:
+  name: "runx"

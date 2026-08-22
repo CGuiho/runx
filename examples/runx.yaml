@@ -1,0 +1,7 @@
+# yaml-language-server: $schema=https://github.com/CGuiho/runx/releases/download/v0.12.2/runx.schema.json
+schema: https://github.com/CGuiho/runx/releases/download/v0.12.2/runx.schema.json
+agent:
+  evolution:
+    upgrade: always-ask
+    issues:
+      bugs: always-proceed
