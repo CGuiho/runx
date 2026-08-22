@@ -1,0 +1,21 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/CGuiho/mirror/main/schema/mirror.config.schema.json
+schema = 1
+
+[project]
+name = "@guiho/runx"
+
+[version]
+scheme = "semver"
+source = "git"
+output = ["git"]
+prerelease_id = ""
+
+[git]
+tag_template = "{name}/v{version}"
+commit = true
+push = true
+allow_dirty = false
+
+[agents]
+write_changelog = true
+changelog_path = "CHANGELOG.md"
