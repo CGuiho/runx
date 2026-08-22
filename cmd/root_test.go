@@ -80,10 +80,10 @@ func TestVersionAndWelcome(t *testing.T) {
 	assert.Contains(t, out, "platform      ")
 	assert.Contains(t, out, "version       v1.2.3")
 	assert.Contains(t, out, "Run runx --help to see available commands.")
-	assert.Contains(t, out, "╭")
-	assert.Contains(t, out, "╰")
 	assert.True(t, strings.HasSuffix(out, "\n"))
 	assert.NotContains(t, out, "\x1b[")
+	assert.NotContains(t, out, "╭")
+	assert.NotContains(t, out, "╰")
 }
 
 func TestBareInvocationBootstrapsAgentIntegrationBeforeWelcome(t *testing.T) {

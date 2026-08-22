@@ -118,55 +118,34 @@ func renderWithColor(platform, architecture, version, updateNotice string, withC
 	}
 
 	var b strings.Builder
-	borderColor := ansiBrightRed
 	logoColor := ansiBrightRed
 	taglineColor := ansiSlate
 
-	// Top border
-	b.WriteString(colorize(withColor, "╭"+strings.Repeat("─", innerWidth)+"╮", borderColor))
-	b.WriteString("\n")
-	// Empty line inside
-	b.WriteString(colorize(withColor, "│"+strings.Repeat(" ", innerWidth)+"│", borderColor))
-	b.WriteString("\n")
-	// Logo centered
+	// Logo centered — no border per user request
 	for _, line := range runxLogo {
 		lineLen := len([]rune(line))
 		pad := innerWidth - lineLen
 		left := pad / 2
 		right := pad - left
 		inner := strings.Repeat(" ", left) + line + strings.Repeat(" ", right)
-		b.WriteString(colorize(withColor, "│", borderColor))
-		b.WriteString(colorize(withColor, inner, logoColor+ansiBold))
-		b.WriteString(colorize(withColor, "│", borderColor))
+		b.WriteString(colorize(withColor, strings.TrimRight(inner, " "), logoColor+ansiBold))
 		b.WriteString("\n")
 	}
-	// Empty line between logo and tagline
-	b.WriteString(colorize(withColor, "│"+strings.Repeat(" ", innerWidth)+"│", borderColor))
-	b.WriteString("\n")
-	// Tagline centered, dim slate
+	// Tagline centered, dim slate — no border
 	tagPad := innerWidth - len([]rune(tagline))
 	tagLeft := tagPad / 2
 	tagRight := tagPad - tagLeft
 	tagInner := strings.Repeat(" ", tagLeft) + tagline + strings.Repeat(" ", tagRight)
-	b.WriteString(colorize(withColor, "│", borderColor))
-	b.WriteString(colorize(withColor, tagInner, taglineColor+ansiDim))
-	b.WriteString(colorize(withColor, "│", borderColor))
+	b.WriteString(colorize(withColor, strings.TrimRight(tagInner, " "), taglineColor+ansiDim))
 	b.WriteString("\n")
-	// GUIHO line centered
+	// GUIHO line centered — no border
 	guihoLine := "GUIHO \u00b7 Crist\u00f3v\u00e3o GUIHO"
 	guihoPad := innerWidth - len([]rune(guihoLine))
 	guihoLeft := guihoPad / 2
 	guihoRight := guihoPad - guihoLeft
 	guihoInner := strings.Repeat(" ", guihoLeft) + guihoLine + strings.Repeat(" ", guihoRight)
-	b.WriteString(colorize(withColor, "│", borderColor))
-	b.WriteString(colorize(withColor, guihoInner, taglineColor))
-	b.WriteString(colorize(withColor, "│", borderColor))
+	b.WriteString(colorize(withColor, strings.TrimRight(guihoInner, " "), taglineColor))
 	b.WriteString("\n")
-	// Empty line
-	b.WriteString(colorize(withColor, "│"+strings.Repeat(" ", innerWidth)+"│", borderColor))
-	b.WriteString("\n")
-	// Bottom border
-	b.WriteString(colorize(withColor, "╰"+strings.Repeat("─", innerWidth)+"╯", borderColor))
 
 	// ── Outside box ─────────────────────────
 	b.WriteString("\n\n")

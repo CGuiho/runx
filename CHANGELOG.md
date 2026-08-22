@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.14.0 - 2026-08-22
+
+### Changed
+
+- Hello window is now borderless and rendered with the approved palette
+  (`2B2D42`, `8D99AE`, `EDF2F4`, `EF233C`, `D90429`) — bright-red RUNX
+  ANSI Shadow logo, slate tagline, and outside metadata (GUIHO, Creator,
+  platform, version, help) without the surrounding box. Plain output
+  remains deterministic and test-stable.
+
 ## 0.13.1 - 2026-08-22
 
 ### Added
