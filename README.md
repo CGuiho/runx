@@ -24,10 +24,10 @@ curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh 
 Prompt for the AI:
 
 ```text
-Load https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-install.md and follow it to install the GUIHO RunX CLI.
+Load https://raw.githubusercontent.com/CGuiho/runx/main/prompts/guiho-p-runx.md and follow it to install the GUIHO RunX CLI.
 ```
 
-The prompt is hosted at `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-install.md` and its ID is `guiho-p-runx`.
+The prompt is hosted at `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/guiho-p-runx.md` and its ID is `guiho-p-runx`.
 
 Verify the installation:
 
@@ -171,10 +171,10 @@ curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/uninstall.s
 Prompt for the AI:
 
 ```text
-Load https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-uninstall.md and follow it to uninstall the GUIHO RunX CLI.
+Load https://raw.githubusercontent.com/CGuiho/runx/main/prompts/guiho-p-runx-uninstall.md and follow it to uninstall the GUIHO RunX CLI.
 ```
 
-The prompt is hosted at `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-uninstall.md` and its ID is `guiho-p-runx-uninstall`.
+The prompt is hosted at `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/guiho-p-runx-uninstall.md` and its ID is `guiho-p-runx-uninstall`.
 
 Destructive default (removes everything):
 

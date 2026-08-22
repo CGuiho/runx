@@ -121,7 +121,7 @@ func UpgradeWholeRelease(opts Options) (*Result, error) {
 		entry.CompatibleAsset.Name,
 		launcherAssetName(entry.CompatibleAsset.Name),
 		"checksums.txt", "artifacts.json",
-		"guiho-s-runx.zip", "guiho-i-runx.md", "runx-install.md", "runx-uninstall.md",
+		"guiho-s-runx.zip", "guiho-i-runx.md", "guiho-p-runx.md", "guiho-p-runx-uninstall.md",
 		"runx.schema.json", "runx.global.schema.json",
 	}
 	for _, asset := range assets {

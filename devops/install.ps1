@@ -87,7 +87,7 @@ Write-Host "Staging:        $Staging"
 function Download([string]$Name) {
   Invoke-WebRequest -Uri "$AssetBase/$Name" -OutFile (Join-Path $Staging $Name) -UseBasicParsing
 }
-foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'checksums.txt', 'artifacts.json', 'guiho-s-runx.zip', 'guiho-i-runx.md', 'runx-install.md', 'runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json')) {
+foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'checksums.txt', 'artifacts.json', 'guiho-s-runx.zip', 'guiho-i-runx.md', 'guiho-p-runx.md', 'guiho-p-runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json')) {
   Download $Asset
 }
 
@@ -107,7 +107,7 @@ function Verify-ManifestDigest([string]$Name) {
     if ($Entry.sha256.ToLowerInvariant() -ne $Actual) { throw "artifacts.json digest mismatch for $Name" }
   }
 }
-foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'guiho-s-runx.zip', 'guiho-i-runx.md', 'runx-install.md', 'runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json', 'artifacts.json')) {
+foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'guiho-s-runx.zip', 'guiho-i-runx.md', 'guiho-p-runx.md', 'guiho-p-runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json', 'artifacts.json')) {
   Verify-Checksum $Asset
   Verify-ManifestDigest $Asset
 }
@@ -145,8 +145,8 @@ New-Item -ItemType Directory -Force -Path (Join-Path $ResourcesDir 'skills'), (J
 Expand-Archive -LiteralPath (Join-Path $Staging 'guiho-s-runx.zip') -DestinationPath (Join-Path $ResourcesDir 'skills') -Force
 if (-not (Test-Path -LiteralPath (Join-Path $ResourcesDir 'skills\guiho-s-runx\SKILL.md'))) { Restore-Pointer; Remove-Item -Recurse -Force -LiteralPath $DestVersionDir; throw 'skill archive is missing guiho-s-runx/SKILL.md' }
 Copy-Item -LiteralPath (Join-Path $Staging 'guiho-i-runx.md') -Destination (Join-Path $ResourcesDir 'instruction\guiho-i-runx.md') -Force
-Copy-Item -LiteralPath (Join-Path $Staging 'runx-install.md') -Destination (Join-Path $ResourcesDir 'prompts\runx-install.md') -Force
-Copy-Item -LiteralPath (Join-Path $Staging 'runx-uninstall.md') -Destination (Join-Path $ResourcesDir 'prompts\runx-uninstall.md') -Force
+Copy-Item -LiteralPath (Join-Path $Staging 'guiho-p-runx.md') -Destination (Join-Path $ResourcesDir 'prompts\guiho-p-runx.md') -Force
+Copy-Item -LiteralPath (Join-Path $Staging 'guiho-p-runx-uninstall.md') -Destination (Join-Path $ResourcesDir 'prompts\guiho-p-runx-uninstall.md') -Force
 Copy-Item -LiteralPath (Join-Path $Staging 'runx.schema.json') -Destination (Join-Path $ResourcesDir 'schemas\runx.schema.json') -Force
 Copy-Item -LiteralPath (Join-Path $Staging 'runx.global.schema.json') -Destination (Join-Path $ResourcesDir 'schemas\runx.global.schema.json') -Force
 

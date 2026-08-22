@@ -120,8 +120,8 @@ func main() {
 	add("instruction/guiho-i-runx", instruction, "instruction", "", "", "./.guiho/runx/resources/instruction/guiho-i-runx.md")
 
 	for _, prompt := range []struct{ file, id string }{
-		{"runx-install.md", "guiho-p-runx"},
-		{"runx-uninstall.md", "guiho-p-runx-uninstall"},
+		{"guiho-p-runx.md", "guiho-p-runx"},
+		{"guiho-p-runx-uninstall.md", "guiho-p-runx-uninstall"},
 	} {
 		if err := copyFile(filepath.Join("prompts", prompt.file), filepath.Join(*output, prompt.file)); err != nil {
 			fatalf("copy prompt %s: %v", prompt.file, err)
