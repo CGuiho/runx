@@ -58,4 +58,5 @@ jobs:
           trap 'rm -rf "$public_home"' EXIT
           HOME="$public_home" RUNX_SKIP_PATH_UPDATE=1 \
             bash devops/install.sh --version "$VERSION"
-          test "$(RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$public_home/.guiho/bin/runx" --version)" = "$VERSION"
+          test "$(HOME="$public_home" RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$public_home/.guiho/bin/runx" --version)" = "$VERSION"
+          test "$(HOME="$public_home" "$public_home/.guiho/bin/runx" __self-test >/dev/null && echo ok)" = "ok"
