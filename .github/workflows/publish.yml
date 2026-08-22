@@ -40,10 +40,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
-            gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md
+            gh release edit "$GITHUB_REF_NAME" --title "$GITHUB_REF_NAME" --notes-file release-notes.md --draft=false --latest
             gh release upload "$GITHUB_REF_NAME" bundle/* --clobber
           else
-            gh release create "$GITHUB_REF_NAME" bundle/* --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag
+            gh release create "$GITHUB_REF_NAME" bundle/* --title "$GITHUB_REF_NAME" --notes-file release-notes.md --verify-tag --draft=false --latest
           fi
       - name: Verify exact GitHub release asset set
         env:
