@@ -15,6 +15,48 @@ owner: runx
 
 # Changelog
 
+## 0.13.0 - 2026-08-22
+
+### Added
+
+- Convention 0001 compliance: stable launcher at `~/.guiho/bin/runx` with
+  immutable versioned payloads under `~/.guiho/runx/versions/`, an atomic
+  `current.json` pointer with previous-version fallback, and an installed
+  ownership ledger.
+- Protocol-v1 release matrix: eight immutable `runx-payload-*` executables,
+  eight launchers, both configuration schemas, the bundled skill archive and
+  instruction, an `artifacts.json` ownership manifest, and full checksums.
+- Whole-release upgrade engine for protocol-v1 installations with staged
+  verification, hidden payload self-test, atomic activation, launcher
+  verification, and complete rollback.
+- Shared uninstallation contract across `runx uninstall`,
+  `devops/uninstall.sh`, and `devops/uninstall.ps1` with REMOVE/PRESERVE
+  planning, `--preserve-config`, `--preserve-data`, `--dry-run`, and `--yes`.
+- Mandatory reinstallation recovery blocks on every terminal upgrade outcome.
+- Hidden `__self-test` installation verification command.
+- Strict project/global configuration contracts with the mandatory
+  agent-evolution policy, published JSON Schemas, and complete examples.
+- Convention-complete `runx init` reconciliation with interactive evolution
+  policy setup and Created/Upgraded/Verified/Unchanged reporting.
+- `--help-tree-global-flags` help-tree behavior per convention.
+
+### Changed
+
+- Installers rewritten for the canonical `.guiho` layout: full-name-only
+  `--version`/`--channel` selection with release-catalog pagination, staging
+  under `~/.guiho/.temp/`, manifest plus checksum verification of every
+  artifact, transactional activation with rollback, and idempotent user PATH
+  updates. The retired `~/.local/bin` direct-binary layout is no longer used.
+- npm is no longer an executable or lifecycle distribution; the Node bootstrap
+  was removed in favor of the native installers.
+
+### Breaking
+
+- Pre-1.0 breaking migration per RFC 0034 and GUIHO CLI Convention 0001:
+  legacy direct-binary installations must reinstall through the remote
+  installers; the exact-eleven release contract is replaced by the
+  protocol-v1 manifest-driven set.
+
 ## 0.12.2 - 2026-08-17
 
 ### Changed
