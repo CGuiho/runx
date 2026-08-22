@@ -9,105 +9,131 @@ import (
 	"testing"
 )
 
-func TestPowerShellInstallerConfiguresGitBashIdempotently(t *testing.T) {
-	if runtime.GOOS != "windows" {
-		t.Skip("PowerShell installer behavior is Windows-specific")
-	}
-
-	installer, err := filepath.Abs("install.ps1")
+// readInstaller loads a devops lifecycle script from this package directory.
+func readInstaller(t *testing.T, name string) string {
+	t.Helper()
+	data, err := os.ReadFile(name)
 	if err != nil {
 		t.Fatal(err)
 	}
-	home := t.TempDir()
-	profile := filepath.Join(home, ".bashrc")
-	const existing = "# Existing Git Bash configuration.\r\n"
-	if err := os.WriteFile(profile, []byte(existing), 0o600); err != nil {
-		t.Fatal(err)
-	}
-	installDirectory := filepath.Join(home, ".local", "bin")
-
-	command := strings.Join([]string{
-		"$env:RUNX_INSTALLER_SOURCE_ONLY = '1'",
-		". '" + quotePowerShellLiteral(installer) + "'",
-		"$installDirectory = '" + quotePowerShellLiteral(installDirectory) + "'",
-		"$first = Add-GitBashPath -InstallDirectory $installDirectory -HomeDirectory '" + quotePowerShellLiteral(home) + "'",
-		"$second = Add-GitBashPath -InstallDirectory $installDirectory -HomeDirectory '" + quotePowerShellLiteral(home) + "'",
-		"if (-not $first.Changed) { throw 'first Git Bash update did not change the profile' }",
-		"if ($second.Changed) { throw 'second Git Bash update was not idempotent' }",
-		`if ($first.ExportLine -cne 'export PATH="$HOME/.local/bin:$PATH"') { throw "unexpected export line: $($first.ExportLine)" }`,
-		`$mixedCasePath = 'C:\Other;' + $installDirectory.ToUpperInvariant() + '\'`,
-		"if (-not (Test-PathValueContains -PathValue $mixedCasePath -Directory $installDirectory)) { throw 'normalized Windows Path lookup failed' }",
-	}, "; ")
-
-	result := exec.Command(
-		"powershell.exe",
-		"-NoLogo",
-		"-NoProfile",
-		"-NonInteractive",
-		"-ExecutionPolicy",
-		"Bypass",
-		"-Command",
-		command,
-	)
-	output, err := result.CombinedOutput()
-	if err != nil {
-		t.Fatalf("PowerShell path helper failed: %v\n%s", err, output)
-	}
-
-	updated, err := os.ReadFile(profile)
-	if err != nil {
-		t.Fatal(err)
-	}
-	text := string(updated)
-	if !strings.HasPrefix(text, existing) {
-		t.Fatalf("existing Git Bash configuration changed:\n%s", text)
-	}
-	const exportLine = `export PATH="$HOME/.local/bin:$PATH"`
-	if count := strings.Count(text, exportLine); count != 1 {
-		t.Fatalf("export line count = %d, want 1:\n%s", count, text)
-	}
-	if !strings.Contains(text, "\r\n"+exportLine+"\r\n") {
-		t.Fatalf("existing CRLF style was not preserved:\n%q", text)
-	}
-	if strings.HasPrefix(text, "\xEF\xBB\xBF") {
-		t.Fatal("Git Bash profile unexpectedly gained a UTF-8 BOM")
-	}
+	return string(data)
 }
 
-func TestREADMEPublishesSimplifiedPowerShellBootstrap(t *testing.T) {
-	readme, err := os.ReadFile(filepath.Join("..", "README.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	text := string(readme)
-	const command = "irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex"
-	if !strings.Contains(text, command) {
-		t.Fatalf("README does not contain the canonical PowerShell bootstrap: %s", command)
-	}
-	if strings.Contains(text, "& ([scriptblock]::Create((Invoke-RestMethod") {
-		t.Fatal("README still contains the complex PowerShell bootstrap")
-	}
-}
-
-func TestREADMEDocumentsLegacyNativeMigration(t *testing.T) {
-	readme, err := os.ReadFile(filepath.Join("..", "README.md"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	text := string(readme)
-	for _, expected := range []string{
-		"### Migrate From RunX 0.8",
-		"curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash",
-		"irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex",
-		"hash -r",
-		"runx --version",
-	} {
-		if !strings.Contains(text, expected) {
-			t.Errorf("README legacy migration guidance does not contain %q", expected)
+func TestInstallersUseCanonicalLayout(t *testing.T) {
+	sh := readInstaller(t, "install.sh")
+	ps1 := readInstaller(t, "install.ps1")
+	layoutElements := []string{".guiho", ".temp", "runx-install-", "versions", "current.json"}
+	for _, expected := range layoutElements {
+		if !strings.Contains(sh, expected) {
+			t.Errorf("install.sh is missing canonical layout element %q", expected)
+		}
+		if !strings.Contains(ps1, expected) {
+			t.Errorf("install.ps1 is missing canonical layout element %q", expected)
 		}
 	}
-	if strings.Contains(text, "--version '0.8.0'") {
-		t.Fatal("README legacy migration guidance still recommends the pinned 0.8 installer")
+	for name, script := range map[string]string{"install.sh": sh, "install.ps1": ps1} {
+		if !strings.Contains(script, "__self-test") {
+			t.Errorf("%s does not run the hidden installation self-test", name)
+		}
+	}
+}
+
+func TestInstallersAcceptOnlyFullFlagNames(t *testing.T) {
+	sh := readInstaller(t, "install.sh")
+	ps1 := readInstaller(t, "install.ps1")
+	shForbidden := []string{"-v)", "-h)", "--install-dir", "RUNX_INSTALL_DIR"}
+	for _, forbidden := range shForbidden {
+		if strings.Contains(sh, forbidden) {
+			t.Errorf("install.sh contains forbidden alias or override %q", forbidden)
+		}
+	}
+	ps1Forbidden := []string{"RUNX_INSTALL_DIR", "$InstallDir"}
+	for _, forbidden := range ps1Forbidden {
+		if strings.Contains(ps1, forbidden) {
+			t.Errorf("install.ps1 contains forbidden alias or override %q", forbidden)
+		}
+	}
+	if !strings.Contains(sh, "--channel") || !strings.Contains(sh, "--version") {
+		t.Error("install.sh must support --version and --channel")
+	}
+	if !strings.Contains(ps1, "[string]$Channel") || !strings.Contains(ps1, "[string]$Version") {
+		t.Error("install.ps1 must support -Version and -Channel")
+	}
+}
+
+func TestUninstallersShareTheContract(t *testing.T) {
+	cases := []struct{ name, text string }{
+		{"uninstall.sh", readInstaller(t, "uninstall.sh")},
+		{"uninstall.ps1", readInstaller(t, "uninstall.ps1")},
+	}
+	for _, testCase := range cases {
+		lower := strings.ToLower(testCase.text)
+		options := map[string][2]string{
+			"preserve-config": {"--preserve-config", "-preserveconfig"},
+			"preserve-data":   {"--preserve-data", "-preservedata"},
+			"dry-run":         {"--dry-run", "-dryrun"},
+		}
+		for option, variants := range options {
+			if !strings.Contains(lower, variants[0]) && !strings.Contains(lower, variants[1]) {
+				t.Errorf("%s is missing the shared contract option %q", testCase.name, option)
+			}
+		}
+		if !strings.Contains(lower, "yes") {
+			t.Errorf("%s is missing the --yes confirmation option", testCase.name)
+		}
+		if !strings.Contains(testCase.text, "PRESERVE") || !strings.Contains(testCase.text, "REMOVE") {
+			t.Errorf("%s must display a REMOVE/PRESERVE plan", testCase.name)
+		}
+	}
+}
+
+func TestPowerShellScriptsParse(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("PowerShell parsing is Windows-specific")
+	}
+	for _, name := range []string{"install.ps1", "uninstall.ps1"} {
+		scriptPath, err := filepath.Abs(name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		command := exec.Command(
+			"powershell.exe",
+			"-NoLogo",
+			"-NoProfile",
+			"-NonInteractive",
+			"-ExecutionPolicy",
+			"Bypass",
+			"-Command",
+			"try { [void][scriptblock]::Create((Get-Content -Raw -LiteralPath '"+scriptPath+"')); exit 0 } catch { Write-Error $_; exit 1 }",
+		)
+		if output, err := command.CombinedOutput(); err != nil {
+			t.Errorf("%s does not parse: %v\n%s", name, err, output)
+		}
+	}
+}
+
+func TestBashScriptsParse(t *testing.T) {
+	if runtime.GOOS == "windows" {
+		bashPath, err := exec.LookPath("bash.exe")
+		if err != nil {
+			if _, err2 := exec.LookPath("bash"); err2 != nil {
+				t.Skip("bash is unavailable for syntax validation")
+			}
+			bashPath = "bash"
+		}
+		for _, name := range []string{"install.sh", "uninstall.sh"} {
+			command := exec.Command(bashPath, "-n", name)
+			if output, err := command.CombinedOutput(); err != nil {
+				t.Errorf("%s does not parse: %v\n%s", name, err, output)
+			}
+		}
+		return
+	}
+	for _, name := range []string{"install.sh", "uninstall.sh"} {
+		command := exec.Command("bash", "-n", name)
+		if output, err := command.CombinedOutput(); err != nil {
+			t.Errorf("%s does not parse: %v\n%s", name, err, output)
+		}
 	}
 }
 

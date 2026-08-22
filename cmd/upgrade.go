@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"os"
+	"io"
 	"runtime"
 	"time"
 
@@ -11,12 +11,38 @@ import (
 	"github.com/spf13/cobra"
 )
 
+// printRecoveryBlock writes the mandatory two-line reinstallation recovery
+// message required before any network work and again as the final block.
+func printRecoveryBlock(out io.Writer, installCommand string) {
+	fmt.Fprintf(out, "If the upgrade fails, reinstall runx with this command:\n%s\n", installCommand)
+}
+
+// initialRecoveryCommand preserves the requested selector: an exact-version
+// upgrade pins that version, anything else uses the installer's default
+// latest-stable selection.
+func initialRecoveryCommand(requested string) string {
+	powerShell := runtime.GOOS == "windows"
+	if powerShell {
+		if requested != "" {
+			return fmt.Sprintf(`powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& ([scriptblock]::Create((Invoke-RestMethod 'https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1'))) -Version '%s'"`, requested)
+		}
+		return `powershell.exe -NoProfile -ExecutionPolicy Bypass -Command "& ([scriptblock]::Create((Invoke-RestMethod 'https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1')))"`
+	}
+	if requested != "" {
+		return fmt.Sprintf(`curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | sh -s -- --version %s`, requested)
+	}
+	return `curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | sh -s --`
+}
+
 func newUpgradeCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	var requested, format string
 	var dryRun bool
 	command := &cobra.Command{Use: "upgrade", Short: "Inspect or upgrade a native RunX executable.", Args: cobra.NoArgs, RunE: func(command *cobra.Command, _ []string) error {
 		if err := validateFormat(format); err != nil {
 			return err
+		}
+		if format == "text" {
+			printRecoveryBlock(command.OutOrStdout(), initialRecoveryCommand(requested))
 		}
 		cwd, _ := deps.Getwd()
 		envelope, err := updater.UpgradeSelf(updater.UpgradeOptions{DryRun: dryRun, CurrentVersion: info.Version, RequestedVersion: requested, BuildTarget: info.Target, HTTPClient: deps.HTTPClient, MaintenanceCWD: cwd, Spawn: deps.Spawn})
@@ -29,6 +55,13 @@ func newUpgradeCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 			}
 		} else {
 			renderUpgrade(command, envelope)
+		}
+		if format == "text" {
+			finalCommand := initialRecoveryCommand(requested)
+			if envelope.Recovery.TargetVersion != "" {
+				finalCommand = initialRecoveryCommand(envelope.Recovery.TargetVersion)
+			}
+			printRecoveryBlock(command.OutOrStdout(), finalCommand)
 		}
 		if envelope.Outcome == "failed" || envelope.Outcome == "rolled-back" {
 			code := 4
@@ -142,38 +175,5 @@ func renderUpgrade(command *cobra.Command, envelope *updater.UpgradeEnvelope) {
 }
 
 func newUninstallCommand(deps Dependencies) *cobra.Command {
-	var dryRun bool
-	var format string
-	command := &cobra.Command{Use: "uninstall", Short: "Uninstall the native RunX executable.", Args: cobra.NoArgs, RunE: func(command *cobra.Command, _ []string) error {
-		if err := validateFormat(format); err != nil {
-			return err
-		}
-		path, err := deps.Executable()
-		if err != nil {
-			return withExitCode(5, err)
-		}
-		result := struct {
-			Target      string `json:"target"`
-			DryRun      bool   `json:"dryRun"`
-			Uninstalled bool   `json:"uninstalled"`
-		}{path, dryRun, false}
-		if !dryRun {
-			if err := os.Remove(path); err != nil {
-				return withExitCode(5, fmt.Errorf("remove executable %s: %w", path, err))
-			}
-			result.Uninstalled = true
-		}
-		if format == "json" {
-			return writeJSON(command, result)
-		}
-		if dryRun {
-			fmt.Fprintf(command.OutOrStdout(), "would remove: %s\n", path)
-		} else {
-			fmt.Fprintf(command.OutOrStdout(), "removed: %s\n", path)
-		}
-		return nil
-	}}
-	command.Flags().BoolVar(&dryRun, "dry-run", false, "Print the target without deleting it.")
-	command.Flags().StringVar(&format, "format", "text", "Select output format: text or json.")
-	return command
+	return newConventionUninstallCommand(deps)
 }

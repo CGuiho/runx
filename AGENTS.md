@@ -175,3 +175,15 @@ Use `mirror version plan <target>` and `mirror version apply <target>` for seman
 `mirror init` defaults to `v{version}` tags and enables release commits and
 pushes; explicit interactive or flag selections remain authoritative.
 <!-- END MIRROR -->
+
+<!-- BEGIN RUNX — DO NOT EDIT THIS SECTION -->
+## RunX Command Catalog
+
+Load the `guiho-s-runx` skill whenever discovering commands, creating or
+updating catalog entries, validating `runx.yaml`, inspecting command details,
+or executing RunX commands.
+Start with `runx check --format json` and `runx list --format json`, select
+stable UIDs, use `runx describe <uid>`, and run
+`runx run --dry-run <uid>` before unfamiliar or side-effecting work.
+RunX options precede the selector; post-selector tokens belong to the child.
+<!-- END RUNX -->

@@ -9,48 +9,41 @@ for copy-and-paste, and only `runx run` starts a configured command.
 
 ## Install
 
-Linux and macOS:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
-```
-
-Windows PowerShell:
+Windows (PowerShell):
 
 ```powershell
 irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
 ```
 
-Both installers select the canonical target, download `checksums.txt`, verify
-SHA-256 before replacement, install the bundled skill into both supported agent
-locations, and verify `runx --version`. The Windows installer adds its directory
-to the persistent user `Path`, the current PowerShell process, and Git Bash's
-`~/.bashrc` without duplicating entries. An existing Git Bash session can load
-the change immediately with `source ~/.bashrc`.
-
-### Migrate From RunX 0.8
-
-RunX 0.8 uses the retired Bun release contract and cannot discover current
-native releases. If `runx upgrade` reports that 0.8 is already up to date, use
-the unpinned installer instead of the pinned 0.8 recovery command.
-
-Linux and macOS:
+macOS and Linux:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
-hash -r
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | sh -s --
+```
+
+Prompt for the AI:
+
+```text
+Install the GUIHO RunX CLI by following the guiho-p-runx agent prompt. It
+explains what RunX is, how to install and verify it, how to install manually,
+and how to create a GitHub issue in https://github.com/CGuiho/runx/issues/new
+if installation fails.
+```
+
+Verify the installation:
+
+```bash
 runx --version
 ```
 
-Windows PowerShell:
-
-```powershell
-irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
-runx --version
-```
-
-Restart an existing shell if it still resolves the old executable. In Git Bash,
-`source ~/.bashrc` loads the installer-managed path without restarting.
+Both installers accept `--version <semver>` / `-Version <semver>` or
+`--channel <name>` / `-Channel <name>` (mutually exclusive; default latest
+stable). They stage downloads under `$HOME/.guiho/.temp/`, verify every artifact
+against `checksums.txt` and the release `artifacts.json` manifest, run the
+payload's hidden self-test before activation, install immutable payloads into
+`$HOME/.guiho/runx/versions/<version>/`, activate them through the stable
+launcher at `$HOME/.guiho/bin/runx`, preserve configuration and data on
+reinstall, and roll back completely on failure.
 
 ## Start
 
@@ -132,8 +125,14 @@ runx agent prompt list|show
 runx upgrade
 runx upgrade check
 runx upgrade list
-runx uninstall --dry-run
+runx uninstall [--preserve-config] [--preserve-data] (--dry-run | --yes)
 ```
+
+Every terminal upgrade outcome prints a reinstallation recovery command pinned
+to the resolved target version. The uninstall command shares its contract with
+the remote uninstallers: it prints a REMOVE/PRESERVE plan, fails closed for
+noninteractive use without `--yes`, and never removes shared `$HOME/.guiho/`
+infrastructure or another CLI's files.
 
 Bare `runx` first installs its embedded skill in both global tool locations and
 idempotently reconciles a bounded RunX instruction block in the repository root.
@@ -147,19 +146,28 @@ appropriate.
 Self-upgrades verify published checksums and preserve the embedded build target,
 including ARMv6 versus ARMv7.
 
-## Build
+## Uninstall
 
-```bash
-go test ./...
-go vet ./...
-go build ./...
-go run devops/build-binaries.go --version 0.8.0 --commit <commit> --build-date 2026-07-26T00:00:00Z
-go run devops/verify-release-assets.go
+Uninstallation removes every RunX-owned artifact by default: the stable
+launcher, all versioned payloads, `$HOME/.guiho/runx/`, global configuration,
+persistent data, managed agent-skill copies, the managed instruction block in
+the project's `AGENTS.md`, and the project's `runx.yaml`. The shared
+`$HOME/.guiho/` infrastructure, its `bin/` and `.temp/` directories, and the
+user PATH entry are preserved.
+
+Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/uninstall.ps1 | iex
 ```
 
-The release contract is exactly 11 artifacts: eight pure-Go executables
-(Linux AMD64/ARM64/ARMv7/ARMv6, Darwin AMD64/ARM64, Windows AMD64/ARM64),
-`guiho-s-runx.zip`, `guiho-i-runx.md`, and `checksums.txt`. AMD64 V2/V3/V4
-variants are not part of the contract.
+macOS and Linux:
 
-See [DOCS.md](DOCS.md) for the complete behavior and safety reference.
+```bash
+curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/uninstall.sh | sh -s --
+```
+
+Preview the removal plan without changing anything with `--dry-run`
+(`-DryRun`). Preserve configuration and persistent data by combining
+`--preserve-config --preserve-data` (`-PreserveConfig -PreserveData`).
+Noninteractive invocations require `--yes` (`-Yes`) after reviewing the plan.

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/CGuiho/runx/embed"
+	"github.com/CGuiho/runx/pkg/installstate"
 	"github.com/CGuiho/runx/pkg/maintenance"
 	"github.com/CGuiho/runx/pkg/update"
 	"github.com/mattn/go-isatty"
@@ -172,7 +173,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	root.AddCommand(
 		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps),
 		newAgentCommand(deps), newUpgradeCommand(deps, info), newUninstallCommand(deps), newUpdateWorkerCommand(deps, info),
-		newMaintenanceWorkerCommand(deps),
+		newMaintenanceWorkerCommand(deps), newSelfTestCommand(deps, info),
 	)
 	configureDeveloperContext(root, func(command *cobra.Command) bool {
 		return showVersion || helpTree || helpDocs || command.Flags().Changed("help-tree-depth")
@@ -250,6 +251,11 @@ func bundledSkill() (string, error) {
 	return string(value), err
 }
 
+func bundledInstruction() (string, error) {
+	value, err := embed.FS.ReadFile("prompts/guiho-i-runx.md")
+	return string(value), err
+}
+
 func effectiveCWD(deps Dependencies, requested string) (string, error) {
 	if requested == "" {
 		var err error
@@ -292,6 +298,35 @@ func newUpdateWorkerCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	command.Flags().StringVar(&version, "version", info.Version, "worker version")
 	command.Flags().StringVar(&target, "target", info.Target, "worker build target")
 	return command
+}
+
+// newSelfTestCommand implements the mandatory hidden installation self-test:
+// it proves the payload starts, its embedded release resources are readable,
+// and its build target/version are coherent without mutating the installation.
+func newSelfTestCommand(deps Dependencies, info BuildInfo) *cobra.Command {
+	return &cobra.Command{Use: "__self-test", Hidden: true, Args: cobra.NoArgs, RunE: func(command *cobra.Command, _ []string) error {
+		skill, err := bundledSkill()
+		if err != nil {
+			return withExitCode(5, fmt.Errorf("embedded skill unreadable: %w", err))
+		}
+		instruction, err := bundledInstruction()
+		if err != nil {
+			return withExitCode(5, fmt.Errorf("embedded instruction unreadable: %w", err))
+		}
+		result := struct {
+			SelfTest         string `json:"selfTest"`
+			Version          string `json:"version"`
+			BuildTarget      string `json:"buildTarget"`
+			Protocol         int    `json:"protocol"`
+			SkillBytes       int    `json:"skillBytes"`
+			InstructionBytes int    `json:"instructionBytes"`
+		}{
+			SelfTest: "ok", Version: info.Version, BuildTarget: info.Target,
+			Protocol:   installstate.ProtocolVersion,
+			SkillBytes: len(skill), InstructionBytes: len(instruction),
+		}
+		return writeJSON(command, result)
+	}}
 }
 
 type ChildExitError struct{ Code int }
