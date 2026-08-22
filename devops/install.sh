@@ -249,6 +249,7 @@ if [ "${RUNX_SKIP_PATH_UPDATE:-0}" != 1 ]; then
   ;; esac
 fi
 
-printf '[OK] Installed and verified RunX %s\n' "$ACTUAL_VERSION"printf 'Launcher: %s\nActive payload: %s/%s\nRunX home: %s\nAgent skill: %s\n' \
+printf '[OK] Installed and verified RunX %s\n' "$ACTUAL_VERSION"
+printf 'Launcher: %s\nActive payload: %s/%s\nRunX home: %s\nAgent skill: %s\n' \
   "$LAUNCHER_PATH" "$DEST_VERSION_DIR" "$PAYLOAD_FILE" "$CLI_DIR" "$RESOURCES_DIR/skills/guiho-s-runx"
 [ "${RUNX_SKIP_PATH_UPDATE:-0}" = 1 ] || case ":$PATH:" in *":$BIN_DIR:"*) ;; *) printf 'Restart your shell or run: source ~/.profile\n' ;; esac
