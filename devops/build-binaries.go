@@ -136,7 +136,9 @@ func main() {
 		fatalf("write artifacts.json: %v", err)
 	}
 
-	checksumFiles := []string{}
+	// Convention 0001: checksums.txt covers every published installation
+	// artifact except itself, including the ownership manifest.
+	checksumFiles := []string{"artifacts.json"}
 	for _, artifact := range manifest.Artifacts {
 		checksumFiles = append(checksumFiles, artifact.File)
 	}

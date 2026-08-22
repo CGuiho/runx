@@ -156,8 +156,8 @@ func verifyChecksums(directory string) error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	if len(seen) != 20 {
-		return fmt.Errorf("expected 20 checksum entries, got %d", len(seen))
+	if len(seen) != 21 {
+		return fmt.Errorf("expected 21 checksum entries, got %d", len(seen))
 	}
 	return nil
 }
