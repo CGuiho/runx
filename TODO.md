@@ -25,8 +25,8 @@ owner: runx
 
 | Status | Count |
 | --- | ---: |
-| todo | 1 |
-| in progress | 0 |
+| todo | 0 |
+| in progress | 1 |
 | testing | 2 |
 | stopped | 0 |
 | completed | 21 |
@@ -332,10 +332,11 @@ owner: runx
 
 ### 23. Make RunX Comply With GUIHO CLI Convention 0001
 
-- Status: todo
+- Status: in progress
 - Priority: highest
 - Created: `2026-08-16T00:00:00+02:00`
-- Updated: `2026-08-16T00:00:00+02:00`
+- Updated: `2026-08-22T20:28:23+02:00`
+- Execution note: The developer issued a direct, durable execution order ("start everything right now! Do not stop until everything is done") on 2026-08-22. Gates are being satisfied as recorded in `docs/questions/guiho-convention-0001-cli-compliance-migration/EXECUTION.md`; implementation proceeds unit by unit from the clean protected-main base `bc1f67b`.
 - Outcome: RunX uses a stable launcher, immutable payloads, manifest-owned transactional lifecycle operations, separate global/project configuration, compliant agent resources, and a release-safe protocol-v1 cutover.
 - Spec: [docs/todo/guiho-convention-0001-cli-compliance-migration.md](docs/todo/guiho-convention-0001-cli-compliance-migration.md)
 - Related:
