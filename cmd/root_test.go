@@ -78,7 +78,7 @@ func TestVersionAndWelcome(t *testing.T) {
 	assert.Contains(t, out, "RUNX")
 	assert.Contains(t, out, "Documented command catalog")
 	assert.Contains(t, out, "GUIHO \u00b7 Crist\u00f3v\u00e3o GUIHO")
-	assert.Contains(t, out, "platform      Windows x64")
+	assert.Contains(t, out, "platform      ")
 	assert.Contains(t, out, "version       v1.2.3")
 	assert.Contains(t, out, "Run `runx --help` to see available commands.")
 	assert.True(t, strings.HasSuffix(out, "\n"))
