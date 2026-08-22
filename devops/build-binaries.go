@@ -119,6 +119,13 @@ func main() {
 	}
 	add("instruction/guiho-i-runx", instruction, "instruction", "", "", "./.guiho/runx/resources/instruction/guiho-i-runx.md")
 
+	for _, prompt := range []string{"runx-install.md", "runx-uninstall.md"} {
+		if err := copyFile(filepath.Join("prompts", prompt), filepath.Join(*output, prompt)); err != nil {
+			fatalf("copy prompt %s: %v", prompt, err)
+		}
+		add("prompt/"+strings.TrimSuffix(prompt, ".md"), prompt, "prompt", "", "", "./.guiho/runx/resources/prompts/"+prompt)
+	}
+
 	for _, schema := range []string{"runx.schema.json", "runx.global.schema.json"} {
 		if err := copyFile(filepath.Join("schemas", schema), filepath.Join(*output, schema)); err != nil {
 			fatalf("copy schema %s: %v", schema, err)
@@ -146,7 +153,7 @@ func main() {
 	if err := writeChecksums(filepath.Join(*output, "checksums.txt"), *output, checksumFiles); err != nil {
 		fatalf("write checksums: %v", err)
 	}
-	expectedTotal := len(targets)*2 + 4 + 1 /*manifest*/ + 1 /*checksums*/
+	expectedTotal := len(targets)*2 + 6 + 1 /*manifest*/ + 1 /*checksums*/
 	fmt.Printf("release matrix complete: %d declared artifacts plus manifest and checksums (%d files)\n",
 		len(manifest.Artifacts), expectedTotal)
 }

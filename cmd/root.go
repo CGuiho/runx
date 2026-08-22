@@ -15,6 +15,7 @@ import (
 	"github.com/CGuiho/runx/pkg/installstate"
 	"github.com/CGuiho/runx/pkg/maintenance"
 	"github.com/CGuiho/runx/pkg/update"
+	"github.com/CGuiho/runx/pkg/welcome"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 )
@@ -153,10 +154,9 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 					return withExitCode(5, err)
 				}
 			}
-			fmt.Fprintf(command.OutOrStdout(), "Hello Windows - runx v%s\n", info.Version)
-			if notice, ok := update.ReadCachedUpdateNotice(update.GetDefaultCachePath(), info.Version); ok {
-				fmt.Fprintln(command.OutOrStdout(), notice)
-			}
+			notice, _ := update.ReadCachedUpdateNotice(update.GetDefaultCachePath(), info.Version)
+			text := welcome.Render(runtime.GOOS, runtime.GOARCH, info.Version, notice)
+			fmt.Fprint(command.OutOrStdout(), text)
 			return nil
 		},
 	}

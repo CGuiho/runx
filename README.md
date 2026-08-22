@@ -21,13 +21,10 @@ macOS and Linux:
 curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | sh -s --
 ```
 
-Prompt for the AI:
+Prompt for the AI (load the `runx-install` prompt):
 
 ```text
-Install the GUIHO RunX CLI by following the guiho-p-runx agent prompt. It
-explains what RunX is, how to install and verify it, how to install manually,
-and how to create a GitHub issue in https://github.com/CGuiho/runx/issues/new
-if installation fails.
+Load the runx-install prompt and follow it to install the GUIHO RunX CLI.
 ```
 
 Verify the installation:
@@ -157,7 +154,7 @@ the project's `AGENTS.md`, and the project's `runx.yaml`. The shared
 `$HOME/.guiho/` infrastructure, its `bin/` and `.temp/` directories, and the
 user PATH entry are preserved.
 
-Windows PowerShell:
+Windows (PowerShell):
 
 ```powershell
 irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/uninstall.ps1 | iex
@@ -169,7 +166,28 @@ macOS and Linux:
 curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/uninstall.sh | sh -s --
 ```
 
-Preview the removal plan without changing anything with `--dry-run`
-(`-DryRun`). Preserve configuration and persistent data by combining
-`--preserve-config --preserve-data` (`-PreserveConfig -PreserveData`).
-Noninteractive invocations require `--yes` (`-Yes`) after reviewing the plan.
+Prompt for the AI (load the `runx-uninstall` prompt):
+
+```text
+Load the runx-uninstall prompt and follow it to uninstall the GUIHO RunX CLI.
+```
+
+Destructive default (removes everything):
+
+```bash
+runx uninstall --yes
+```
+
+Dry run (shows REMOVE/PRESERVE plan without changing anything):
+
+```bash
+runx uninstall --dry-run
+```
+
+Preserve configuration and persistent data:
+
+```bash
+runx uninstall --preserve-config --preserve-data --yes
+```
+
+Noninteractive invocations without `--yes` fail without changing anything.

@@ -141,6 +141,8 @@ download "$ASSET_BASE" checksums.txt
 download "$ASSET_BASE" artifacts.json
 download "$ASSET_BASE" guiho-s-runx.zip
 download "$ASSET_BASE" guiho-i-runx.md
+download "$ASSET_BASE" runx-install.md
+download "$ASSET_BASE" runx-uninstall.md
 download "$ASSET_BASE" runx.schema.json
 download "$ASSET_BASE" runx.global.schema.json
 
@@ -157,7 +159,7 @@ manifest_digest(){
   ' "$STAGING/artifacts.json"
 }
 
-FILES="$PAYLOAD_ASSET $LAUNCHER_ASSET guiho-s-runx.zip guiho-i-runx.md runx.schema.json runx.global.schema.json artifacts.json"
+FILES="$PAYLOAD_ASSET $LAUNCHER_ASSET guiho-s-runx.zip guiho-i-runx.md runx-install.md runx-uninstall.md runx.schema.json runx.global.schema.json artifacts.json"
 for asset in $FILES; do
   verify_checksum "$asset" "$asset"
   declared="$(manifest_digest x "$asset")"
@@ -190,10 +192,12 @@ if [ -e "$DEST_VERSION_DIR" ]; then rm -rf -- "$DEST_VERSION_DIR"; fi
 mkdir -p "$DEST_VERSION_DIR"
 cp -- "$STAGING/$PAYLOAD_ASSET" "$DEST_VERSION_DIR/$PAYLOAD_FILE"
 chmod 0755 "$DEST_VERSION_DIR/$PAYLOAD_FILE"
-mkdir -p "$RESOURCES_DIR/skills" "$RESOURCES_DIR/instruction" "$RESOURCES_DIR/schemas"
+mkdir -p "$RESOURCES_DIR/skills" "$RESOURCES_DIR/instruction" "$RESOURCES_DIR/prompts" "$RESOURCES_DIR/schemas"
 unzip -q -o "$STAGING/guiho-s-runx.zip" -d "$RESOURCES_DIR/skills"
 [ -f "$RESOURCES_DIR/skills/guiho-s-runx/SKILL.md" ] || { rollback_install(){ :; }; fail 'skill archive is missing guiho-s-runx/SKILL.md'; }
 cp -- "$STAGING/guiho-i-runx.md" "$RESOURCES_DIR/instruction/guiho-i-runx.md"
+cp -- "$STAGING/runx-install.md" "$RESOURCES_DIR/prompts/runx-install.md"
+cp -- "$STAGING/runx-uninstall.md" "$RESOURCES_DIR/prompts/runx-uninstall.md"
 cp -- "$STAGING/runx.schema.json" "$RESOURCES_DIR/schemas/runx.schema.json"
 cp -- "$STAGING/runx.global.schema.json" "$RESOURCES_DIR/schemas/runx.global.schema.json"
 cp -- "$STAGING/artifacts.json" "$DEST_VERSION_DIR/release-artifacts.json"

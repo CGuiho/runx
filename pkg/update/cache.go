@@ -88,14 +88,16 @@ func ReadCachedUpdateNotice(path string, currentVersion string) (string, bool) {
 	if err != nil || cache == nil {
 		return "", false
 	}
-
+	if !IsCacheFresh(cache, CacheTTL) {
+		return "", false
+	}
 	if cache.NewVersionAvailable && cache.LatestVersion != "" {
 		if CompareVersions(cache.LatestVersion, currentVersion) > 0 {
 			cmd := cache.UpgradeCommand
 			if cmd == "" {
 				cmd = "runx upgrade"
 			}
-			notice := fmt.Sprintf("  ⚠ New version available: v%s\n    Run `%s` to update.", strings.TrimPrefix(cache.LatestVersion, "v"), cmd)
+			notice := fmt.Sprintf("⚠ New version available: v%s\n  run %s to update", strings.TrimPrefix(cache.LatestVersion, "v"), cmd)
 			return notice, true
 		}
 	}

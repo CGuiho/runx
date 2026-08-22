@@ -231,29 +231,44 @@ func newAgentPromptCommand() *cobra.Command {
 		if err := validateFormat(format); err != nil {
 			return err
 		}
+		entries, err := embed.FS.ReadDir("prompts")
+		if err != nil {
+			return err
+		}
+		ids := []string{}
+		details := []map[string]string{}
+		for _, entry := range entries {
+			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
+				continue
+			}
+			id := strings.TrimSuffix(entry.Name(), ".md")
+			ids = append(ids, id)
+			details = append(details, map[string]string{"id": id, "path": "prompts/" + entry.Name()})
+		}
 		if names {
 			if format == "json" {
-				return writeJSON(command, []string{"guiho-i-runx"})
+				return writeJSON(command, ids)
 			}
-			fmt.Fprintln(command.OutOrStdout(), "guiho-i-runx")
+			for _, id := range ids {
+				fmt.Fprintln(command.OutOrStdout(), id)
+			}
 			return nil
 		}
-		value := []map[string]string{{"id": "guiho-i-runx", "path": "prompts/guiho-i-runx.md"}}
 		if format == "json" {
-			return writeJSON(command, value)
+			return writeJSON(command, details)
 		}
-		fmt.Fprintln(command.OutOrStdout(), "guiho-i-runx  prompts/guiho-i-runx.md")
+		for _, d := range details {
+			fmt.Fprintf(command.OutOrStdout(), "%s  %s\n", d["id"], d["path"])
+		}
 		return nil
 	}}
 	list.Flags().BoolVar(&names, "names", false, "Print prompt names only.")
 	list.Flags().StringVar(&format, "format", "text", "Select output format: text or json.")
 	show := &cobra.Command{Use: "show <id>", Short: "Print one raw bundled prompt.", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		if args[0] != "guiho-i-runx" {
-			return withExitCode(2, fmt.Errorf("unknown RunX prompt %q", args[0]))
-		}
-		data, err := embed.FS.ReadFile("prompts/guiho-i-runx.md")
+		path := "prompts/" + args[0] + ".md"
+		data, err := embed.FS.ReadFile(path)
 		if err != nil {
-			return err
+			return withExitCode(2, fmt.Errorf("unknown RunX prompt %q", args[0]))
 		}
 		fmt.Fprint(command.OutOrStdout(), string(data))
 		return nil

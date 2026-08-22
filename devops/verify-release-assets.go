@@ -58,8 +58,8 @@ func main() {
 	if manifest.Schema != 1 || manifest.Protocol != 1 || manifest.Name != "runx" || manifest.Version == "" {
 		fatalf("artifacts.json header is incomplete: %+v", manifest)
 	}
-	if len(manifest.Artifacts) != 20 {
-		fatalf("expected exactly 20 declared artifacts, got %d", len(manifest.Artifacts))
+	if len(manifest.Artifacts) != 22 {
+		fatalf("expected exactly 22 declared artifacts, got %d", len(manifest.Artifacts))
 	}
 
 	entries, err := os.ReadDir(*directory)
@@ -114,7 +114,7 @@ func main() {
 	if !found {
 		fatalf("skill archive is missing guiho-s-runx/SKILL.md")
 	}
-	fmt.Printf("verified protocol-v1 release v%s: 20 declared artifacts, manifest digests, checksums, and skill archive\n", manifest.Version)
+	fmt.Printf("verified protocol-v1 release v%s: 22 declared artifacts, manifest digests, checksums, and skill archive\n", manifest.Version)
 }
 
 func verifyChecksums(directory string) error {
@@ -156,8 +156,8 @@ func verifyChecksums(directory string) error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	if len(seen) != 21 {
-		return fmt.Errorf("expected 21 checksum entries, got %d", len(seen))
+	if len(seen) != 23 {
+		return fmt.Errorf("expected 23 checksum entries, got %d", len(seen))
 	}
 	return nil
 }

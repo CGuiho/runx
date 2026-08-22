@@ -15,6 +15,27 @@ owner: runx
 
 # Changelog
 
+## 0.13.1 - 2026-08-22
+
+### Added
+
+- Deterministic bordered RunX welcome window on bare invocation with product,
+  organization, platform, architecture, version, and help guidance, plus
+  integrated validated cached-update notice without ANSI styling.
+- Canonical `runx-install` and `runx-uninstall` prompt files distributed with
+  every release, referenced by the README's three-command install/uninstall
+  sections per convention.
+
+### Fixed
+
+- Bare-invocation cached-update notice now matches the convention's exact
+  two-line form, is validated against SemVer and TTL, and is rendered
+  deterministically without foreground network work.
+- Installers and the whole-release upgrade engine now stage, verify, and
+  install every prompt artifact alongside skills, instruction, and schemas.
+- Release matrix and verification now cover 22 declared artifacts plus the
+  ownership manifest and checksums.
+
 ## 0.13.0 - 2026-08-22
 
 ### Added
