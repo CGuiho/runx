@@ -6,6 +6,7 @@ import (
 	"runtime"
 	"time"
 
+	"github.com/CGuiho/runx/pkg/lifecycle"
 	"github.com/CGuiho/runx/pkg/update"
 	"github.com/CGuiho/runx/pkg/updater"
 	"github.com/spf13/cobra"
@@ -44,6 +45,33 @@ func newUpgradeCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 		if format == "text" {
 			printRecoveryBlock(command.OutOrStdout(), initialRecoveryCommand(requested))
 		}
+
+		// Protocol-v1 installations upgrade through the whole-release engine;
+		// legacy direct-binary installations keep the verified replacement path.
+		if lifecycle.IsProtocolV1Installation(deps.HomeDir) {
+			result, err := lifecycle.UpgradeWholeRelease(lifecycle.Options{
+				CurrentVersion: info.Version, RequestedVersion: requested,
+				BuildTarget: info.Target, HTTPClient: deps.HTTPClient, HomeDir: deps.HomeDir, DryRun: dryRun,
+			})
+			if err != nil {
+				return withExitCode(4, err)
+			}
+			if format == "json" {
+				return writeJSON(command, result)
+			}
+			out := command.OutOrStdout()
+			fmt.Fprintf(out, "previous version: %s\ntarget version: %s\noutcome: %s\n", result.PreviousVersion, result.TargetVersion, result.Outcome)
+			if result.Verified {
+				fmt.Fprintf(out, "launcher: %s\npayload: %s\nverification: ok\n", result.LauncherPath, result.PayloadPath)
+			}
+			finalCommand := initialRecoveryCommand(requested)
+			if result.TargetVersion != "" {
+				finalCommand = initialRecoveryCommand(result.TargetVersion)
+			}
+			printRecoveryBlock(out, finalCommand)
+			return nil
+		}
+
 		cwd, _ := deps.Getwd()
 		envelope, err := updater.UpgradeSelf(updater.UpgradeOptions{DryRun: dryRun, CurrentVersion: info.Version, RequestedVersion: requested, BuildTarget: info.Target, HTTPClient: deps.HTTPClient, MaintenanceCWD: cwd, Spawn: deps.Spawn})
 		if err != nil {

@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/CGuiho/runx/pkg/config"
 	"go.yaml.in/yaml/v3"
 )
 
@@ -48,6 +49,11 @@ func ParseManifestBytes(data []byte) (*Manifest, error) {
 func ValidateManifestSchema(manifest *Manifest) error {
 	if !semverPattern.MatchString(manifest.Version) || !strings.HasPrefix(manifest.Version, "2.") {
 		return fmt.Errorf("unsupported manifest version %q: semantic version 2.x is required", manifest.Version)
+	}
+	if manifest.Agent != nil {
+		if err := config.Validate(*manifest.Agent); err != nil {
+			return fmt.Errorf("manifest agent policy: %w", err)
+		}
 	}
 	if !identifierPattern.MatchString(manifest.Namespace) {
 		return fmt.Errorf("manifest namespace %q must match %s", manifest.Namespace, identifierPattern)

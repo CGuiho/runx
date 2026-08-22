@@ -104,6 +104,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	}
 	var helpTree bool
 	var helpTreeDepth int
+	var helpTreeGlobalFlags bool
 	var helpDocs bool
 	var showVersion bool
 
@@ -120,7 +121,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 				return errDeveloperHelp
 			}
 			if helpTree || command.Flags().Changed("help-tree-depth") {
-				fmt.Fprint(command.OutOrStdout(), RenderCommandTree(command, helpTreeDepth))
+				fmt.Fprint(command.OutOrStdout(), RenderCommandTree(command, helpTreeDepth, helpTreeGlobalFlags))
 				return errDeveloperHelp
 			}
 			if helpDocs {
@@ -168,10 +169,11 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	root.Flags().BoolVarP(&showVersion, "version", "v", false, "Show the RunX version.")
 	root.PersistentFlags().BoolVar(&helpTree, "help-tree", false, "Show this command hierarchy.")
 	root.PersistentFlags().IntVar(&helpTreeDepth, "help-tree-depth", 0, "Limit help-tree recursion depth.")
+	root.PersistentFlags().BoolVar(&helpTreeGlobalFlags, "help-tree-global-flags", false, "Repeat inherited global flags under every descendant in the tree.")
 	root.PersistentFlags().BoolVar(&helpDocs, "help-docs", false, "Emit Markdown documentation for this command.")
 
 	root.AddCommand(
-		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps),
+		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps, info),
 		newAgentCommand(deps), newUpgradeCommand(deps, info), newUninstallCommand(deps), newUpdateWorkerCommand(deps, info),
 		newMaintenanceWorkerCommand(deps), newSelfTestCommand(deps, info),
 	)

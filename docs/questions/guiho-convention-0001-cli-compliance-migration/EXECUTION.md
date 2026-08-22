@@ -61,18 +61,18 @@ Any later correction cycle must re-run review/validation on final heads.
 | --- | --- | --- |
 | E00 | blocked-recorded | Cross-repository; see Gate D. |
 | U00 | done (pre-existing) | Planning baseline already integrated in `01d920a`. |
-| U01 | pending | |
-| U02 | pending | |
-| U03 | pending | |
-| U04 | pending | |
-| U05 | pending | |
-| U06 | pending | |
-| U07 | pending | |
-| U08 | pending | |
-| U09 | pending | |
-| U10 | pending | |
-| U11 | pending | |
-| C00 | pending | Code-only until R00 authorization. |
+| U01 | done (core) | Root `runx.yaml` catalog + `xdocs.yaml`; toml retirement deferred until installed xdocs CLI parity is verified. |
+| U02 | done (core) | Strict config contracts, policy enum, schemas, examples, validator; full interactive init orchestrator delivered with the init command. |
+| U03 | partial | Manifest carries optional strict agent.evolution; canonical byte-pinned resource graph remains open. |
+| U04 | partial | Release manifest contract shipped via build/verify tooling; pkg/release selection package remains open. |
+| U05 | done (core) | installstate paths, pointer, ledger, atomic writes, staging; lock/journal/instance-registry primitives remain open. |
+| U06 | done (core) | Stable launcher binary with delegation and fallback; capability-token dispatch remains open. |
+| U07 | done | Protocol-v1 release matrix: 8 payloads + 8 launchers + resources + artifacts.json + checksums. |
+| U08 | done (core) | Both installers rewritten to the canonical layout with channels, self-test, and rollback. |
+| U09 | done (core) | Shared uninstallation contract across Cobra and both scripts. |
+| U10 | done (core) | Recovery blocks plus protocol-v1 whole-release engine with legacy fallback. |
+| U11 | done | --help-tree-global-flags implemented per convention. |
+| C00 | partial | Public surface wired for uninstall/upgrade/init/help-tree; npm retirement and DOCS.md refresh remain open. |
 | R00 | not authorized | Requires explicit release request. |
 | H00 | pending | Depends on R00. |
 

@@ -112,8 +112,10 @@ RunX never searches parent directories.
 ## Developer Context
 
 Every command scope supports `-h`/`--help`, `--help-tree`,
-`--help-tree-depth <positive-integer>`, and `--help-docs`. Root additionally
-supports `-v`/`--version`. The tree and Markdown are generated from the live
+`--help-tree-depth <positive-integer>`, `--help-tree-global-flags`, and
+`--help-docs`. Root additionally supports `-v`/`--version`. By default the tree
+shows global flags once at the root; `--help-tree-global-flags` repeats them
+under every descendant. The tree and Markdown are generated from the live
 Cobra commands.
 
 ## Agent And Upgrade Commands

@@ -125,3 +125,42 @@ func LauncherPath() (string, error) {
 	}
 	return filepath.Join(bin, LauncherName()), nil
 }
+
+// In-variants resolve canonical locations for an explicitly provided home
+// directory so lifecycle code can inject homes instead of relying on process
+// environment state.
+
+func dirIn(home string, parts ...string) string {
+	return filepath.Join(append([]string{home, ".guiho"}, parts...)...)
+}
+
+// GUISafeHomeIn returns <home>/.guiho.
+func GUISafeHomeIn(home string) string { return filepath.Join(home, ".guiho") }
+
+// CLIDirIn returns <home>/.guiho/runx.
+func CLIDirIn(home string) string { return dirIn(home, "runx") }
+
+// BinDirIn returns <home>/.guiho/bin.
+func BinDirIn(home string) string { return dirIn(home, "bin") }
+
+// VersionsDirIn returns <home>/.guiho/runx/versions.
+func VersionsDirIn(home string) string { return dirIn(home, "runx", "versions") }
+
+// VersionDirIn returns the immutable version directory under an explicit home.
+func VersionDirIn(home, version string) (string, error) {
+	if !isValidVersionName(version) {
+		return "", fmt.Errorf("invalid version %q", version)
+	}
+	return filepath.Join(VersionsDirIn(home), version), nil
+}
+
+// CurrentPointerPathIn returns <home>/.guiho/runx/current.json.
+func CurrentPointerPathIn(home string) string { return filepath.Join(CLIDirIn(home), "current.json") }
+
+// InstalledLedgerPathIn returns <home>/.guiho/runx/installed-artifacts.json.
+func InstalledLedgerPathIn(home string) string {
+	return filepath.Join(CLIDirIn(home), "installed-artifacts.json")
+}
+
+// LauncherPathIn returns <home>/.guiho/bin/runx(.exe).
+func LauncherPathIn(home string) string { return filepath.Join(BinDirIn(home), LauncherName()) }

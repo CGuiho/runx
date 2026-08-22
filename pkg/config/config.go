@@ -137,6 +137,13 @@ func Resolve(project ProjectConfig, global GlobalConfig) (Effective, error) {
 // Validate checks a decoded document against its semantic contract.
 func Validate(document any) error {
 	switch typed := document.(type) {
+	case Agent:
+		return typed.Evolution.validate()
+	case *Agent:
+		if typed == nil {
+			return fmt.Errorf("nil agent policy")
+		}
+		return typed.Evolution.validate()
 	case ProjectConfig:
 		return typed.Agent.Evolution.validate()
 	case *ProjectConfig:

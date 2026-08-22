@@ -157,3 +157,37 @@ func WriteLedger(ledger Ledger) error {
 	data = append(data, '\n')
 	return WriteFileAtomic(path, data, 0o644)
 }
+
+// ReadPointerIn loads and validates the pointer under an explicit home.
+func ReadPointerIn(home string) (*Pointer, error) {
+	data, err := os.ReadFile(CurrentPointerPathIn(home))
+	if os.IsNotExist(err) {
+		return nil, nil
+	}
+	if err != nil {
+		return nil, fmt.Errorf("read pointer: %w", err)
+	}
+	var pointer Pointer
+	decoder := json.NewDecoder(bytesReader(data))
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(&pointer); err != nil {
+		return nil, fmt.Errorf("decode pointer: %w", err)
+	}
+	if err := pointer.Validate(); err != nil {
+		return nil, fmt.Errorf("invalid pointer: %w", err)
+	}
+	return &pointer, nil
+}
+
+// WritePointerIn atomically replaces the pointer under an explicit home.
+func WritePointerIn(home string, pointer Pointer) error {
+	if err := pointer.Validate(); err != nil {
+		return err
+	}
+	data, err := json.MarshalIndent(pointer, "", "  ")
+	if err != nil {
+		return err
+	}
+	data = append(data, '\n')
+	return WriteFileAtomic(CurrentPointerPathIn(home), data, 0o644)
+}

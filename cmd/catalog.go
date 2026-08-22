@@ -6,8 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
-	"path/filepath"
 	"regexp"
 	"sort"
 	"strconv"
@@ -321,68 +319,6 @@ func quoteRetryArgument(value string) string {
 		return value
 	}
 	return strconv.Quote(value)
-}
-
-func newInitCommand(deps Dependencies) *cobra.Command {
-	var flags catalogFlags
-	command := &cobra.Command{Use: "init", Short: "Create a new YAML RunX configuration.", Args: cobra.NoArgs, RunE: func(command *cobra.Command, _ []string) error {
-		if err := validateFormat(flags.format); err != nil {
-			return err
-		}
-		cwd, err := effectiveCWD(deps, flags.cwd)
-		if err != nil {
-			return withExitCode(5, err)
-		}
-		path := flags.config
-		if path == "" {
-			path = "runx.yaml"
-		}
-		if !filepath.IsAbs(path) {
-			path = filepath.Join(cwd, path)
-		}
-		path, _ = filepath.Abs(path)
-		if _, err := os.Stat(path); err == nil {
-			return withExitCode(5, fmt.Errorf("configuration already exists: %s", path))
-		} else if !os.IsNotExist(err) {
-			return withExitCode(5, err)
-		}
-		namespace := normalizeNamespace(filepath.Base(filepath.Dir(path)))
-		content := fmt.Sprintf("version: \"2.0.0\"\n\nnamespace: %q\n\nscripts:\n  directory: \".scripts\"\n\ncommands: []\n", namespace)
-		if _, err := manifest.ParseManifestBytes([]byte(content)); err != nil {
-			return withExitCode(3, err)
-		}
-		if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-			return withExitCode(5, err)
-		}
-		temporary, err := os.CreateTemp(filepath.Dir(path), ".runx-*.yaml")
-		if err != nil {
-			return withExitCode(5, err)
-		}
-		temporaryPath := temporary.Name()
-		defer os.Remove(temporaryPath)
-		if _, err := temporary.WriteString(content); err != nil {
-			temporary.Close()
-			return withExitCode(5, err)
-		}
-		if err := temporary.Close(); err != nil {
-			return withExitCode(5, err)
-		}
-		if err := os.Rename(temporaryPath, path); err != nil {
-			return withExitCode(5, err)
-		}
-		result := struct {
-			Status    string `json:"status"`
-			Path      string `json:"path"`
-			Namespace string `json:"namespace"`
-		}{"created", path, namespace}
-		if flags.format == "json" {
-			return writeJSON(command, result)
-		}
-		fmt.Fprintf(command.OutOrStdout(), "Created RunX configuration: %s\n", path)
-		return nil
-	}}
-	addCatalogFlags(command, &flags)
-	return command
 }
 
 func joinedTags(tags []string) string {

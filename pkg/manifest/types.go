@@ -1,14 +1,19 @@
 package manifest
 
-import "strconv"
+import (
+	"strconv"
+
+	"github.com/CGuiho/runx/pkg/config"
+)
 
 // Manifest is the strict on-disk RunX manifest v2 contract.
 type Manifest struct {
-	Version   string    `yaml:"version" json:"version"`
-	Namespace string    `yaml:"namespace" json:"namespace"`
-	Scripts   Scripts   `yaml:"scripts" json:"scripts"`
-	Parent    string    `yaml:"parent,omitempty" json:"parent,omitempty"`
-	Commands  []Command `yaml:"commands" json:"commands"`
+	Version   string        `yaml:"version" json:"version"`
+	Namespace string        `yaml:"namespace" json:"namespace"`
+	Scripts   Scripts       `yaml:"scripts" json:"scripts"`
+	Parent    string        `yaml:"parent,omitempty" json:"parent,omitempty"`
+	Agent     *config.Agent `yaml:"agent,omitempty" json:"agent,omitempty"`
+	Commands  []Command     `yaml:"commands" json:"commands"`
 }
 
 type Scripts struct {

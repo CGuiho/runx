@@ -17,19 +17,23 @@ type treeItem struct {
 	flag                  bool
 }
 
-func RenderCommandTree(command *cobra.Command, maxDepth int) string {
+// RenderCommandTree renders the hierarchy from command downward. With
+// includeGlobalFlags, inherited global flags repeat under every descendant;
+// without it (the convention default), global flags appear once on the root
+// and are hidden from descendants.
+func RenderCommandTree(command *cobra.Command, maxDepth int, includeGlobalFlags bool) string {
 	var output strings.Builder
 	output.WriteString("COMMAND TREE\n\n")
 	fmt.Fprintf(&output, "%s  %s\n", command.CommandPath(), command.Short)
-	renderTreeChildren(&output, command, "", 1, maxDepth)
+	renderTreeChildren(&output, command, "", 1, maxDepth, command.Parent() == nil || includeGlobalFlags)
 	return output.String()
 }
 
-func renderTreeChildren(output *strings.Builder, command *cobra.Command, prefix string, depth, maxDepth int) {
+func renderTreeChildren(output *strings.Builder, command *cobra.Command, prefix string, depth, maxDepth int, showInherited bool) {
 	if maxDepth > 0 && depth > maxDepth {
 		return
 	}
-	items := commandTreeItems(command)
+	items := commandTreeItems(command, showInherited)
 	for index, item := range items {
 		last := index == len(items)-1
 		branch, next := "├── ", prefix+"│   "
@@ -42,12 +46,12 @@ func renderTreeChildren(output *strings.Builder, command *cobra.Command, prefix 
 		}
 		output.WriteByte('\n')
 		if item.command != nil {
-			renderTreeChildren(output, item.command, next, depth+1, maxDepth)
+			renderTreeChildren(output, item.command, next, depth+1, maxDepth, showInherited)
 		}
 	}
 }
 
-func commandTreeItems(command *cobra.Command) []treeItem {
+func commandTreeItems(command *cobra.Command, showInherited bool) []treeItem {
 	items := []treeItem{}
 	command.InitDefaultHelpFlag()
 	if help := command.Flags().Lookup("help"); help != nil {
@@ -78,7 +82,9 @@ func commandTreeItems(command *cobra.Command) []treeItem {
 		})
 	}
 	add(command.LocalNonPersistentFlags())
-	add(command.InheritedFlags())
+	if showInherited {
+		add(command.InheritedFlags())
+	}
 	sort.SliceStable(items, func(i, j int) bool {
 		if items[i].flag != items[j].flag {
 			return !items[i].flag

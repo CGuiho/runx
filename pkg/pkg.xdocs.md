@@ -11,6 +11,7 @@ children:
   - runx-config
   - runx-installstate
   - runx-launcher
+  - runx-lifecycle
 files: {}
 documents: {}
 tags:

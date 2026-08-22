@@ -23,8 +23,12 @@ func executeTest(t *testing.T, cwd string, args ...string) (string, string, erro
 
 func executeTestWithInput(t *testing.T, cwd, input string, terminal bool, args ...string) (string, string, error) {
 	t.Helper()
+	return executeTestFull(t, cwd, t.TempDir(), input, terminal, args...)
+}
+
+func executeTestFull(t *testing.T, cwd, home, input string, terminal bool, args ...string) (string, string, error) {
+	t.Helper()
 	var stdout, stderr bytes.Buffer
-	home := t.TempDir()
 	deps := Dependencies{In: strings.NewReader(input), Out: &stdout, Err: &stderr, Getwd: func() (string, error) { return cwd, nil }, HomeDir: func() (string, error) { return home, nil }, Executable: func() (string, error) { return filepath.Join(cwd, "runx.exe"), nil }, Spawn: func(string, ...string) error { return nil }, IsTerminal: func(io.Reader) bool { return terminal }}
 	root := NewRootCommand(deps, BuildInfo{Version: "1.2.3", Commit: "abc", Date: "2026-01-01T00:00:00Z", Target: "runx-windows-amd64"})
 	root.SetArgs(args)
@@ -421,9 +425,9 @@ func TestAgentResourcesAndInit(t *testing.T) {
 	require.NoError(t, err)
 	assert.Equal(t, "guiho-i-runx\n", out)
 	newProject := t.TempDir()
-	out, _, err = executeTest(t, newProject, "init", "--format", "json")
+	out, _, err = executeTestWithInput(t, newProject, "n\nalways-proceed\nalways-proceed\nalways-proceed\nalways-proceed\n", true, "init", "--format", "json")
 	require.NoError(t, err)
-	assert.Contains(t, out, "created")
+	assert.Contains(t, out, "initialized")
 	initPath := filepath.Join(newProject, "runx.yaml")
 	_, err = os.Stat(initPath)
 	require.NoError(t, err)
