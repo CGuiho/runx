@@ -6,7 +6,6 @@ children:
   - runx-cmd
   - runx-packages
   - runx-embed
-  - runx-scripts
   - runx-skills
   - runx-prompts
   - runx-devops
@@ -30,7 +29,7 @@ documents:
   AGENTS.md: Repository rules for the Go CLI, XDocs, Mirror, validation, and protected release boundaries.
   CHANGELOG.md: Mirror-managed historical release record.
   CONTRIBUTING.md: Go validation, documentation, and protected release contribution workflow.
-  DOCS.md: Complete production CLI, manifest, execution confirmation, lifecycle, agent, upgrade, installer, legacy-to-native migration, and 11-artifact reference.
+  DOCS.md: Complete production CLI, manifest, execution confirmation, lifecycle, agent, upgrade, installer, legacy-to-native migration, and protocol-v1 release reference.
   LICENSE.md: MIT license.
   README.md: Public installation with concise verified bootstrap commands, legacy-to-native migration, and cross-shell PATH guidance, plus manifest-v2, stable UID, numeric-index, safe confirmation, command, and Go release overviews.
   SECURITY.md: Vulnerability reporting and trusted-manifest boundary.

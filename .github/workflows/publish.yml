@@ -55,17 +55,7 @@ jobs:
       - name: Verify exact-version installer
         run: |
           public_home="$(mktemp -d)"
-          install_dir="$public_home/.local/bin"
           trap 'rm -rf "$public_home"' EXIT
-          HOME="$public_home" RUNX_INSTALL_DIR="$install_dir" RUNX_SKIP_PATH_UPDATE=1 \
+          HOME="$public_home" RUNX_SKIP_PATH_UPDATE=1 \
             bash devops/install.sh --version "$VERSION"
-          test "$(RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$install_dir/runx" --version)" = "$VERSION"
-      - uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          registry-url: 'https://registry.npmjs.org'
-          package-manager-cache: false
-      - name: Publish npm native bootstrap
-        run: |
-          npm version "$VERSION" --no-git-tag-version --allow-same-version
-          npm publish --access public
+          test "$(RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$public_home/.guiho/bin/runx" --version)" = "$VERSION"

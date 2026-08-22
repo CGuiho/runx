@@ -181,44 +181,35 @@ HTTP client. Listing exhausts API pagination before applying the visible
 `--page`/`--size` slice. JSON retains complete release and compatible-asset
 metadata.
 
-`upgrade` resolves the embedded build target, downloads the exact binary and
-`checksums.txt`, verifies SHA-256 and native executable magic, and only then
-changes the installed executable. Unix replacement uses same-filesystem staged
-renames with verification and rollback. A running Windows executable starts a
-hidden helper that waits for the parent process to exit, replaces and verifies
-the binary, restores the backup on failure, and records a recovery error log.
-Every terminal failure reports an exact-version installer recovery command.
+Protocol-v1 installations upgrade through `pkg/lifecycle`: the whole-release
+engine stages every release artifact under `$HOME/.guiho/.temp/runx-upgrade-<id>`,
+verifies each against `checksums.txt`, runs the staged payload's hidden
+self-test, installs an immutable version directory, atomically swaps the
+`current.json` pointer while retaining the previous verified version, verifies
+the result through the stable launcher, and rolls back the pointer and version
+directory on any failure. The running executable is never replaced. Legacy
+direct-binary installations keep the verified staged-replacement updater; every
+terminal outcome prints the two-line reinstallation recovery block pinned to
+the resolved target version.
 
-## Installers And npm Bootstrap
+## Installers And Uninstallers
 
 `devops/install.sh` detects AMD64, ARM64, ARMv7, ARMv6, and Darwin targets.
-`devops/install.ps1` detects Windows AMD64 and ARM64. Both display target
-metadata, use download progress, verify binary and skill archive checksums,
-replace transactionally, install both global skill copies, reconcile existing
-project instructions, and verify the installed version.
+`devops/install.ps1` detects Windows AMD64 and ARM64. Both accept full-name
+only `--version`/`--channel` (PowerShell `-Version`/`-Channel`) selection with
+release-catalog pagination, stage downloads under
+`$HOME/.guiho/.temp/runx-install-<id>`, verify checksums and the
+`artifacts.json` manifest for every artifact, self-test the payload before
+activation, install immutable payloads plus the stable launcher into the
+canonical `.guiho` layout, activate via atomic pointer swap with previous-version
+rollback, preserve configuration and data on reinstall, update the user PATH
+idempotently, and verify the installed launcher version.
 
-RunX 0.8 uses the retired Bun release contract and cannot discover current
-native releases. When its updater reports that 0.8 is already current, migrate
-with the unpinned direct installer rather than its pinned 0.8 recovery command:
-
-```bash
-curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | bash
-hash -r
-runx --version
-```
-
-```powershell
-irm https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.ps1 | iex
-runx --version
-```
-
-Restart an existing shell if it still resolves the old executable. Git Bash can
-load the installer-managed path immediately with `source ~/.bashrc`.
-
-`scripts/runx-bin.mjs` is a Node-compatible npm bootstrap. It downloads the
-package version's native artifact and checksum manifest into
-`~/.guiho/runx/npm/<version>/`, verifies SHA-256, and delegates stdio,
-environment, arguments, signals, and exit status.
+`devops/uninstall.sh`, `devops/uninstall.ps1`, and `runx uninstall` share one
+uninstallation contract: a REMOVE/PRESERVE plan, `--preserve-config`,
+`--preserve-data`, `--dry-run`, and `--yes`; fail-closed noninteractive use;
+managed-block-only instruction removal; and preservation of shared
+`.guiho/` infrastructure.
 
 ## Exit Codes
 
@@ -234,22 +225,14 @@ environment, arguments, signals, and exit status.
 
 ## Release Contract
 
-`devops/build-binaries.go` produces exactly:
-
-```text
-runx-linux-amd64
-runx-linux-arm64
-runx-linux-armv7
-runx-linux-armv6
-runx-darwin-amd64
-runx-darwin-arm64
-runx-windows-amd64.exe
-runx-windows-arm64.exe
-guiho-s-runx.zip
-guiho-i-runx.md
-checksums.txt
-```
+`devops/build-binaries.go` produces the protocol-v1 matrix: eight immutable
+payload executables (`runx-payload-<os>-<arch>` for Linux AMD64/ARM64/ARMv7/ARMv6,
+Darwin AMD64/ARM64, Windows AMD64/ARM64), eight stable launchers
+(`runx-launcher-<os>-<arch>`), `guiho-s-runx.zip`, `guiho-i-runx.md`,
+`runx.schema.json`, `runx.global.schema.json`, an `artifacts.json` ownership
+manifest declaring every artifact's digest, kind, and canonical installed path,
+and a `checksums.txt` covering every artifact except itself.
 
 All binaries use `CGO_ENABLED=0`; AMD64 uses V1, ARM64 uses V8.0, and 32-bit
-ARM uses its named GOARM level. AMD64 V2/V3/V4 and the former 14-asset matrix
-are not supported by the current contract.
+ARM uses its named GOARM level. AMD64 V2/V3/V4 and the legacy 11-asset direct
+binary names are not supported by the current contract.

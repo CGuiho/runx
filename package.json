@@ -3,11 +3,7 @@
   "description": "Native Go/Cobra command catalog and local CLI executor.",
   "version": "0.8.0",
   "type": "module",
-  "bin": {
-    "runx": "scripts/runx-bin.mjs"
-  },
   "files": [
-    "scripts/",
     "skills/",
     "docs/",
     "devops/",

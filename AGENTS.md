@@ -43,9 +43,9 @@ Stop if you can not find it.
 - RunX is the open-source Go/Cobra CLI for a documented,
   language-agnostic `runx.yaml` command catalog.
 - The executable entrypoint is `main.go`; `cmd/` owns the single Cobra tree and
-  `pkg/` owns manifest, execution, update, maintenance, and upgrade behavior.
-  The isolated Node-compatible `scripts/runx-bin.mjs` remains only an npm
-  downloader/delegator and contains no RunX domain logic.
+  `pkg/` owns manifest, execution, update, maintenance, lifecycle, and upgrade behavior.
+  npm is not an executable or lifecycle distribution; installation is owned by
+  the native lifecycle scripts and the stable launcher layout under `.guiho`.
 - Use the Go toolchain for formatting, tests, vetting, builds, and release
   compilation. TypeScript/Bun sources are retained as legacy reference only.
 - `runx` without arguments first performs local-only, idempotent agent
