@@ -73,8 +73,8 @@ Any later correction cycle must re-run review/validation on final heads.
 | U10 | done (core) | Recovery blocks plus protocol-v1 whole-release engine with legacy fallback. |
 | U11 | done | --help-tree-global-flags implemented per convention. |
 | C00 | partial | Public surface wired for uninstall/upgrade/init/help-tree; npm retirement and DOCS.md refresh remain open. |
-| R00 | not authorized | Requires explicit release request. |
-| H00 | pending | Depends on R00. |
+| R00 | **done** | 0.13.0 released 2026-08-22; see docs/releases/guiho-convention-0001-first-protocol-v1.md. |
+| H00 | unblocked | Transition-support removal now possible against the published protocol-v1 release. |
 
 Questions arising during units are appended below with timestamps.
 

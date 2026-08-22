@@ -332,7 +332,7 @@ owner: runx
 
 ### 23. Make RunX Comply With GUIHO CLI Convention 0001
 
-- Status: in progress
+- Status: testing
 - Priority: highest
 - Created: `2026-08-16T00:00:00+02:00`
 - Updated: `2026-08-22T20:28:23+02:00`
