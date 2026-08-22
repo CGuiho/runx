@@ -1,5 +1,10 @@
 //go:build ignore
 
+// Command build-binaries compiles the complete Convention 0001 release matrix:
+// eight immutable runx-payload-* executables, eight stable launchers, the
+// bundled skill archive, the agent instruction, both configuration schemas,
+// the artifacts.json ownership manifest, and checksums.txt covering every
+// artifact except itself.
 package main
 
 import (
@@ -7,6 +12,7 @@ import (
 	"bufio"
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
 	"flag"
 	"fmt"
 	"io"
@@ -19,13 +25,40 @@ import (
 	"time"
 )
 
-type target struct{ name, goos, goarch, tuning string }
+type target struct {
+	name   string
+	goos   string
+	goarch string
+	tuning string
+}
 
 var targets = []target{
-	{"runx-linux-amd64", "linux", "amd64", "GOAMD64=v1"}, {"runx-linux-arm64", "linux", "arm64", "GOARM64=v8.0"},
-	{"runx-linux-armv7", "linux", "arm", "GOARM=7"}, {"runx-linux-armv6", "linux", "arm", "GOARM=6"},
-	{"runx-darwin-amd64", "darwin", "amd64", "GOAMD64=v1"}, {"runx-darwin-arm64", "darwin", "arm64", "GOARM64=v8.0"},
-	{"runx-windows-amd64.exe", "windows", "amd64", "GOAMD64=v1"}, {"runx-windows-arm64.exe", "windows", "arm64", "GOARM64=v8.0"},
+	{"linux-amd64", "linux", "amd64", "GOAMD64=v1"}, {"linux-arm64", "linux", "arm64", "GOARM64=v8.0"},
+	{"linux-armv7", "linux", "arm", "GOARM=7"}, {"linux-armv6", "linux", "arm", "GOARM=6"},
+	{"darwin-amd64", "darwin", "amd64", "GOAMD64=v1"}, {"darwin-arm64", "darwin", "arm64", "GOARM64=v8.0"},
+	{"windows-amd64", "windows", "amd64", "GOAMD64=v1"}, {"windows-arm64", "windows", "arm64", "GOARM64=v8.0"},
+}
+
+type manifestArtifact struct {
+	ID            string   `json:"id"`
+	File          string   `json:"file"`
+	SHA256        string   `json:"sha256"`
+	Kind          string   `json:"kind"`
+	OS            string   `json:"os,omitempty"`
+	Arch          string   `json:"arch,omitempty"`
+	Version       string   `json:"version"`
+	InstalledPath string   `json:"installedPath"`
+	Projections   []string `json:"projections,omitempty"`
+}
+
+type releaseManifest struct {
+	Schema    int                `json:"schema"`
+	Protocol  int                `json:"protocol"`
+	Name      string             `json:"name"`
+	Version   string             `json:"version"`
+	Commit    string             `json:"commit"`
+	BuildDate string             `json:"buildDate"`
+	Artifacts []manifestArtifact `json:"artifacts"`
 }
 
 func main() {
@@ -47,42 +80,110 @@ func main() {
 	if err := os.MkdirAll(*output, 0o755); err != nil {
 		fatalf("create output: %v", err)
 	}
-	assets := []string{}
-	for _, item := range targets {
-		path := filepath.Join(*output, item.name)
-		targetName := strings.TrimSuffix(item.name, ".exe")
-		ldflags := strings.Join([]string{"-s", "-w", "-X", "main.version=" + *version, "-X", "main.commit=" + *commit, "-X", "main.buildDate=" + *buildDate, "-X", "main.buildTarget=" + targetName}, " ")
-		command := exec.Command("go", "build", "-trimpath", "-buildvcs=true", "-ldflags", ldflags, "-o", path, ".")
-		command.Env = buildEnvironment(item)
-		command.Stdout = os.Stdout
-		command.Stderr = os.Stderr
-		fmt.Printf("building %s\n", item.name)
-		if err := command.Run(); err != nil {
-			fatalf("build %s: %v", item.name, err)
-		}
-		assets = append(assets, path)
+
+	manifest := releaseManifest{
+		Schema: 1, Protocol: 1, Name: "runx",
+		Version: *version, Commit: *commit, BuildDate: stamp.Format(time.RFC3339),
 	}
-	skill := filepath.Join(*output, "guiho-s-runx.zip")
-	if err := zipDirectory(filepath.Join("skills", "guiho-s-runx"), skill, stamp); err != nil {
+	add := func(id, file, kind, goos, goarch, installedPath string) {
+		sum, err := sha256File(filepath.Join(*output, file))
+		if err != nil {
+			fatalf("checksum %s: %v", file, err)
+		}
+		manifest.Artifacts = append(manifest.Artifacts, manifestArtifact{
+			ID: id, File: file, SHA256: sum, Kind: kind,
+			OS: goos, Arch: goarch, Version: *version, InstalledPath: installedPath,
+		})
+	}
+
+	for _, item := range targets {
+		payloadName := fmt.Sprintf("runx-payload-%s%s", item.name, exeSuffix(item.goos))
+		launcherName := fmt.Sprintf("runx-launcher-%s%s", item.name, exeSuffix(item.goos))
+		buildBinary(filepath.Join(*output, payloadName), item.goos, item.goarch, item.tuning, ".", *version, *commit, stamp)
+		fmt.Printf("built %s\n", payloadName)
+		buildBinary(filepath.Join(*output, launcherName), item.goos, item.goarch, item.tuning, "./cmd/runx-launcher", *version, *commit, stamp)
+		fmt.Printf("built %s\n", launcherName)
+		add("payload/"+item.name, payloadName, "payload", item.goos, item.archName(), "./.guiho/runx/versions/"+*version+"/"+payloadFileName(item.goos))
+		add("launcher/"+item.name, launcherName, "launcher", item.goos, item.archName(), "./.guiho/bin/runx"+exeSuffix(item.goos))
+	}
+
+	skillZip := "guiho-s-runx.zip"
+	if err := zipDirectory(filepath.Join("skills", "guiho-s-runx"), filepath.Join(*output, skillZip), stamp); err != nil {
 		fatalf("create skill archive: %v", err)
 	}
-	assets = append(assets, skill)
-	instruction := filepath.Join(*output, "guiho-i-runx.md")
-	if err := copyFile(filepath.Join("prompts", "guiho-i-runx.md"), instruction); err != nil {
+	add("skill/guiho-s-runx", skillZip, "skill-archive", "", "", "./.guiho/runx/resources/skills/guiho-s-runx")
+
+	instruction := "guiho-i-runx.md"
+	if err := copyFile(filepath.Join("prompts", "guiho-i-runx.md"), filepath.Join(*output, instruction)); err != nil {
 		fatalf("copy instruction: %v", err)
 	}
-	assets = append(assets, instruction)
-	sort.Strings(assets)
-	if err := writeChecksums(filepath.Join(*output, "checksums.txt"), assets); err != nil {
+	add("instruction/guiho-i-runx", instruction, "instruction", "", "", "./.guiho/runx/resources/instruction/guiho-i-runx.md")
+
+	for _, schema := range []string{"runx.schema.json", "runx.global.schema.json"} {
+		if err := copyFile(filepath.Join("schemas", schema), filepath.Join(*output, schema)); err != nil {
+			fatalf("copy schema %s: %v", schema, err)
+		}
+		add("schema/"+strings.TrimSuffix(schema, ".json"), schema, "configuration-schema", "", "", "./.guiho/runx/resources/schemas/"+schema)
+	}
+
+	sort.Slice(manifest.Artifacts, func(i, j int) bool { return manifest.Artifacts[i].File < manifest.Artifacts[j].File })
+	manifestBytes, err := json.MarshalIndent(manifest, "", "  ")
+	if err != nil {
+		fatalf("encode artifacts.json: %v", err)
+	}
+	manifestBytes = append(manifestBytes, '\n')
+	if err := os.WriteFile(filepath.Join(*output, "artifacts.json"), manifestBytes, 0o644); err != nil {
+		fatalf("write artifacts.json: %v", err)
+	}
+
+	checksumFiles := []string{}
+	for _, artifact := range manifest.Artifacts {
+		checksumFiles = append(checksumFiles, artifact.File)
+	}
+	sort.Strings(checksumFiles)
+	if err := writeChecksums(filepath.Join(*output, "checksums.txt"), *output, checksumFiles); err != nil {
 		fatalf("write checksums: %v", err)
 	}
-	if len(assets)+1 != 11 {
-		fatalf("release must contain 11 artifacts, got %d", len(assets)+1)
-	}
-	fmt.Println("release matrix complete: 8 binaries and 3 supporting artifacts")
+	expectedTotal := len(targets)*2 + 4 + 1 /*manifest*/ + 1 /*checksums*/
+	fmt.Printf("release matrix complete: %d declared artifacts plus manifest and checksums (%d files)\n",
+		len(manifest.Artifacts), expectedTotal)
 }
 
-func buildEnvironment(item target) []string {
+func (t target) archName() string { return t.goarch }
+
+func exeSuffix(goos string) string {
+	if goos == "windows" {
+		return ".exe"
+	}
+	return ""
+}
+
+func payloadFileName(goos string) string {
+	if goos == "windows" {
+		return "runx-payload.exe"
+	}
+	return "runx-payload"
+}
+
+func buildBinary(outputPath, goos, goarch, tuning, packagePath, version, commit string, stamp time.Time) {
+	targetName := strings.TrimSuffix(filepath.Base(outputPath), ".exe")
+	ldflags := strings.Join([]string{
+		"-s", "-w",
+		"-X", "main.version=" + version,
+		"-X", "main.commit=" + commit,
+		"-X", "main.buildDate=" + stamp.Format(time.RFC3339),
+		"-X", "main.buildTarget=" + targetName,
+	}, " ")
+	command := exec.Command("go", "build", "-trimpath", "-buildvcs=true", "-ldflags", ldflags, "-o", outputPath, packagePath)
+	command.Env = buildEnvironment(goos, goarch, tuning)
+	command.Stdout = os.Stdout
+	command.Stderr = os.Stderr
+	if err := command.Run(); err != nil {
+		fatalf("build %s: %v", targetName, err)
+	}
+}
+
+func buildEnvironment(goos, goarch, tuning string) []string {
 	blocked := map[string]bool{"GOOS": true, "GOARCH": true, "GOAMD64": true, "GOARM64": true, "GOARM": true, "CGO_ENABLED": true}
 	result := []string{}
 	for _, value := range os.Environ() {
@@ -91,8 +192,22 @@ func buildEnvironment(item target) []string {
 			result = append(result, value)
 		}
 	}
-	return append(result, "GOOS="+item.goos, "GOARCH="+item.goarch, "CGO_ENABLED=0", item.tuning)
+	return append(result, "GOOS="+goos, "GOARCH="+goarch, "CGO_ENABLED=0", tuning)
 }
+
+func sha256File(path string) (string, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer file.Close()
+	hash := sha256.New()
+	if _, err := io.Copy(hash, file); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hash.Sum(nil)), nil
+}
+
 func zipDirectory(source, destination string, stamp time.Time) error {
 	output, err := os.Create(destination)
 	if err != nil {
@@ -150,6 +265,7 @@ func zipDirectory(source, destination string, stamp time.Time) error {
 	}
 	return output.Close()
 }
+
 func copyFile(source, destination string) error {
 	input, err := os.Open(source)
 	if err != nil {
@@ -166,27 +282,19 @@ func copyFile(source, destination string) error {
 	}
 	return output.Close()
 }
-func writeChecksums(path string, assets []string) error {
+
+func writeChecksums(path, outputDir string, files []string) error {
 	output, err := os.Create(path)
 	if err != nil {
 		return err
 	}
 	writer := bufio.NewWriter(output)
-	for _, asset := range assets {
-		input, err := os.Open(asset)
+	for _, file := range files {
+		sum, err := sha256File(filepath.Join(outputDir, file))
 		if err != nil {
 			return err
 		}
-		hash := sha256.New()
-		_, copyErr := io.Copy(hash, input)
-		closeErr := input.Close()
-		if copyErr != nil {
-			return copyErr
-		}
-		if closeErr != nil {
-			return closeErr
-		}
-		if _, err := fmt.Fprintf(writer, "%s  %s\n", hex.EncodeToString(hash.Sum(nil)), filepath.Base(asset)); err != nil {
+		if _, err := fmt.Fprintf(writer, "%s  %s\n", sum, file); err != nil {
 			return err
 		}
 	}
@@ -195,4 +303,5 @@ func writeChecksums(path string, assets []string) error {
 	}
 	return output.Close()
 }
+
 func fatalf(format string, values ...any) { fmt.Fprintf(os.Stderr, format+"\n", values...); os.Exit(1) }

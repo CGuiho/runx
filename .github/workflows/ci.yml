@@ -55,7 +55,8 @@ jobs:
       - run: go run devops/verify-release-assets.go
       - name: Smoke native Linux artifact
         run: |
-          test "$(bundle/runx-linux-amd64 --version)" = "0.0.0-dev"
-          bundle/runx-linux-amd64 --help-tree-depth 2 --help-tree
+          test "$(bundle/runx-payload-linux-amd64 --version)" = "0.0.0-dev"
+          bundle/runx-payload-linux-amd64 --help-tree-depth 2 --help-tree
+          bundle/runx-payload-linux-amd64 __self-test
       - name: Verify Node bootstrap syntax
         run: node --check scripts/runx-bin.mjs

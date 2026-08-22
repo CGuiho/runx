@@ -31,7 +31,8 @@ jobs:
         run: |
           go run devops/build-binaries.go --version "$VERSION" --commit "$GITHUB_SHA" --build-date "$BUILD_DATE"
           go run devops/verify-release-assets.go
-          test "$(bundle/runx-linux-amd64 --version)" = "$VERSION"
+          test "$(bundle/runx-payload-linux-amd64 --version)" = "$VERSION"
+          bundle/runx-payload-linux-amd64 __self-test
       - name: Extract version-scoped release notes
         run: go run devops/extract-release-notes.go --version "$VERSION"
       - name: Publish GitHub release assets
