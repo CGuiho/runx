@@ -21,11 +21,13 @@ macOS and Linux:
 curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/install.sh | sh -s --
 ```
 
-Prompt for the AI (load the `runx-install` prompt):
+Prompt for the AI:
 
 ```text
-Load the runx-install prompt and follow it to install the GUIHO RunX CLI.
+Load https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-install.md and follow it to install the GUIHO RunX CLI.
 ```
+
+The prompt is hosted at `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-install.md` and its ID is `guiho-p-runx`.
 
 Verify the installation:
 
@@ -166,11 +168,13 @@ macOS and Linux:
 curl -fsSL https://raw.githubusercontent.com/CGuiho/runx/main/devops/uninstall.sh | sh -s --
 ```
 
-Prompt for the AI (load the `runx-uninstall` prompt):
+Prompt for the AI:
 
 ```text
-Load the runx-uninstall prompt and follow it to uninstall the GUIHO RunX CLI.
+Load https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-uninstall.md and follow it to uninstall the GUIHO RunX CLI.
 ```
+
+The prompt is hosted at `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-uninstall.md` and its ID is `guiho-p-runx-uninstall`.
 
 Destructive default (removes everything):
 

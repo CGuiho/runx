@@ -238,10 +238,17 @@ func newAgentPromptCommand() *cobra.Command {
 		ids := []string{}
 		details := []map[string]string{}
 		for _, entry := range entries {
-			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") {
+			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") || strings.HasSuffix(entry.Name(), ".xdocs.md") {
+				continue
+			}
+			data, err := embed.FS.ReadFile("prompts/" + entry.Name())
+			if err != nil {
 				continue
 			}
 			id := strings.TrimSuffix(entry.Name(), ".md")
+			if fid := promptIDFromFrontmatter(string(data)); fid != "" {
+				id = fid
+			}
 			ids = append(ids, id)
 			details = append(details, map[string]string{"id": id, "path": "prompts/" + entry.Name()})
 		}
@@ -266,13 +273,51 @@ func newAgentPromptCommand() *cobra.Command {
 	list.Flags().StringVar(&format, "format", "text", "Select output format: text or json.")
 	show := &cobra.Command{Use: "show <id>", Short: "Print one raw bundled prompt.", Args: cobra.ExactArgs(1), RunE: func(command *cobra.Command, args []string) error {
 		path := "prompts/" + args[0] + ".md"
-		data, err := embed.FS.ReadFile(path)
+		if data, err := embed.FS.ReadFile(path); err == nil {
+			fmt.Fprint(command.OutOrStdout(), string(data))
+			return nil
+		}
+		entries, err := embed.FS.ReadDir("prompts")
 		if err != nil {
 			return withExitCode(2, fmt.Errorf("unknown RunX prompt %q", args[0]))
 		}
-		fmt.Fprint(command.OutOrStdout(), string(data))
-		return nil
+		for _, entry := range entries {
+			if entry.IsDir() || !strings.HasSuffix(entry.Name(), ".md") || strings.HasSuffix(entry.Name(), ".xdocs.md") {
+				continue
+			}
+			data, err := embed.FS.ReadFile("prompts/" + entry.Name())
+			if err != nil {
+				continue
+			}
+			if promptIDFromFrontmatter(string(data)) == args[0] {
+				fmt.Fprint(command.OutOrStdout(), string(data))
+				return nil
+			}
+		}
+		return withExitCode(2, fmt.Errorf("unknown RunX prompt %q", args[0]))
 	}}
 	root.AddCommand(list, show)
 	return root
 }
+
+func promptIDFromFrontmatter(content string) string {
+	if !strings.HasPrefix(content, "---") {
+		return ""
+	}
+	rest := content[3:]
+	end := strings.Index(rest, "\n---")
+	if end < 0 {
+		return ""
+	}
+	frontmatter := rest[:end]
+	for _, line := range strings.Split(frontmatter, "\n") {
+		line = strings.TrimSpace(line)
+		if strings.HasPrefix(line, "name:") {
+			value := strings.TrimSpace(strings.TrimPrefix(line, "name:"))
+			value = strings.Trim(value, "\"'")
+			return value
+		}
+	}
+	return ""
+}
+

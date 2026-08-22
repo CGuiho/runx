@@ -432,7 +432,9 @@ func TestAgentResourcesAndInit(t *testing.T) {
 	}
 	out, _, err = executeTest(t, cwd, "agent", "prompt", "list", "--names")
 	require.NoError(t, err)
-	assert.Equal(t, "guiho-i-runx\n", out)
+	assert.Contains(t, out, "guiho-i-runx")
+	assert.Contains(t, out, "guiho-p-runx")
+	assert.Contains(t, out, "guiho-p-runx-uninstall")
 	newProject := t.TempDir()
 	out, _, err = executeTestWithInput(t, newProject, "n\nalways-proceed\nalways-proceed\nalways-proceed\nalways-proceed\n", true, "init", "--format", "json")
 	require.NoError(t, err)

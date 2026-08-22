@@ -119,11 +119,14 @@ func main() {
 	}
 	add("instruction/guiho-i-runx", instruction, "instruction", "", "", "./.guiho/runx/resources/instruction/guiho-i-runx.md")
 
-	for _, prompt := range []string{"runx-install.md", "runx-uninstall.md"} {
-		if err := copyFile(filepath.Join("prompts", prompt), filepath.Join(*output, prompt)); err != nil {
-			fatalf("copy prompt %s: %v", prompt, err)
+	for _, prompt := range []struct{ file, id string }{
+		{"runx-install.md", "guiho-p-runx"},
+		{"runx-uninstall.md", "guiho-p-runx-uninstall"},
+	} {
+		if err := copyFile(filepath.Join("prompts", prompt.file), filepath.Join(*output, prompt.file)); err != nil {
+			fatalf("copy prompt %s: %v", prompt.file, err)
 		}
-		add("prompt/"+strings.TrimSuffix(prompt, ".md"), prompt, "prompt", "", "", "./.guiho/runx/resources/prompts/"+prompt)
+		add("prompt/"+prompt.id, prompt.file, "prompt", "", "", "./.guiho/runx/resources/prompts/"+prompt.file)
 	}
 
 	for _, schema := range []string{"runx.schema.json", "runx.global.schema.json"} {
