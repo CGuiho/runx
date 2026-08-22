@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.14.2 - 2026-08-22
+
+### Fixed
+
+- Correct artifact filenames per `guiho-convention-0002`: renamed
+  `prompts/runx-install.md` → `prompts/guiho-p-runx.md` and
+  `prompts/runx-uninstall.md` → `prompts/guiho-p-runx-uninstall.md` so
+  filename stem equals frontmatter `name` (`guiho-p-runx` /
+  `guiho-p-runx-uninstall`) and matches `^guiho-(p)-[a-z0-9-]+$`. Updated
+  `embed/prompts`, build matrix, installers, upgrade engine, and README
+  raw URLs to `.../prompts/guiho-p-runx.md`.
+
 ## 0.14.1 - 2026-08-22
 
 ### Fixed
