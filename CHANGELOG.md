@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.14.1 - 2026-08-22
+
+### Fixed
+
+- Prompt IDs now follow the convention (`guiho-p-runx` for the main install
+  prompt, `guiho-p-runx-uninstall` for the uninstall prompt) while files
+  remain `prompts/runx-install.md` / `prompts/runx-uninstall.md` as
+  required for distribution. Agent prompt list/show resolves via
+  frontmatter, and README now provides the full raw GitHub URLs
+  `https://raw.githubusercontent.com/CGuiho/runx/main/prompts/runx-install.md`
+  and `runx-uninstall.md`.
+
 ## 0.14.0 - 2026-08-22
 
 ### Changed
