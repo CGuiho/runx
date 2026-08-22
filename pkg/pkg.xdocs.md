@@ -8,6 +8,9 @@ children:
   - runx-update
   - runx-maintenance
   - runx-updater
+  - runx-config
+  - runx-installstate
+  - runx-launcher
 files: {}
 documents: {}
 tags:
