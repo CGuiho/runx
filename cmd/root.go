@@ -155,7 +155,20 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 				}
 			}
 			notice, _ := update.ReadCachedUpdateNotice(update.GetDefaultCachePath(), info.Version)
-			text := welcome.Render(runtime.GOOS, runtime.GOARCH, info.Version, notice)
+			isTerm := false
+			if deps.IsTerminal != nil {
+				isTerm = deps.IsTerminal(deps.In)
+			} else {
+				isTerm = isTerminalReader(deps.In)
+			}
+			useColor := welcome.ShouldUseColor(isTerm)
+			// Allow explicit --color flag to force color when present
+			if flag := command.Flags().Lookup("color"); flag != nil && flag.Changed {
+				if v, err := command.Flags().GetBool("color"); err == nil {
+					useColor = v && welcome.ShouldUseColor(true)
+				}
+			}
+			text := welcome.RenderWithColor(runtime.GOOS, runtime.GOARCH, info.Version, notice, useColor)
 			fmt.Fprint(command.OutOrStdout(), text)
 			return nil
 		},
@@ -171,6 +184,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	root.PersistentFlags().IntVar(&helpTreeDepth, "help-tree-depth", 0, "Limit help-tree recursion depth.")
 	root.PersistentFlags().BoolVar(&helpTreeGlobalFlags, "help-tree-global-flags", false, "Repeat inherited global flags under every descendant in the tree.")
 	root.PersistentFlags().BoolVar(&helpDocs, "help-docs", false, "Emit Markdown documentation for this command.")
+	root.PersistentFlags().Bool("color", false, "Enable ANSI color output when supported.")
 
 	root.AddCommand(
 		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps, info),

@@ -75,12 +75,13 @@ func TestVersionAndWelcome(t *testing.T) {
 	assert.Equal(t, "1.2.3\n", out)
 	out, _, err = executeTest(t, cwd)
 	require.NoError(t, err)
-	assert.Contains(t, out, "RUNX")
 	assert.Contains(t, out, "Documented command catalog")
 	assert.Contains(t, out, "GUIHO \u00b7 Crist\u00f3v\u00e3o GUIHO")
 	assert.Contains(t, out, "platform      ")
 	assert.Contains(t, out, "version       v1.2.3")
-	assert.Contains(t, out, "Run `runx --help` to see available commands.")
+	assert.Contains(t, out, "Run runx --help to see available commands.")
+	assert.Contains(t, out, "╭")
+	assert.Contains(t, out, "╰")
 	assert.True(t, strings.HasSuffix(out, "\n"))
 	assert.NotContains(t, out, "\x1b[")
 }
@@ -96,7 +97,7 @@ func TestBareInvocationBootstrapsAgentIntegrationBeforeWelcome(t *testing.T) {
 	deps := Dependencies{In: strings.NewReader(""), Out: &stdout, Err: &stderr, Getwd: func() (string, error) { return repository, nil }, HomeDir: func() (string, error) { return home, nil }, Executable: func() (string, error) { return filepath.Join(repository, "runx.exe"), nil }, Spawn: func(string, ...string) error { return nil }}
 	root := NewRootCommand(deps, BuildInfo{Version: "1.2.3", Target: "runx-windows-amd64"})
 	require.NoError(t, root.Execute())
-	assert.Contains(t, stdout.String(), "RUNX")
+	assert.Contains(t, stdout.String(), "Documented command catalog")
 	assert.Contains(t, stdout.String(), "version       v1.2.3")
 	for _, skillRoot := range []string{".agents", ".claude"} {
 		content, err := os.ReadFile(filepath.Join(home, skillRoot, "skills", skillID, "SKILL.md"))
