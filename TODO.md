@@ -26,8 +26,8 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
-| testing | 3 |
+| in progress | 0 |
+| testing | 4 |
 | stopped | 0 |
 | completed | 21 |
 
@@ -348,10 +348,10 @@ owner: runx
 
 ### 24. Fix Windows Installer Pointer Encoding
 
-- Status: in progress
+- Status: testing
 - Priority: highest
 - Created: `2026-08-23T12:18:30+02:00`
-- Updated: `2026-08-23T12:18:30+02:00`
+- Updated: `2026-08-23T12:39:29+02:00`
 - Outcome: Windows PowerShell 5 installation and reinstall write a BOM-free UTF-8 `current.json`, activate the stable launcher successfully, and are exercised end to end before release.
 - Spec: [docs/todo/windows-installer-pointer-encoding.md](docs/todo/windows-installer-pointer-encoding.md)
 - Parent: GUIHO CLI Convention 0001 compliance task 23.
