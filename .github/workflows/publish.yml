@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - '@guiho/runx/v*'
+      - 'runx/v*'
 
 permissions:
   contents: write
