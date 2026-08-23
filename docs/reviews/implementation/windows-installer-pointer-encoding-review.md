@@ -37,14 +37,30 @@ Accepted with no blocker, high, or medium findings at implementation head
 - Release publication is blocked on the native Windows installer integration
   test.
 
+## Follow-up Findings And Corrections
+
+The post-release gates intentionally remained open and found two additional
+issues before completion:
+
+- PR 60 corrected whole-release verification so the checksum manifest does not
+  have to hash itself while every ordinary downloaded artifact remains
+  mandatory and verified.
+- PR 61 made an explicitly requested already-active version return verified
+  `up-to-date` without trying to overwrite the running Windows payload.
+
+Both corrections added native Windows integration coverage and passed exact-head
+Ubuntu, Windows, and release-contract checks.
+
 ## Acceptance Criteria
 
-The implementation satisfies the task criteria. The one post-merge acceptance
-boundary is a live upgrade from a released 0.14.3–0.14.5 client after the
-compatibility aliases become public.
+Accepted after public 0.14.8 installation, public 0.14.7 → 0.14.8 synchronous
+upgrade, and public exact 0.14.8 idempotence all passed.
 
 ## Evidence
 
-- Review comment: https://github.com/CGuiho/runx/pull/59#issuecomment-5385635421
-- Validated PR head: `538476c9176f8ffe047a0df771498a5c2ba3e2fa`
-- Merge commit: `a8eb075304a5b1ad36fdf583b430786f560c0f5d`
+- PR 59 review: https://github.com/CGuiho/runx/pull/59#issuecomment-5385635421
+- PR 60 review: https://github.com/CGuiho/runx/pull/60#issuecomment-5385707234
+- PR 61 review/validation: https://github.com/CGuiho/runx/pull/61#issuecomment-5385759966
+- Merge commits: `a8eb075304a5b1ad36fdf583b430786f560c0f5d`,
+  `caec3f7769b37f73a97817652f166d994e9400c7`, and
+  `ee6c458262912c2fdabd119f8138cf7abf8112a8`
