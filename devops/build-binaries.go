@@ -103,8 +103,25 @@ func main() {
 		fmt.Printf("built %s\n", payloadName)
 		buildBinary(filepath.Join(*output, launcherName), item.goos, item.goarch, item.tuning, "./cmd/runx-launcher", *version, *commit, stamp)
 		fmt.Printf("built %s\n", launcherName)
-		add("payload/"+item.name, payloadName, "payload", item.goos, item.archName(), "./.guiho/runx/versions/"+*version+"/"+payloadFileName(item.goos))
-		add("launcher/"+item.name, launcherName, "launcher", item.goos, item.archName(), "./.guiho/bin/runx"+exeSuffix(item.goos))
+		payloadInstalledPath := "./.guiho/runx/versions/" + *version + "/" + payloadFileName(item.goos)
+		launcherInstalledPath := "./.guiho/bin/runx" + exeSuffix(item.goos)
+		add("payload/"+item.name, payloadName, "payload", item.goos, item.archName(), payloadInstalledPath)
+		add("launcher/"+item.name, launcherName, "launcher", item.goos, item.archName(), launcherInstalledPath)
+
+		// Releases 0.14.3 through 0.14.5 accidentally looked for an extra
+		// `runx-` segment in protocol-v1 payload and launcher asset names.
+		// Publish checksummed aliases so those installed versions can upgrade
+		// into the corrected release instead of requiring a manual reinstall.
+		compatPayloadName := fmt.Sprintf("runx-payload-runx-%s%s", item.name, exeSuffix(item.goos))
+		compatLauncherName := fmt.Sprintf("runx-launcher-runx-%s%s", item.name, exeSuffix(item.goos))
+		if err := copyFile(filepath.Join(*output, payloadName), filepath.Join(*output, compatPayloadName)); err != nil {
+			fatalf("create compatibility payload %s: %v", compatPayloadName, err)
+		}
+		if err := copyFile(filepath.Join(*output, launcherName), filepath.Join(*output, compatLauncherName)); err != nil {
+			fatalf("create compatibility launcher %s: %v", compatLauncherName, err)
+		}
+		add("compatibility/payload/"+item.name, compatPayloadName, "compatibility-alias", item.goos, item.archName(), payloadInstalledPath)
+		add("compatibility/launcher/"+item.name, compatLauncherName, "compatibility-alias", item.goos, item.archName(), launcherInstalledPath)
 	}
 
 	skillZip := "guiho-s-runx.zip"
@@ -156,7 +173,7 @@ func main() {
 	if err := writeChecksums(filepath.Join(*output, "checksums.txt"), *output, checksumFiles); err != nil {
 		fatalf("write checksums: %v", err)
 	}
-	expectedTotal := len(targets)*2 + 6 + 1 /*manifest*/ + 1 /*checksums*/
+	expectedTotal := len(manifest.Artifacts) + 1 /*manifest*/ + 1 /*checksums*/
 	fmt.Printf("release matrix complete: %d declared artifacts plus manifest and checksums (%d files)\n",
 		len(manifest.Artifacts), expectedTotal)
 }
