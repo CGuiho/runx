@@ -23,6 +23,8 @@ jobs:
       - name: Resolve release metadata
         run: |
           VERSION="${GITHUB_REF_NAME#@guiho/runx/v}"
+          VERSION="${VERSION#runx/v}"
+          VERSION="${VERSION#v}"
           test -n "$VERSION"
           printf 'VERSION=%s\n' "$VERSION" >> "$GITHUB_ENV"
           printf 'BUILD_DATE=%s\n' "$(git show -s --format=%cI HEAD)" >> "$GITHUB_ENV"
