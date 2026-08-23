@@ -67,7 +67,8 @@ phases are waived in favor of the existing Convention 0001 contract and task
 
 ## Implementation Milestone
 
-- `install.ps1` writes pointer JSON with `System.Text.UTF8Encoding($false)`.
+- `install.ps1` writes pointer JSON with `System.Text.UTF8Encoding($false)` and
+  hashes files with the module-independent .NET SHA-256 API.
 - Pointer readers tolerate only the legacy UTF-8 BOM before strict JSON decode.
 - Protocol-v1 asset selection removes the existing `runx-` prefix before
   constructing the payload name.
@@ -81,9 +82,10 @@ phases are waived in favor of the existing Convention 0001 contract and task
 
 ## Validation
 
-Focused Windows PowerShell and Go tests pass. Complete suite, vet, builds,
-release-matrix verification, XDocs validation, CI, and published-release
-transition smoke remain before completion.
+Focused Windows PowerShell and Go tests pass. The first PR CI run correctly
+caught that GitHub's Windows PowerShell did not auto-load `Get-FileHash`; the
+installer no longer depends on that cmdlet. Complete corrected CI and the
+published-release transition smoke remain before completion.
 
 ## Release Decision
 
