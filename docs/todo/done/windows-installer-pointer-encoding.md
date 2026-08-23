@@ -4,7 +4,7 @@ purpose: Define the incident correction and acceptance contract for TODO task 24
 description: Requires PowerShell 5 and 7 installation paths to write a BOM-free current.json and pass real Windows launcher activation tests.
 created: 2026-08-23
 flags:
-  - testing
+  - completed
 tags:
   - installer
   - windows
@@ -13,16 +13,16 @@ keywords:
   - current.json
   - UTF-8 BOM
   - stable launcher
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # Fix Windows Installer Pointer Encoding
 
 ## Status
 
-- State: testing
+- State: completed
 - Created: `2026-08-23T12:18:30+02:00`
-- Updated: `2026-08-23T12:39:29+02:00`
+- Updated: `2026-08-23T13:38:20+02:00`
 - Parent task: RunX TODO 23, GUIHO CLI Convention 0001 compliance
 
 ## Incident
@@ -90,11 +90,19 @@ phases are waived in favor of the existing Convention 0001 contract and task
 
 ## Validation
 
-The native different-version whole-release gate passes. Completion is blocked
-until a public 0.14.7 → 0.14.8 upgrade succeeds and a public 0.14.8 exact
-same-version request reports verified `up-to-date` without mutation.
+- Public clean installation of 0.14.8 succeeded with verified SHA-256 digests,
+  BOM-free `current.json`, stable launcher dispatch, and raw `0.14.8` output.
+- Public `runx upgrade` from installed 0.14.7 to 0.14.8 completed synchronously,
+  activated the new immutable payload, and verified through the launcher.
+- Public `runx upgrade --version 0.14.8` returned verified `up-to-date` without
+  mutating or locking the active payload.
+- Release workflow `32636794191` passed the native Windows install, rollback,
+  reinstall, different-version upgrade, same-version idempotence, Go, release
+  matrix, exact remote assets, and public installer gates.
 
 ## Release Decision
 
-Patch required. Do not publish until both clean install and reinstall pass on
-Windows PowerShell with the actual launcher and payload.
+Completed through Mirror-managed patches 0.14.6, 0.14.7, and final corrective
+release 0.14.8. The canonical installer is the one-time recovery path for
+protocol-v1 0.14.3–0.14.6 because their defect exists inside already-installed
+binaries.
