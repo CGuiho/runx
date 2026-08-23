@@ -6,8 +6,8 @@ children: []
 files:
   cache.go: Strictly decodes and atomically writes the global update cache and renders validated notices.
   cache_test.go: Covers cache read, write, freshness, and notice behavior.
-  catalog.go: Fetches complete typed GitHub release pages and selects the canonical embedded-target asset and checksums.
-  catalog_test.go: Covers SemVer ordering, platform mapping, pagination data, and compatible assets.
+  catalog.go: Fetches complete typed GitHub release pages and selects canonical protocol-v1 payload names before legacy direct-binary names without duplicating the runx- prefix.
+  catalog_test.go: Covers SemVer ordering, platform mapping, protocol-v1 payload preference, legacy fallback naming, pagination data, and compatible assets.
   worker.go: Coalesces bounded remote checks with a stale-recoverable lease and starts detached worker processes.
   worker_posix.go: Configures detached worker processes on non-Windows systems.
   worker_windows.go: Configures hidden detached worker processes on Windows.
@@ -21,6 +21,7 @@ tags:
 keywords:
   - cache
   - GitHub Releases
+  - protocol-v1 payloads
   - detached worker
 flags: []
 status: stable
