@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.14.9 - 2026-08-23
+
+### Fixed
+
+- Unconditionally remove the Windows installer's unique
+  `$HOME/.guiho/.temp/runx-install-*` staging child after success or any
+  terminating failure while preserving the shared `.guiho/.temp` directory.
+- Assert zero leftover installer staging after clean install, injected
+  activation rollback, and same-version reinstall in the native Windows gate.
+
 ## 0.14.8 - 2026-08-23
 
 ### Fixed

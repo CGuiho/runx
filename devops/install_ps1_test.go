@@ -190,6 +190,16 @@ func TestPowerShellInstallerAndWholeReleaseUpgrade(t *testing.T) {
 	home := t.TempDir()
 	project := t.TempDir()
 	script := filepath.Join(repositoryRoot, "devops", "install.ps1")
+	assertNoInstallerStaging := func(label string) {
+		t.Helper()
+		matches, globErr := filepath.Glob(filepath.Join(home, ".guiho", ".temp", "runx-install-*"))
+		if globErr != nil {
+			t.Fatalf("%s inspect installer staging: %v", label, globErr)
+		}
+		if len(matches) != 0 {
+			t.Fatalf("%s left installer staging directories: %v", label, matches)
+		}
+	}
 	runInstaller := func(label string, injectFailure bool) {
 		t.Helper()
 		command := exec.Command(
@@ -212,6 +222,7 @@ func TestPowerShellInstallerAndWholeReleaseUpgrade(t *testing.T) {
 			command.Env = append(command.Env, "RUNX_INSTALL_TEST_FAIL_AFTER_ACTIVATION=1")
 		}
 		output, runErr := command.CombinedOutput()
+		assertNoInstallerStaging(label)
 		if injectFailure {
 			if runErr == nil {
 				t.Fatalf("%s unexpectedly succeeded:\n%s", label, output)

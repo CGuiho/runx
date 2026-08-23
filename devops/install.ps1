@@ -86,6 +86,7 @@ New-Item -ItemType Directory -Force -Path $TempRoot | Out-Null
 $Staging = Join-Path $TempRoot ("runx-install-" + [Guid]::NewGuid().ToString('N'))
 New-Item -ItemType Directory -Path $Staging | Out-Null
 
+try {
 Write-Host 'Initiating GUIHO CLI Upgrade / Installation Sequence...'
 Write-Host "Target Version: $TargetVersion"
 Write-Host "Platform:       $Platform"
@@ -260,8 +261,12 @@ if ($env:RUNX_INSTALL_TEST_MODE -eq '1' -or $env:RUNX_SKIP_PATH_UPDATE -eq '1') 
   }
 }
 
-Remove-Item -Recurse -Force -ErrorAction SilentlyContinue -LiteralPath $Staging
 Write-Host "[OK] Installed and verified RunX $ActualVersion"
 Write-Host "Launcher: $LauncherPath"
 Write-Host "Active payload: $(Join-Path $DestVersionDir 'runx-payload.exe')"
 Write-Host "RunX home: $CliDir"
+} finally {
+  # The shared .guiho/.temp directory is never owned by RunX; remove only this
+  # operation's unique staging child after success or any terminating failure.
+  Remove-Item -Recurse -Force -ErrorAction SilentlyContinue -LiteralPath $Staging
+}
