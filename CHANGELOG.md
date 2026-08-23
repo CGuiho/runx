@@ -15,6 +15,16 @@ owner: runx
 
 # Changelog
 
+## 0.14.8 - 2026-08-23
+
+### Fixed
+
+- Treat an explicitly requested already-active whole-release version as
+  verified `up-to-date` instead of trying to overwrite the running immutable
+  Windows payload.
+- Extend the native Windows lifecycle test through same-version upgrade
+  idempotence after a successful different-version whole-release upgrade.
+
 ## 0.14.7 - 2026-08-23
 
 ### Fixed
