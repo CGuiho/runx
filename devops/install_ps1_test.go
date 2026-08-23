@@ -2,10 +2,12 @@ package devops
 
 import (
 	"archive/zip"
+	"bytes"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -16,6 +18,7 @@ import (
 	"testing"
 
 	"github.com/CGuiho/runx/pkg/installstate"
+	"github.com/CGuiho/runx/pkg/lifecycle"
 )
 
 // readInstaller loads a devops lifecycle script from this package directory.
@@ -152,7 +155,7 @@ func quotePowerShellLiteral(value string) string {
 	return strings.ReplaceAll(value, "'", "''")
 }
 
-func TestPowerShellInstallerCleanInstallAndReinstall(t *testing.T) {
+func TestPowerShellInstallerAndWholeReleaseUpgrade(t *testing.T) {
 	if runtime.GOOS != "windows" {
 		t.Skip("the native PowerShell installer integration test requires Windows")
 	}
@@ -162,6 +165,7 @@ func TestPowerShellInstallerCleanInstallAndReinstall(t *testing.T) {
 	}
 
 	const version = "9.8.7"
+	const upgradeVersion = "9.8.8"
 	repositoryRoot, err := filepath.Abs("..")
 	if err != nil {
 		t.Fatal(err)
@@ -225,7 +229,7 @@ func TestPowerShellInstallerCleanInstallAndReinstall(t *testing.T) {
 		}
 	}
 
-	assertInstallation := func(label string) {
+	assertInstallation := func(label, wantVersion string) {
 		t.Helper()
 		pointerBytes, readErr := os.ReadFile(installstate.CurrentPointerPathIn(home))
 		if readErr != nil {
@@ -238,8 +242,8 @@ func TestPowerShellInstallerCleanInstallAndReinstall(t *testing.T) {
 		if pointerErr != nil {
 			t.Fatalf("%s strict pointer decode failed: %v", label, pointerErr)
 		}
-		if pointer == nil || pointer.Active != version {
-			t.Fatalf("%s active pointer = %#v, want %s", label, pointer, version)
+		if pointer == nil || pointer.Active != wantVersion {
+			t.Fatalf("%s active pointer = %#v, want %s", label, pointer, wantVersion)
 		}
 
 		launcher := installstate.LauncherPathIn(home)
@@ -256,17 +260,88 @@ func TestPowerShellInstallerCleanInstallAndReinstall(t *testing.T) {
 		if runErr != nil {
 			t.Fatalf("%s launcher failed: %v\n%s", label, runErr, output)
 		}
-		if got := strings.TrimSpace(string(output)); got != version {
-			t.Fatalf("%s launcher version = %q, want %q", label, got, version)
+		if got := strings.TrimSpace(string(output)); got != wantVersion {
+			t.Fatalf("%s launcher version = %q, want %q", label, got, wantVersion)
 		}
 	}
 
 	runInstaller("clean install", false)
-	assertInstallation("clean install")
+	assertInstallation("clean install", version)
 	runInstaller("injected same-version activation failure", true)
-	assertInstallation("rollback after injected same-version activation failure")
+	assertInstallation("rollback after injected same-version activation failure", version)
 	runInstaller("same-version reinstall", false)
-	assertInstallation("same-version reinstall")
+	assertInstallation("same-version reinstall", version)
+
+	upgradeFixture := t.TempDir()
+	buildWindowsFixture(t, repositoryRoot, upgradeFixture, upgradeVersion)
+	transport := roundTripFunc(func(request *http.Request) (*http.Response, error) {
+		if request.URL.Host == "api.github.com" {
+			catalog := []map[string]any{{
+				"tag_name": "runx/v" + upgradeVersion,
+				"draft":    false, "prerelease": false,
+				"assets": []map[string]string{
+					{"name": "runx-payload-windows-amd64.exe", "browser_download_url": "https://fixture/runx-payload-windows-amd64.exe"},
+					{"name": "checksums.txt", "browser_download_url": "https://fixture/checksums.txt"},
+				},
+			}}
+			body, marshalErr := json.Marshal(catalog)
+			if marshalErr != nil {
+				return nil, marshalErr
+			}
+			return httpResponse(request, http.StatusOK, body), nil
+		}
+		name := filepath.Base(request.URL.Path)
+		body, readErr := os.ReadFile(filepath.Join(upgradeFixture, name))
+		if readErr != nil {
+			return httpResponse(request, http.StatusNotFound, nil), nil
+		}
+		return httpResponse(request, http.StatusOK, body), nil
+	})
+	client := &http.Client{Transport: transport}
+	t.Setenv("HOME", home)
+	t.Setenv("USERPROFILE", home)
+	originalDirectory, err := os.Getwd()
+	if err != nil {
+		t.Fatal(err)
+	}
+	requireChdir(t, project)
+	defer requireChdir(t, originalDirectory)
+
+	result, err := lifecycle.UpgradeWholeRelease(lifecycle.Options{
+		CurrentVersion: version,
+		BuildTarget:    "runx-payload-windows-amd64",
+		HTTPClient:     client,
+		HomeDir:        func() (string, error) { return home, nil },
+	})
+	if err != nil {
+		t.Fatalf("whole-release upgrade failed: %v", err)
+	}
+	if result.Outcome != "upgraded" || !result.Verified {
+		t.Fatalf("whole-release result = %#v, want upgraded and verified", result)
+	}
+	assertInstallation("whole-release upgrade with standard checksum manifest", upgradeVersion)
+}
+
+type roundTripFunc func(*http.Request) (*http.Response, error)
+
+func (function roundTripFunc) RoundTrip(request *http.Request) (*http.Response, error) {
+	return function(request)
+}
+
+func httpResponse(request *http.Request, status int, body []byte) *http.Response {
+	return &http.Response{
+		StatusCode: status,
+		Header:     make(http.Header),
+		Body:       io.NopCloser(bytes.NewReader(body)),
+		Request:    request,
+	}
+}
+
+func requireChdir(t *testing.T, directory string) {
+	t.Helper()
+	if err := os.Chdir(directory); err != nil {
+		t.Fatalf("change directory to %s: %v", directory, err)
+	}
 }
 
 func buildWindowsFixture(t *testing.T, repositoryRoot, fixture, version string) {
