@@ -1,12 +1,21 @@
 package devops
 
 import (
+	"archive/zip"
+	"crypto/sha256"
+	"encoding/hex"
+	"encoding/json"
+	"fmt"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"testing"
+
+	"github.com/CGuiho/runx/pkg/installstate"
 )
 
 // readInstaller loads a devops lifecycle script from this package directory.
@@ -106,6 +115,8 @@ func TestPowerShellScriptsParse(t *testing.T) {
 			"-Command",
 			"try { [void][scriptblock]::Create((Get-Content -Raw -LiteralPath '"+scriptPath+"')); exit 0 } catch { Write-Error $_; exit 1 }",
 		)
+		powerShellCache := t.TempDir()
+		command.Env = append(os.Environ(), "LOCALAPPDATA="+powerShellCache, "APPDATA="+powerShellCache)
 		if output, err := command.CombinedOutput(); err != nil {
 			t.Errorf("%s does not parse: %v\n%s", name, err, output)
 		}
@@ -139,4 +150,223 @@ func TestBashScriptsParse(t *testing.T) {
 
 func quotePowerShellLiteral(value string) string {
 	return strings.ReplaceAll(value, "'", "''")
+}
+
+func TestPowerShellInstallerCleanInstallAndReinstall(t *testing.T) {
+	if runtime.GOOS != "windows" {
+		t.Skip("the native PowerShell installer integration test requires Windows")
+	}
+	powerShell, err := exec.LookPath("powershell.exe")
+	if err != nil {
+		t.Skip("Windows PowerShell is unavailable")
+	}
+
+	const version = "9.8.7"
+	repositoryRoot, err := filepath.Abs("..")
+	if err != nil {
+		t.Fatal(err)
+	}
+	fixture := t.TempDir()
+	buildWindowsFixture(t, repositoryRoot, fixture, version)
+
+	server := httptest.NewServer(http.HandlerFunc(func(response http.ResponseWriter, request *http.Request) {
+		name := filepath.Base(request.URL.Path)
+		data, readErr := os.ReadFile(filepath.Join(fixture, name))
+		if readErr != nil {
+			http.NotFound(response, request)
+			return
+		}
+		response.Header().Set("Content-Length", fmt.Sprint(len(data)))
+		if request.Method != http.MethodHead {
+			_, _ = response.Write(data)
+		}
+	}))
+	defer server.Close()
+
+	home := t.TempDir()
+	project := t.TempDir()
+	script := filepath.Join(repositoryRoot, "devops", "install.ps1")
+	runInstaller := func(label string, injectFailure bool) {
+		t.Helper()
+		command := exec.Command(
+			powerShell,
+			"-NoLogo", "-NoProfile", "-NonInteractive", "-ExecutionPolicy", "Bypass",
+			"-File", script, "-Version", version,
+		)
+		command.Dir = project
+		command.Env = append(os.Environ(),
+			"HOME="+home,
+			"USERPROFILE="+home,
+			"LOCALAPPDATA="+filepath.Join(home, "AppData", "Local"),
+			"APPDATA="+filepath.Join(home, "AppData", "Roaming"),
+			"RUNX_INSTALL_TEST_MODE=1",
+			"RUNX_INSTALL_TEST_DOWNLOAD_ROOT="+server.URL+"/releases/download",
+			"RUNX_DISABLE_UPDATE_WORKER=1",
+			"RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1",
+		)
+		if injectFailure {
+			command.Env = append(command.Env, "RUNX_INSTALL_TEST_FAIL_AFTER_ACTIVATION=1")
+		}
+		output, runErr := command.CombinedOutput()
+		if injectFailure {
+			if runErr == nil {
+				t.Fatalf("%s unexpectedly succeeded:\n%s", label, output)
+			}
+			if !strings.Contains(string(output), "was rolled back") {
+				t.Fatalf("%s did not report rollback:\n%s", label, output)
+			}
+			return
+		}
+		if runErr != nil {
+			t.Fatalf("%s failed: %v\n%s", label, runErr, output)
+		}
+		if !strings.Contains(string(output), "[OK] Installed and verified RunX "+version) {
+			t.Fatalf("%s did not report verified installation:\n%s", label, output)
+		}
+	}
+
+	assertInstallation := func(label string) {
+		t.Helper()
+		pointerBytes, readErr := os.ReadFile(installstate.CurrentPointerPathIn(home))
+		if readErr != nil {
+			t.Fatalf("%s read current.json: %v", label, readErr)
+		}
+		if len(pointerBytes) >= 3 && pointerBytes[0] == 0xef && pointerBytes[1] == 0xbb && pointerBytes[2] == 0xbf {
+			t.Fatalf("%s wrote current.json with a UTF-8 BOM: %x", label, pointerBytes[:3])
+		}
+		pointer, pointerErr := installstate.ReadPointerIn(home)
+		if pointerErr != nil {
+			t.Fatalf("%s strict pointer decode failed: %v", label, pointerErr)
+		}
+		if pointer == nil || pointer.Active != version {
+			t.Fatalf("%s active pointer = %#v, want %s", label, pointer, version)
+		}
+
+		launcher := installstate.LauncherPathIn(home)
+		command := exec.Command(launcher, "--version")
+		command.Env = append(os.Environ(),
+			"HOME="+home,
+			"USERPROFILE="+home,
+			"LOCALAPPDATA="+filepath.Join(home, "AppData", "Local"),
+			"APPDATA="+filepath.Join(home, "AppData", "Roaming"),
+			"RUNX_DISABLE_UPDATE_WORKER=1",
+			"RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1",
+		)
+		output, runErr := command.CombinedOutput()
+		if runErr != nil {
+			t.Fatalf("%s launcher failed: %v\n%s", label, runErr, output)
+		}
+		if got := strings.TrimSpace(string(output)); got != version {
+			t.Fatalf("%s launcher version = %q, want %q", label, got, version)
+		}
+	}
+
+	runInstaller("clean install", false)
+	assertInstallation("clean install")
+	runInstaller("injected same-version activation failure", true)
+	assertInstallation("rollback after injected same-version activation failure")
+	runInstaller("same-version reinstall", false)
+	assertInstallation("same-version reinstall")
+}
+
+func buildWindowsFixture(t *testing.T, repositoryRoot, fixture, version string) {
+	t.Helper()
+	build := func(output, packagePath string, ldflags string) {
+		t.Helper()
+		arguments := []string{"build", "-trimpath"}
+		if ldflags != "" {
+			arguments = append(arguments, "-ldflags", ldflags)
+		}
+		arguments = append(arguments, "-o", output, packagePath)
+		command := exec.Command("go", arguments...)
+		command.Dir = repositoryRoot
+		command.Env = append(os.Environ(), "CGO_ENABLED=0", "GOOS=windows", "GOARCH=amd64", "GOAMD64=v1")
+		if outputBytes, err := command.CombinedOutput(); err != nil {
+			t.Fatalf("build fixture %s: %v\n%s", packagePath, err, outputBytes)
+		}
+	}
+
+	payload := filepath.Join(fixture, "runx-payload-windows-amd64.exe")
+	launcher := filepath.Join(fixture, "runx-launcher-windows-amd64.exe")
+	build(payload, ".", fmt.Sprintf("-X main.version=%s -X main.commit=installer-test -X main.buildDate=2026-01-01T00:00:00Z -X main.buildTarget=runx-windows-amd64", version))
+	build(launcher, "./cmd/runx-launcher", "")
+
+	archivePath := filepath.Join(fixture, "guiho-s-runx.zip")
+	archiveFile, err := os.Create(archivePath)
+	if err != nil {
+		t.Fatal(err)
+	}
+	archive := zip.NewWriter(archiveFile)
+	skill, err := archive.Create("guiho-s-runx/SKILL.md")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := skill.Write([]byte("---\nname: guiho-s-runx\n---\n# Fixture\n")); err != nil {
+		t.Fatal(err)
+	}
+	if err := archive.Close(); err != nil {
+		t.Fatal(err)
+	}
+	if err := archiveFile.Close(); err != nil {
+		t.Fatal(err)
+	}
+
+	textFiles := map[string]string{
+		"guiho-i-runx.md":           "# Fixture instruction\n",
+		"guiho-p-runx.md":           "---\nname: guiho-p-runx\n---\n# Fixture prompt\n",
+		"guiho-p-runx-uninstall.md": "---\nname: guiho-p-runx-uninstall\n---\n# Fixture uninstall prompt\n",
+		"runx.schema.json":          "{}\n",
+		"runx.global.schema.json":   "{}\n",
+	}
+	for name, content := range textFiles {
+		if err := os.WriteFile(filepath.Join(fixture, name), []byte(content), 0o644); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	assetNames := []string{
+		filepath.Base(payload), filepath.Base(launcher), "guiho-s-runx.zip",
+		"guiho-i-runx.md", "guiho-p-runx.md", "guiho-p-runx-uninstall.md",
+		"runx.schema.json", "runx.global.schema.json",
+	}
+	type manifestEntry struct {
+		File   string `json:"file"`
+		SHA256 string `json:"sha256"`
+	}
+	manifest := struct {
+		Schema    int             `json:"schema"`
+		Protocol  int             `json:"protocol"`
+		Name      string          `json:"name"`
+		Version   string          `json:"version"`
+		Artifacts []manifestEntry `json:"artifacts"`
+	}{Schema: 1, Protocol: 1, Name: "runx", Version: version}
+	for _, name := range assetNames {
+		manifest.Artifacts = append(manifest.Artifacts, manifestEntry{File: name, SHA256: fixtureSHA256(t, filepath.Join(fixture, name))})
+	}
+	manifestBytes, err := json.Marshal(manifest)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := os.WriteFile(filepath.Join(fixture, "artifacts.json"), append(manifestBytes, '\n'), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	assetNames = append(assetNames, "artifacts.json")
+
+	var checksums strings.Builder
+	for _, name := range assetNames {
+		fmt.Fprintf(&checksums, "%s  %s\n", fixtureSHA256(t, filepath.Join(fixture, name)), name)
+	}
+	if err := os.WriteFile(filepath.Join(fixture, "checksums.txt"), []byte(checksums.String()), 0o644); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func fixtureSHA256(t *testing.T, path string) string {
+	t.Helper()
+	data, err := os.ReadFile(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	sum := sha256.Sum256(data)
+	return hex.EncodeToString(sum[:])
 }
