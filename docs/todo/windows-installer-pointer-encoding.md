@@ -4,7 +4,7 @@ purpose: Define the incident correction and acceptance contract for TODO task 24
 description: Requires PowerShell 5 and 7 installation paths to write a BOM-free current.json and pass real Windows launcher activation tests.
 created: 2026-08-23
 flags:
-  - in-progress
+  - testing
 tags:
   - installer
   - windows
@@ -20,9 +20,9 @@ owner: runx-todo
 
 ## Status
 
-- State: in progress
+- State: testing
 - Created: `2026-08-23T12:18:30+02:00`
-- Updated: `2026-08-23T12:18:30+02:00`
+- Updated: `2026-08-23T12:39:29+02:00`
 - Parent task: RunX TODO 23, GUIHO CLI Convention 0001 compliance
 
 ## Incident
@@ -32,6 +32,11 @@ byte-order mark. The RunX installer used that command to stage `current.json`.
 The stable launcher strictly decoded JSON and rejected the leading bytes with
 `invalid character 'ï' looking for beginning of value`, so installation rolled
 back after all release artifacts had already downloaded and verified.
+
+Independent reproduction also found that release selection prefixed the
+already-prefixed target `runx-windows-amd64` with `runx-payload-`, yielding the
+nonexistent `runx-payload-runx-windows-amd64.exe`. That defect prevents
+0.14.3–0.14.5 clients from selecting canonical protocol-v1 payloads.
 
 ## Plan Unit
 
@@ -60,11 +65,25 @@ phases are waived in favor of the existing Convention 0001 contract and task
 6. Existing installation failure leaves the prior active pointer and launcher
    usable.
 
+## Implementation Milestone
+
+- `install.ps1` writes pointer JSON with `System.Text.UTF8Encoding($false)`.
+- Pointer readers tolerate only the legacy UTF-8 BOM before strict JSON decode.
+- Protocol-v1 asset selection removes the existing `runx-` prefix before
+  constructing the payload name.
+- Release builds include checksummed compatibility payload/launcher aliases for
+  every supported target, allowing defective 0.14.3–0.14.5 clients to enter the
+  corrected release.
+- The Windows integration test passed clean installation, injected
+  post-activation rollback, and same-version reinstall with native binaries.
+- A real-network installer-driven upgrade from 0.14.3 to published 0.14.5
+  passed in an isolated Windows home and produced BOM-free pointer bytes.
+
 ## Validation
 
-Pending implementation. Required checks include focused Windows tests, the
-complete Go suite, vet, builds, release-matrix verification, XDocs validation,
-and a clean-home Windows installer smoke using the published release candidate.
+Focused Windows PowerShell and Go tests pass. Complete suite, vet, builds,
+release-matrix verification, XDocs validation, CI, and published-release
+transition smoke remain before completion.
 
 ## Release Decision
 
