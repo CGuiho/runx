@@ -269,6 +269,9 @@ func verifyChecksums(staging string, assets []string) error {
 		expected[strings.TrimPrefix(fields[1], "*")] = strings.ToLower(fields[0])
 	}
 	for _, asset := range assets {
+		if asset == "checksums.txt" {
+			continue
+		}
 		want, ok := expected[asset]
 		if !ok {
 			return fmt.Errorf("checksum entry missing for %s", asset)
