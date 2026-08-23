@@ -1,7 +1,11 @@
 package lifecycle
 
 import (
+	"crypto/sha256"
+	"encoding/hex"
 	"errors"
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/CGuiho/runx/pkg/installstate"
@@ -25,4 +29,16 @@ func TestUpgradeWithoutPointerFailsClosedBeforeNetwork(t *testing.T) {
 	_, err := UpgradeWholeRelease(Options{HomeDir: fixedHome(home), BuildTarget: "runx-windows-amd64"})
 	require.Error(t, err)
 	assert.True(t, errors.Is(err, ErrLegacyInstallation), "want ErrLegacyInstallation, got %v", err)
+}
+
+func TestVerifyChecksumsDoesNotRequireManifestToHashItself(t *testing.T) {
+	staging := t.TempDir()
+	payload := []byte("verified payload")
+	require.NoError(t, os.WriteFile(filepath.Join(staging, "payload"), payload, 0o644))
+	sum := sha256.Sum256(payload)
+	manifest := hex.EncodeToString(sum[:]) + "  payload\n"
+	require.NoError(t, os.WriteFile(filepath.Join(staging, "checksums.txt"), []byte(manifest), 0o644))
+
+	require.NoError(t, verifyChecksums(staging, []string{"payload", "checksums.txt"}))
+	require.ErrorContains(t, verifyChecksums(staging, []string{"payload", "missing", "checksums.txt"}), "checksum entry missing for missing")
 }

@@ -5,7 +5,7 @@ parent: runx-github
 children: []
 files:
   ci.yml: Runs formatting, module integrity, tests, vet, native smokes, all target builds, and exact protocol-v1 asset verification on Linux and Windows.
-  publish.yml: Blocks publication on a real Windows PowerShell clean-install/reinstall gate, then validates Go, builds the complete release, publishes it, verifies the exact remote asset set, and smoke-tests the public installer.
+  publish.yml: Blocks publication on a real Windows PowerShell clean-install, rollback, reinstall, and whole-release-upgrade gate, then validates Go, builds the release, publishes it, verifies the remote assets, and smoke-tests the public installer.
 documents: {}
 tags:
   - github-actions

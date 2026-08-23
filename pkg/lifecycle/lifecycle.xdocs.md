@@ -4,8 +4,8 @@ description: Protocol-v1 whole-release upgrade engine with staging, verification
 parent: runx-packages
 children: []
 files:
-  upgrade.go: Detects protocol-v1 installations, selects releases, stages and verifies every artifact under the shared temp root, self-tests the staged payload, installs an immutable version directory, atomically swaps current.json, verifies through the stable launcher, and rolls back on failure.
-  upgrade_test.go: Covers installation detection and fail-closed behavior before any network work.
+  upgrade.go: Detects protocol-v1 installations, selects releases, stages and verifies every checksummed artifact without requiring the checksum manifest to hash itself, self-tests the payload, installs an immutable version, atomically swaps current.json, verifies through the launcher, and rolls back on failure.
+  upgrade_test.go: Covers installation detection, fail-closed behavior before network work, and the standard checksum-manifest rule that checksums.txt never hashes itself.
 documents: {}
 tags:
   - go
@@ -14,6 +14,7 @@ tags:
 keywords:
   - whole-release upgrade
   - protocol v1
+  - checksums.txt
   - rollback
 flags: []
 status: stable
