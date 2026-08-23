@@ -15,6 +15,15 @@ owner: runx
 
 # Changelog
 
+## 0.14.5 - 2026-08-23
+
+### Fixed
+
+- Remove duplicate `GUIHO — Documented command catalog` line from the
+  borderless hello window. The product identity now appears once, centered
+  inside as `Documented command catalog` + `GUIHO · Cristóvão GUIHO`, with
+  the outside showing only `Creator`, `platform`, `version`, and help.
+
 ## 0.14.4 - 2026-08-22
 
 ### Changed
