@@ -101,18 +101,28 @@ foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'checksums.txt', 'artifacts.
 }
 
 $ChecksumLines = Get-Content -LiteralPath (Join-Path $Staging 'checksums.txt')
+function Get-SHA256([string]$Path) {
+  $Stream = [IO.File]::OpenRead($Path)
+  $Hasher = [Security.Cryptography.SHA256]::Create()
+  try {
+    return -join ($Hasher.ComputeHash($Stream) | ForEach-Object { $_.ToString('x2') })
+  } finally {
+    $Hasher.Dispose()
+    $Stream.Dispose()
+  }
+}
 function Verify-Checksum([string]$Name) {
   $Line = $ChecksumLines | Where-Object { $_ -match "\s+$([Regex]::Escape($Name))$" } | Select-Object -First 1
   if (-not $Line) { throw "checksum entry missing for $Name" }
   $Expected = ($Line -split '\s+')[0]
-  $Actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $Staging $Name)).Hash.ToLowerInvariant()
+  $Actual = Get-SHA256 (Join-Path $Staging $Name)
   if ($Expected.ToLowerInvariant() -ne $Actual) { throw "checksum verification failed for $Name" }
 }
 $Manifest = Get-Content -Raw -LiteralPath (Join-Path $Staging 'artifacts.json') | ConvertFrom-Json
 function Verify-ManifestDigest([string]$Name) {
   $Entry = $Manifest.artifacts | Where-Object { $_.file -eq $Name } | Select-Object -First 1
   if ($Entry) {
-    $Actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $Staging $Name)).Hash.ToLowerInvariant()
+    $Actual = Get-SHA256 (Join-Path $Staging $Name)
     if ($Entry.sha256.ToLowerInvariant() -ne $Actual) { throw "artifacts.json digest mismatch for $Name" }
   }
 }
