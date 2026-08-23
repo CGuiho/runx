@@ -149,9 +149,6 @@ func renderWithColor(platform, architecture, version, updateNotice string, withC
 
 	// ── Outside box ─────────────────────────
 	b.WriteString("\n\n")
-	b.WriteString(colorize(withColor, "GUIHO", ansiOffWhite+ansiBold))
-	b.WriteString(colorize(withColor, "  —  Documented command catalog", ansiSlate))
-	b.WriteString("\n\n")
 
 	// Creator
 	b.WriteString(colorize(withColor, fmt.Sprintf("%-9s", "Creator"), ansiSlate))
