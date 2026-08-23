@@ -22,7 +22,7 @@ func ReadPointer() (*Pointer, error) {
 		return nil, fmt.Errorf("read pointer %s: %w", path, err)
 	}
 	var pointer Pointer
-	decoder := json.NewDecoder(bytesReader(data))
+	decoder := json.NewDecoder(bytesReader(withoutUTF8BOM(data)))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&pointer); err != nil {
 		return nil, fmt.Errorf("decode pointer %s: %w", path, err)
@@ -31,6 +31,15 @@ func ReadPointer() (*Pointer, error) {
 		return nil, fmt.Errorf("invalid pointer %s: %w", path, err)
 	}
 	return &pointer, nil
+}
+
+// withoutUTF8BOM accepts pointers produced by legacy Windows PowerShell
+// installers while keeping the JSON decoder and pointer schema strict.
+func withoutUTF8BOM(data []byte) []byte {
+	if len(data) >= 3 && data[0] == 0xef && data[1] == 0xbb && data[2] == 0xbf {
+		return data[3:]
+	}
+	return data
 }
 
 // WritePointer atomically replaces the current pointer.
@@ -168,7 +177,7 @@ func ReadPointerIn(home string) (*Pointer, error) {
 		return nil, fmt.Errorf("read pointer: %w", err)
 	}
 	var pointer Pointer
-	decoder := json.NewDecoder(bytesReader(data))
+	decoder := json.NewDecoder(bytesReader(withoutUTF8BOM(data)))
 	decoder.DisallowUnknownFields()
 	if err := decoder.Decode(&pointer); err != nil {
 		return nil, fmt.Errorf("decode pointer: %w", err)
