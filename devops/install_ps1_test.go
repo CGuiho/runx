@@ -320,6 +320,21 @@ func TestPowerShellInstallerAndWholeReleaseUpgrade(t *testing.T) {
 		t.Fatalf("whole-release result = %#v, want upgraded and verified", result)
 	}
 	assertInstallation("whole-release upgrade with standard checksum manifest", upgradeVersion)
+
+	sameVersionResult, err := lifecycle.UpgradeWholeRelease(lifecycle.Options{
+		CurrentVersion:   upgradeVersion,
+		RequestedVersion: upgradeVersion,
+		BuildTarget:      "runx-payload-windows-amd64",
+		HTTPClient:       client,
+		HomeDir:          func() (string, error) { return home, nil },
+	})
+	if err != nil {
+		t.Fatalf("same-version whole-release check failed: %v", err)
+	}
+	if sameVersionResult.Outcome != "up-to-date" || !sameVersionResult.Verified {
+		t.Fatalf("same-version result = %#v, want verified up-to-date", sameVersionResult)
+	}
+	assertInstallation("same-version whole-release idempotence", upgradeVersion)
 }
 
 type roundTripFunc func(*http.Request) (*http.Response, error)
