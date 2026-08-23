@@ -96,8 +96,8 @@ func UpgradeWholeRelease(opts Options) (*Result, error) {
 	if err != nil {
 		return nil, err
 	}
-	if entry.Version == pointer.Active && opts.RequestedVersion == "" {
-		return &Result{Outcome: "up-to-date", PreviousVersion: pointer.Active, TargetVersion: pointer.Active}, nil
+	if entry.Version == pointer.Active {
+		return &Result{Outcome: "up-to-date", PreviousVersion: pointer.Active, TargetVersion: pointer.Active, Verified: true}, nil
 	}
 	if entry.CompatibleAsset == nil || !strings.HasPrefix(entry.CompatibleAsset.Name, "runx-payload-") {
 		return nil, fmt.Errorf("%w: %s", ErrLegacyRelease, entry.Version)
