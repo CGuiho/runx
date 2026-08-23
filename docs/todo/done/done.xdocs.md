@@ -15,6 +15,7 @@ files:
   runx-reveal-implementation.md: Completed task 21 Luna implementation, review, integration, and release handoff record.
   windows-git-bash-auto-shell.md: Completed task 22 caller-aware Windows shell:auto specification and 0.12.1 acceptance record.
   windows-git-bash-auto-shell-implementation.md: Completed task 22 Luna implementation, exact-head review, validation, and patch-release record.
+  windows-installer-pointer-encoding.md: Completed task 24 incident record for BOM-free Windows installation, standard whole-release checksums, synchronous upgrade, and idempotence.
 documents:
   done.md: Permanent completion ledger for archived RunX tasks.
   manifest-v2-composition.md: Completed task specification for RunX manifest v2 composition.
@@ -28,6 +29,7 @@ documents:
   runx-reveal-implementation.md: Completed implementation and delivery record for RunX reveal.
   windows-git-bash-auto-shell.md: Completed task specification and acceptance evidence for caller-aware Windows automatic shell execution.
   windows-git-bash-auto-shell-implementation.md: Completed implementation and delivery record for the Windows Git Bash automatic-shell correction.
+  windows-installer-pointer-encoding.md: Completed incident, implementation, validation, and 0.14.8 public acceptance record.
 tags:
   - todo
   - done
@@ -36,6 +38,8 @@ keywords:
   - completed tasks
   - runx reveal
   - Git Bash
+  - PowerShell
+  - whole-release upgrade
 flags: []
 status: stable
 ---
