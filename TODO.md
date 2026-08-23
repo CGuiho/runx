@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 4 |
+| testing | 3 |
 | stopped | 0 |
-| completed | 21 |
+| completed | 22 |
 
 ## Tasks
 
@@ -348,10 +348,14 @@ owner: runx
 
 ### 24. Fix Windows Installer Pointer Encoding
 
-- Status: testing
+- Status: completed
 - Priority: highest
 - Created: `2026-08-23T12:18:30+02:00`
-- Updated: `2026-08-23T12:39:29+02:00`
-- Outcome: Windows PowerShell 5 installation and reinstall write a BOM-free UTF-8 `current.json`, activate the stable launcher successfully, and are exercised end to end before release.
-- Spec: [docs/todo/windows-installer-pointer-encoding.md](docs/todo/windows-installer-pointer-encoding.md)
+- Updated: `2026-08-23T13:38:20+02:00`
+- Outcome: Windows PowerShell installation, rollback, reinstall, different-version whole-release upgrade, and same-version idempotence now pass native and public gates with BOM-free pointers and standard checksum manifests.
+- Spec: [docs/todo/done/windows-installer-pointer-encoding.md](docs/todo/done/windows-installer-pointer-encoding.md)
+- Review: [docs/reviews/implementation/windows-installer-pointer-encoding-review.md](docs/reviews/implementation/windows-installer-pointer-encoding-review.md)
+- Validation: [docs/validation/windows-installer-pointer-encoding.md](docs/validation/windows-installer-pointer-encoding.md)
+- Pull requests: [#59](https://github.com/CGuiho/runx/pull/59), [#60](https://github.com/CGuiho/runx/pull/60), [#61](https://github.com/CGuiho/runx/pull/61)
+- Release: [runx/v0.14.8](https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.8), workflow [32636794191](https://github.com/CGuiho/runx/actions/runs/32636794191).
 - Parent: GUIHO CLI Convention 0001 compliance task 23.
