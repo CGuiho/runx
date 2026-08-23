@@ -4,7 +4,7 @@ purpose: Define the completion contract for RunX TODO task 25.
 description: Requires unconditional cleanup of the unique Windows installer staging directory after success or any terminating failure.
 created: 2026-08-23
 flags:
-  - testing
+  - completed
 tags:
   - installer
   - windows
@@ -13,15 +13,15 @@ keywords:
   - .guiho/.temp
   - finally
   - rollback
-owner: runx-todo
+owner: runx-todo-done
 ---
 
 # Guarantee Windows Installer Staging Cleanup
 
 ## Status
 
-- State: testing
-- Updated: `2026-08-23T13:47:00+02:00`
+- State: completed
+- Updated: `2026-08-23T13:56:00+02:00`
 
 ## Incident
 
@@ -52,6 +52,19 @@ injected post-activation rollback, same-version reinstall, different-version
 whole-release upgrade, same-version idempotence, and zero leftover
 `runx-install-*` staging children after each installer outcome.
 
+## Public Acceptance
+
+- Public injected post-activation failure returned nonzero, rolled back, and
+  left zero `runx-install-*` staging directories.
+- Immediate public recovery install of 0.14.9 succeeded and also left zero
+  staging directories.
+- Actual user installation upgraded synchronously from 0.14.8 to 0.14.9,
+  verified through the launcher, and exact 0.14.9 returned `up-to-date`.
+- Seven stale staging directories left by older failed installers were removed
+  without touching the shared `.guiho/.temp` directory.
+
 ## Release Decision
 
-Patch 0.14.9 required after complete CI and public failure-cleanup smoke.
+Completed in Mirror-managed release `runx/v0.14.9`, publish workflow
+[32637716640](https://github.com/CGuiho/runx/actions/runs/32637716640).
+
