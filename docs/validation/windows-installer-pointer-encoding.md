@@ -63,10 +63,15 @@ Validated implementation head
   `ok`, no payload mutation.
 - Actual user installation repaired through the canonical installer and raw
   `runx --version` returned `0.14.8`.
+- Public 0.14.9 injected installer failure rolled back with nonzero status and
+  zero leftover staging; immediate recovery install succeeded with zero
+  leftover staging.
+- Actual user installation upgraded synchronously 0.14.8 → 0.14.9; exact
+  0.14.9 returned verified `up-to-date`.
 
 ## Readiness
 
-Passed and complete at release `runx/v0.14.8` with 40 non-draft release assets.
+Passed and complete at release `runx/v0.14.9` with 40 non-draft release assets.
 Protocol-v1 0.14.3–0.14.6 installations require the canonical installer once
 because their checksum defect is inside the already-installed executable.
 
@@ -75,8 +80,9 @@ because their checksum defect is inside the already-installed executable.
 - PR 59 validation: https://github.com/CGuiho/runx/pull/59#issuecomment-5385635476
 - PR 60 validation: https://github.com/CGuiho/runx/pull/60#issuecomment-5385707301
 - PR 61 gate: https://github.com/CGuiho/runx/pull/61#issuecomment-5385759966
-- Final workflow: https://github.com/CGuiho/runx/actions/runs/32636794191
-- Release: https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.8
+- 0.14.8 workflow: https://github.com/CGuiho/runx/actions/runs/32636794191
+- Final cleanup workflow: https://github.com/CGuiho/runx/actions/runs/32637716640
+- Final release: https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.9
 
 No production deployment, promotion, traffic, DNS, database, or secret mutation
 occurred.
