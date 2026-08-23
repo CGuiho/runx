@@ -4,7 +4,7 @@ purpose: Define the completion contract for RunX TODO task 25.
 description: Requires unconditional cleanup of the unique Windows installer staging directory after success or any terminating failure.
 created: 2026-08-23
 flags:
-  - in-progress
+  - testing
 tags:
   - installer
   - windows
@@ -20,8 +20,8 @@ owner: runx-todo
 
 ## Status
 
-- State: in progress
-- Updated: `2026-08-23T13:42:00+02:00`
+- State: testing
+- Updated: `2026-08-23T13:47:00+02:00`
 
 ## Incident
 
@@ -45,6 +45,13 @@ plan context; no separate architecture or plan is necessary.
 3. Cleanup remains confined to the operation's exact staging path.
 4. Native Windows CI and release gates enforce the behavior.
 
+## Validation
+
+The native Windows integration passes script parsing, clean installation,
+injected post-activation rollback, same-version reinstall, different-version
+whole-release upgrade, same-version idempotence, and zero leftover
+`runx-install-*` staging children after each installer outcome.
+
 ## Release Decision
 
-Patch required after validation.
+Patch 0.14.9 required after complete CI and public failure-cleanup smoke.
