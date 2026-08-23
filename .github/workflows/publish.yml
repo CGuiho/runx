@@ -19,8 +19,8 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - name: Verify real PowerShell clean install and reinstall
-        run: go test -count=1 ./devops -run '^TestPowerShellInstallerCleanInstallAndReinstall$' -v
+      - name: Verify real PowerShell install rollback reinstall and whole-release upgrade
+        run: go test -count=1 ./devops -run '^TestPowerShellInstallerAndWholeReleaseUpgrade$' -v
 
   publish:
     needs: verify-windows-installer
