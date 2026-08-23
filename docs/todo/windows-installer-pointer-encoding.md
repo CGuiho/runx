@@ -82,15 +82,17 @@ phases are waived in favor of the existing Convention 0001 contract and task
 - A real-network installer-driven upgrade from 0.14.3 to published 0.14.5
   passed in an isolated Windows home and produced BOM-free pointer bytes.
 - The mandatory post-0.14.6 live `runx upgrade` smoke failed closed with
-  `checksum entry missing for checksums.txt`; this became the 0.14.7 follow-up
-  unit rather than being misreported as successful.
+  `checksum entry missing for checksums.txt`; this became the 0.14.7 follow-up.
+- The public 0.14.7 clean install passed, then its exact same-version upgrade
+  smoke found a Windows lock: the transaction tried to overwrite the active
+  immutable payload. The 0.14.8 follow-up returns verified `up-to-date` without
+  mutation for an already-active exact target.
 
 ## Validation
 
-The installer gates and 0.14.6 publication passed, but the post-publication
-whole-release upgrade smoke found the checksum-manifest defect. Completion is
-blocked until 0.14.7 passes the new native whole-release integration gate and a
-real published 0.14.7 exact-version whole-release upgrade demonstrates the corrected path.
+The native different-version whole-release gate passes. Completion is blocked
+until a public 0.14.7 → 0.14.8 upgrade succeeds and a public 0.14.8 exact
+same-version request reports verified `up-to-date` without mutation.
 
 ## Release Decision
 
