@@ -6,15 +6,16 @@ children: []
 files:
   paths.go: Resolves $HOME/.guiho roots via os.UserHomeDir plus filepath.Join for the launcher, versions, resources, pointer, ledger, and staging locations.
   pointer.go: Strict protocol-1 pointer validation, SemVer sanitization, and traversal rejection.
-  ledger.go: Installed-artifacts ownership ledger with unique-ID, owned-path, and protocol invariants.
+  ledger.go: Strict pointer and ownership-ledger decoding, including a narrow legacy UTF-8 BOM compatibility boundary for PowerShell-generated current.json files.
   atomic.go: Atomic file replacement and unique staging directories under the shared temp root.
-  installstate_test.go: Covers canonical layout, pointer/ledger validation, foreign-path rejection, atomic writes, and staging cleanup.
+  installstate_test.go: Covers canonical layout, pointer/ledger validation, legacy PowerShell BOM pointers, foreign-path rejection, atomic writes, and staging cleanup.
 documents: {}
 tags:
   - go
   - installation
 keywords:
   - current.json
+  - UTF-8 BOM compatibility
   - installed-artifacts.json
   - stable launcher
   - immutable payloads
