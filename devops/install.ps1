@@ -20,8 +20,8 @@ $Platform = switch ($env:PROCESSOR_ARCHITECTURE.ToUpperInvariant()) {
   'ARM64' { 'windows-arm64' }
   default { throw "Unsupported Windows architecture: $env:PROCESSOR_ARCHITECTURE" }
 }
-$PayloadAsset = "runx-payload-$Platform"
-$LauncherAsset = "runx-launcher-$Platform"
+$PayloadAsset = "runx-payload-$Platform.exe"
+$LauncherAsset = "runx-launcher-$Platform.exe"
 
 function Normalize-Version([string]$Value) {
   return ($Value -replace '^@guiho/runx/v', '' -replace '^@guiho/runx@', '' -replace '^runx/v', '' -replace '^runx@', '' -replace '^v', '')
