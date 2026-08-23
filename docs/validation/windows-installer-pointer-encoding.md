@@ -43,23 +43,40 @@ Validated implementation head
 | PR workflow 32635016462 | Ubuntu, Windows, and release-contract jobs passed |
 | Real-network installer-driven 0.14.3 → 0.14.5 | Passed in an isolated Windows home with BOM-free pointer |
 
-## Corrected Gate Finding
+## Corrected Gate Findings
 
-The first PR CI run caught that GitHub's Windows PowerShell did not auto-load
-`Get-FileHash`. The installer was corrected to use the module-independent .NET
-SHA-256 API; workflow 32635016462 then passed on Windows.
+1. PR 59 CI caught that GitHub's Windows PowerShell did not auto-load
+   `Get-FileHash`; the installer moved to the module-independent .NET SHA-256
+   API.
+2. The post-0.14.6 public upgrade smoke caught an impossible self-checksum
+   requirement; PR 60 excludes only `checksums.txt` itself and adds a native
+   different-version whole-release test.
+3. The public 0.14.7 exact-version smoke caught a Windows lock on the active
+   payload; PR 61 returns verified `up-to-date` before mutation.
+
+## Public Acceptance
+
+- Public 0.14.8 clean install: passed.
+- Public 0.14.7 → 0.14.8 `runx upgrade`: outcome `upgraded`, launcher
+  verification `ok`, active pointer `0.14.8`, previous pointer `0.14.7`.
+- Public `runx upgrade --version 0.14.8`: outcome `up-to-date`, verification
+  `ok`, no payload mutation.
+- Actual user installation repaired through the canonical installer and raw
+  `runx --version` returned `0.14.8`.
 
 ## Readiness
 
-Ready for the Mirror-managed 0.14.6 patch release. After publication, validate
-a real 0.14.3–0.14.5 `runx upgrade` through the compatibility aliases before
-marking the task complete.
+Passed and complete at release `runx/v0.14.8` with 40 non-draft release assets.
+Protocol-v1 0.14.3–0.14.6 installations require the canonical installer once
+because their checksum defect is inside the already-installed executable.
 
 ## Evidence
 
-- Validation comment: https://github.com/CGuiho/runx/pull/59#issuecomment-5385635476
-- CI: https://github.com/CGuiho/runx/actions/runs/32635016462
-- PR: https://github.com/CGuiho/runx/pull/59
+- PR 59 validation: https://github.com/CGuiho/runx/pull/59#issuecomment-5385635476
+- PR 60 validation: https://github.com/CGuiho/runx/pull/60#issuecomment-5385707301
+- PR 61 gate: https://github.com/CGuiho/runx/pull/61#issuecomment-5385759966
+- Final workflow: https://github.com/CGuiho/runx/actions/runs/32636794191
+- Release: https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.8
 
 No production deployment, promotion, traffic, DNS, database, or secret mutation
 occurred.
