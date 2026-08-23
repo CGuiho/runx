@@ -35,8 +35,10 @@ back after all release artifacts had already downloaded and verified.
 
 Independent reproduction also found that release selection prefixed the
 already-prefixed target `runx-windows-amd64` with `runx-payload-`, yielding the
-nonexistent `runx-payload-runx-windows-amd64.exe`. That defect prevents
-0.14.3–0.14.5 clients from selecting canonical protocol-v1 payloads.
+nonexistent `runx-payload-runx-windows-amd64.exe`. The post-0.14.6 live smoke
+then exposed a second upgrade defect: the installed 0.14.3–0.14.6 lifecycle
+engine requires `checksums.txt` to contain its own SHA-256 digest, which no
+valid checksum manifest can do.
 
 ## Plan Unit
 
@@ -79,13 +81,16 @@ phases are waived in favor of the existing Convention 0001 contract and task
   post-activation rollback, and same-version reinstall with native binaries.
 - A real-network installer-driven upgrade from 0.14.3 to published 0.14.5
   passed in an isolated Windows home and produced BOM-free pointer bytes.
+- The mandatory post-0.14.6 live `runx upgrade` smoke failed closed with
+  `checksum entry missing for checksums.txt`; this became the 0.14.7 follow-up
+  unit rather than being misreported as successful.
 
 ## Validation
 
-Focused Windows PowerShell and Go tests pass. The first PR CI run correctly
-caught that GitHub's Windows PowerShell did not auto-load `Get-FileHash`; the
-installer no longer depends on that cmdlet. Complete corrected CI and the
-published-release transition smoke remain before completion.
+The installer gates and 0.14.6 publication passed, but the post-publication
+whole-release upgrade smoke found the checksum-manifest defect. Completion is
+blocked until 0.14.7 passes the new native whole-release integration gate and a
+real published 0.14.7 exact-version whole-release upgrade demonstrates the corrected path.
 
 ## Release Decision
 
