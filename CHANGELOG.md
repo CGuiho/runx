@@ -24,6 +24,8 @@ owner: runx
   instead of failing on the leading `EF BB BF` bytes.
 - Accept legacy BOM-prefixed pointers at the launcher's file-decoding boundary
   while retaining strict JSON fields and pointer validation.
+- Compute Windows installer SHA-256 digests through the .NET cryptography API
+  without depending on PowerShell module auto-loading for `Get-FileHash`.
 - Correct protocol-v1 release lookup so `runx-windows-amd64` maps to
   `runx-payload-windows-amd64.exe` rather than the nonexistent
   `runx-payload-runx-windows-amd64.exe`.
