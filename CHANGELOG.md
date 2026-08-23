@@ -15,6 +15,15 @@ owner: runx
 
 # Changelog
 
+## 0.14.4 - 2026-08-22
+
+### Changed
+
+- **Tag format migration:** tags are now `runx/v0.14.4` (was
+  `@guiho/runx/v*`). The `0.14.3` transition release understands both
+  formats and can upgrade to `runx/v*`; new releases are published and
+  discovered via `runx/v*`.
+
 ## 0.14.3 - 2026-08-22
 
 ### Changed

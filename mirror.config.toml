@@ -2,7 +2,7 @@
 schema = 1
 
 [project]
-name = "@guiho/runx"
+name = "runx"
 
 [version]
 scheme = "semver"
