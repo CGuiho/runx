@@ -2,8 +2,7 @@
 subject: runx-launcher-command
 description: Platform launcher entrypoint that delegates to the committed active payload and exits with its code.
 parent: runx-cmd
-children:
-  - runx-launcher-command
+children: []
 files:
   main.go: Reads the pointer, resolves active-or-fallback payload, delegates, and maps failures to exit code 5.
   delegate_unix.go: Unix process delegation with identical streams and exit-code propagation.

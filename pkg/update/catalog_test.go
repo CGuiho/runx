@@ -36,6 +36,33 @@ func TestResolveUpgradePlatform(t *testing.T) {
 	assert.Error(t, err)
 }
 
+func TestAssetCandidatesPreferProtocolV1Payload(t *testing.T) {
+	tests := []struct {
+		platform ReleasePlatform
+		want     []string
+	}{
+		{
+			platform: ReleasePlatform{OS: "windows", Arch: "amd64", Target: "runx-windows-amd64"},
+			want:     []string{"runx-payload-windows-amd64.exe", "runx-windows-amd64.exe"},
+		},
+		{
+			platform: ReleasePlatform{OS: "linux", Arch: "armv7", Target: "runx-linux-armv7"},
+			want:     []string{"runx-payload-linux-armv7", "runx-linux-armv7"},
+		},
+	}
+	for _, testCase := range tests {
+		assert.Equal(t, testCase.want, AssetCandidates(testCase.platform))
+	}
+
+	release := GitHubRelease{Assets: []GitHubAsset{
+		{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/legacy"},
+		{Name: "runx-payload-windows-amd64.exe", BrowserDownloadURL: "https://example.com/payload"},
+	}}
+	asset := FindCompatibleAsset(release, tests[0].platform)
+	require.NotNil(t, asset)
+	assert.Equal(t, "runx-payload-windows-amd64.exe", asset.Name)
+}
+
 func TestFetchReleaseCatalog(t *testing.T) {
 	mockReleases := []GitHubRelease{
 		{
@@ -43,8 +70,8 @@ func TestFetchReleaseCatalog(t *testing.T) {
 			Prerelease: false,
 			Draft:      false,
 			Assets: []GitHubAsset{
-				{Name: "runx-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
-				{Name: "runx-linux-amd64", BrowserDownloadURL: "https://example.com/linux"},
+				{Name: "runx-payload-windows-amd64.exe", BrowserDownloadURL: "https://example.com/win.exe"},
+				{Name: "runx-payload-linux-amd64", BrowserDownloadURL: "https://example.com/linux"},
 				{Name: "checksums.txt", BrowserDownloadURL: "https://example.com/checksums"},
 			},
 		},

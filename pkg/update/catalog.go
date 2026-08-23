@@ -114,13 +114,14 @@ func NormalizeReleaseVersion(tag string) string {
 
 func AssetCandidates(platform ReleasePlatform) []string {
 	name := platform.Target
+	platformName := strings.TrimPrefix(name, "runx-")
 	suffix := ""
 	if platform.OS == "windows" {
 		suffix = ".exe"
 	}
 	// Protocol-v1 immutable payloads are preferred; the legacy direct-binary
 	// name remains discoverable for installations that predate protocol v1.
-	return []string{"runx-payload-" + name + suffix, name + suffix}
+	return []string{"runx-payload-" + platformName + suffix, name + suffix}
 }
 
 func FindCompatibleAsset(release GitHubRelease, platform ReleasePlatform) *ReleaseAsset {

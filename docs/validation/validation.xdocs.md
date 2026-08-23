@@ -31,6 +31,7 @@ files:
   runx-0.11.1-release.md: Final publication, artifact, checksum, native smoke, and npm validation for RunX 0.11.1.
   runx-reveal.md: Exact-head review, Go, XDocs, cross-build, CI, merge, and 0.12.0 release-readiness evidence for PR #50.
   runx-0.12.1-shell-auto-release.md: Records final 0.12.0 reveal and 0.12.1 Git Bash automatic-shell publication evidence.
+  guiho-convention-0001-first-protocol-v1.md: Records local and remote evidence for the first protocol-v1 RunX release.
 documents:
   bash-installer.md: Current-main validation report for the RunX Bash installer.
   bounded-update-worker.md: Validation report for CPU-safe RunX background update checks.
@@ -60,6 +61,7 @@ documents:
   runx-0.11.1-release.md: Final publication and independent release validation for RunX 0.11.1.
   runx-reveal.md: Integration validation and minor-release handoff for the RunX reveal command.
   runx-0.12.1-shell-auto-release.md: Final release, asset, npm, native checksum, reveal, and Git Bash path-probe acceptance for issue 47.
+  guiho-convention-0001-first-protocol-v1.md: Validation report for the RunX 0.13.0 protocol-v1 release.
 tags:
   - validation
 keywords:

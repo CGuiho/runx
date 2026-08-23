@@ -58,8 +58,8 @@ func main() {
 	if manifest.Schema != 1 || manifest.Protocol != 1 || manifest.Name != "runx" || manifest.Version == "" {
 		fatalf("artifacts.json header is incomplete: %+v", manifest)
 	}
-	if len(manifest.Artifacts) != 22 {
-		fatalf("expected exactly 22 declared artifacts, got %d", len(manifest.Artifacts))
+	if len(manifest.Artifacts) != 38 {
+		fatalf("expected exactly 38 declared artifacts, got %d", len(manifest.Artifacts))
 	}
 
 	entries, err := os.ReadDir(*directory)
@@ -100,6 +100,9 @@ func main() {
 	if err := verifyChecksums(*directory); err != nil {
 		fatalf("verify checksums: %v", err)
 	}
+	if err := verifyCompatibilityAliases(*directory); err != nil {
+		fatalf("verify upgrade compatibility aliases: %v", err)
+	}
 	archive, err := zip.OpenReader(filepath.Join(*directory, "guiho-s-runx.zip"))
 	if err != nil {
 		fatalf("open skill archive: %v", err)
@@ -114,7 +117,38 @@ func main() {
 	if !found {
 		fatalf("skill archive is missing guiho-s-runx/SKILL.md")
 	}
-	fmt.Printf("verified protocol-v1 release v%s: 22 declared artifacts, manifest digests, checksums, and skill archive\n", manifest.Version)
+	fmt.Printf("verified protocol-v1 release v%s: 38 declared artifacts, manifest digests, checksums, and skill archive\n", manifest.Version)
+}
+
+func verifyCompatibilityAliases(directory string) error {
+	platforms := []string{
+		"linux-amd64", "linux-arm64", "linux-armv7", "linux-armv6",
+		"darwin-amd64", "darwin-arm64", "windows-amd64", "windows-arm64",
+	}
+	for _, platform := range platforms {
+		suffix := ""
+		if strings.HasPrefix(platform, "windows-") {
+			suffix = ".exe"
+		}
+		pairs := [][2]string{
+			{"runx-payload-" + platform + suffix, "runx-payload-runx-" + platform + suffix},
+			{"runx-launcher-" + platform + suffix, "runx-launcher-runx-" + platform + suffix},
+		}
+		for _, pair := range pairs {
+			canonical, err := sha256File(filepath.Join(directory, pair[0]))
+			if err != nil {
+				return err
+			}
+			alias, err := sha256File(filepath.Join(directory, pair[1]))
+			if err != nil {
+				return err
+			}
+			if canonical != alias {
+				return fmt.Errorf("%s does not match %s", pair[1], pair[0])
+			}
+		}
+	}
+	return nil
 }
 
 func verifyChecksums(directory string) error {
@@ -156,8 +190,8 @@ func verifyChecksums(directory string) error {
 	if err := scanner.Err(); err != nil {
 		return err
 	}
-	if len(seen) != 23 {
-		return fmt.Errorf("expected 23 checksum entries, got %d", len(seen))
+	if len(seen) != 39 {
+		return fmt.Errorf("expected 39 checksum entries, got %d", len(seen))
 	}
 	return nil
 }

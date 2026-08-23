@@ -320,4 +320,3 @@ func promptIDFromFrontmatter(content string) string {
 	}
 	return ""
 }
-

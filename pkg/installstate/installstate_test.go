@@ -62,6 +62,19 @@ func TestPointerRoundTripAndValidation(t *testing.T) {
 	require.Error(t, err)
 }
 
+func TestReadPointerAcceptsLegacyPowerShellUTF8BOM(t *testing.T) {
+	home := t.TempDir()
+	path := CurrentPointerPathIn(home)
+	require.NoError(t, os.MkdirAll(filepath.Dir(path), 0o755))
+	data := append([]byte{0xef, 0xbb, 0xbf}, []byte(`{"protocol":1,"active":"1.2.3"}`)...)
+	require.NoError(t, os.WriteFile(path, data, 0o644))
+
+	pointer, err := ReadPointerIn(home)
+	require.NoError(t, err)
+	require.NotNil(t, pointer)
+	assert.Equal(t, "1.2.3", pointer.Active)
+}
+
 func TestLedgerRejectsForeignPaths(t *testing.T) {
 	isolateHome(t)
 	launcherPath, err := LauncherPath()

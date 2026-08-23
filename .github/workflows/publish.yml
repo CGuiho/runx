@@ -11,7 +11,19 @@ permissions:
   id-token: write
 
 jobs:
+  verify-windows-installer:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Verify real PowerShell clean install and reinstall
+        run: go test -count=1 ./devops -run '^TestPowerShellInstallerCleanInstallAndReinstall$' -v
+
   publish:
+    needs: verify-windows-installer
     runs-on: ubuntu-latest
     environment: production
     steps:

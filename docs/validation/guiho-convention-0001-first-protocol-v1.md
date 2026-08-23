@@ -3,7 +3,7 @@ name: GUIHO Convention 0001 First Protocol-v1 Release Validation
 purpose: Record validation evidence for the RunX 0.13.0 protocol-v1 release.
 description: Local gate evidence, release-contract verification, and remote smoke results bound to the released commit.
 created: 2026-08-22
-owner: runx
+owner: runx-validation
 flags:
   - passed
 tags: [validation, r00]

@@ -15,6 +15,11 @@ if ($Help) { Write-Output 'Usage: install.ps1 [-Version VERSION] [-Channel CHANN
 if ($Version -and $Channel) { throw '--Version and -Channel are mutually exclusive.' }
 
 $Repo = if ($env:RUNX_REPO) { $env:RUNX_REPO } else { 'CGuiho/runx' }
+$ReleaseDownloadRoot = "https://github.com/$Repo/releases/download"
+if ($env:RUNX_INSTALL_TEST_MODE -eq '1') {
+  if (-not $env:RUNX_INSTALL_TEST_DOWNLOAD_ROOT) { throw 'RUNX_INSTALL_TEST_DOWNLOAD_ROOT is required in installer test mode.' }
+  $ReleaseDownloadRoot = $env:RUNX_INSTALL_TEST_DOWNLOAD_ROOT.TrimEnd('/')
+}
 $Platform = switch ($env:PROCESSOR_ARCHITECTURE.ToUpperInvariant()) {
   'AMD64' { 'windows-amd64' }
   'ARM64' { 'windows-arm64' }
@@ -66,9 +71,9 @@ $TargetVersion = Resolve-Selection
 # Transition: prefer new tag runx/v* if it exists, fallback to legacy @guiho/runx/v*.
 $EncodedTagNew = [Uri]::EscapeDataString("runx/v$TargetVersion")
 $EncodedTagOld = [Uri]::EscapeDataString("@guiho/runx/v$TargetVersion")
-$ProbeNew = "https://github.com/$Repo/releases/download/$EncodedTagNew/checksums.txt"
+$ProbeNew = "$ReleaseDownloadRoot/$EncodedTagNew/checksums.txt"
 try { Invoke-WebRequest -Uri $ProbeNew -Method Head -UseBasicParsing -TimeoutSec 10 | Out-Null; $EncodedTag = $EncodedTagNew } catch { $EncodedTag = $EncodedTagOld }
-$AssetBase = "https://github.com/$Repo/releases/download/$EncodedTag"
+$AssetBase = "$ReleaseDownloadRoot/$EncodedTag"
 
 $GuihoRoot = Join-Path $HOME '.guiho'
 $CliDir = Join-Path $GuihoRoot 'runx'
@@ -96,18 +101,28 @@ foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'checksums.txt', 'artifacts.
 }
 
 $ChecksumLines = Get-Content -LiteralPath (Join-Path $Staging 'checksums.txt')
+function Get-SHA256([string]$Path) {
+  $Stream = [IO.File]::OpenRead($Path)
+  $Hasher = [Security.Cryptography.SHA256]::Create()
+  try {
+    return -join ($Hasher.ComputeHash($Stream) | ForEach-Object { $_.ToString('x2') })
+  } finally {
+    $Hasher.Dispose()
+    $Stream.Dispose()
+  }
+}
 function Verify-Checksum([string]$Name) {
   $Line = $ChecksumLines | Where-Object { $_ -match "\s+$([Regex]::Escape($Name))$" } | Select-Object -First 1
   if (-not $Line) { throw "checksum entry missing for $Name" }
   $Expected = ($Line -split '\s+')[0]
-  $Actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $Staging $Name)).Hash.ToLowerInvariant()
+  $Actual = Get-SHA256 (Join-Path $Staging $Name)
   if ($Expected.ToLowerInvariant() -ne $Actual) { throw "checksum verification failed for $Name" }
 }
 $Manifest = Get-Content -Raw -LiteralPath (Join-Path $Staging 'artifacts.json') | ConvertFrom-Json
 function Verify-ManifestDigest([string]$Name) {
   $Entry = $Manifest.artifacts | Where-Object { $_.file -eq $Name } | Select-Object -First 1
   if ($Entry) {
-    $Actual = (Get-FileHash -Algorithm SHA256 -LiteralPath (Join-Path $Staging $Name)).Hash.ToLowerInvariant()
+    $Actual = Get-SHA256 (Join-Path $Staging $Name)
     if ($Entry.sha256.ToLowerInvariant() -ne $Actual) { throw "artifacts.json digest mismatch for $Name" }
   }
 }
@@ -140,7 +155,12 @@ function Restore-Pointer {
 }
 
 $DestVersionDir = Join-Path $VersionsDir $TargetVersion
-if (Test-Path -LiteralPath $DestVersionDir) { Remove-Item -Recurse -Force -LiteralPath $DestVersionDir }
+$BackupVersionDir = Join-Path $Staging 'version.previous'
+$HadVersionDir = Test-Path -LiteralPath $DestVersionDir
+if ($HadVersionDir) {
+  Copy-Item -LiteralPath $DestVersionDir -Destination $BackupVersionDir -Recurse
+  Remove-Item -Recurse -Force -LiteralPath $DestVersionDir
+}
 New-Item -ItemType Directory -Force -Path $DestVersionDir | Out-Null
 Copy-Item -LiteralPath $StagedPayload -Destination (Join-Path $DestVersionDir 'runx-payload.exe')
 Copy-Item -LiteralPath (Join-Path $Staging 'artifacts.json') -Destination (Join-Path $DestVersionDir 'release-artifacts.json')
@@ -170,13 +190,17 @@ if ($HadPointer) {
   $OldPointer = Get-Content -Raw -LiteralPath (Join-Path $Staging 'current.json.previous') | ConvertFrom-Json
   $PreviousActive = $OldPointer.active
 }
-if ($PreviousActive -and $PreviousActive -ne $TargetVersion) {
-  @{ protocol = 1; active = $TargetVersion; previous = $PreviousActive } |
-    ConvertTo-Json -Compress | Set-Content -NoNewline -Encoding utf8 (Join-Path $Staging 'current.json.new')
+# Windows PowerShell 5.1 writes a BOM for `Set-Content -Encoding utf8`.
+# current.json is strict JSON consumed by the native launcher, so write UTF-8
+# explicitly without a BOM on every supported PowerShell version.
+$Pointer = if ($PreviousActive -and $PreviousActive -ne $TargetVersion) {
+  @{ protocol = 1; active = $TargetVersion; previous = $PreviousActive }
 } else {
-  @{ protocol = 1; active = $TargetVersion } |
-    ConvertTo-Json -Compress | Set-Content -NoNewline -Encoding utf8 (Join-Path $Staging 'current.json.new')
+  @{ protocol = 1; active = $TargetVersion }
 }
+$PointerJson = $Pointer | ConvertTo-Json -Compress
+$Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[IO.File]::WriteAllText((Join-Path $Staging 'current.json.new'), $PointerJson, $Utf8NoBom)
 
 $LauncherPath = Join-Path $BinDir 'runx.exe'
 $BackupLauncher = Join-Path $Staging 'launcher.previous'
@@ -192,35 +216,48 @@ function Commit-Activation {
 function Restore-Installation {
   Restore-Pointer
   if ($HadLauncher) { Copy-Item -Force -LiteralPath $BackupLauncher -Destination $LauncherPath }
+  else { Remove-Item -Force -ErrorAction SilentlyContinue -LiteralPath $LauncherPath }
   Remove-Item -Recurse -Force -ErrorAction SilentlyContinue -LiteralPath $DestVersionDir
+  if ($HadVersionDir) { Copy-Item -LiteralPath $BackupVersionDir -Destination $DestVersionDir -Recurse }
 }
 
-try { Commit-Activation } catch { Restore-Installation; throw 'activation failed and was rolled back' }
-
-$env:RUNX_DISABLE_UPDATE_WORKER = '1'; $env:RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = '1'
-try { $ActualVersion = (& $LauncherPath --version).Trim() } catch { $ActualVersion = '' } finally {
-  $env:RUNX_DISABLE_UPDATE_WORKER = $PreviousUpdate; $env:RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = $PreviousMaintenance
+$ActualVersion = ''
+try {
+  Commit-Activation
+  if ($env:RUNX_INSTALL_TEST_FAIL_AFTER_ACTIVATION -eq '1') { throw 'injected post-activation failure' }
+  $env:RUNX_DISABLE_UPDATE_WORKER = '1'; $env:RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = '1'
+  try { $ActualVersion = (& $LauncherPath --version).Trim() } finally {
+    $env:RUNX_DISABLE_UPDATE_WORKER = $PreviousUpdate; $env:RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = $PreviousMaintenance
+  }
+  if ($ActualVersion -ne $TargetVersion) { throw "activated launcher reports '$ActualVersion', want $TargetVersion" }
+} catch {
+  $Failure = $_.Exception.Message
+  Restore-Installation
+  throw "installation activation failed and was rolled back: $Failure"
 }
-if ($ActualVersion -ne $TargetVersion) { Restore-Installation; throw "activated launcher reports '$ActualVersion', want $TargetVersion" }
 
 # User-level PATH update: idempotent, no admin rights.
 function Get-ComparablePath([string]$Value) {
   try { return [IO.Path]::GetFullPath(([Environment]::ExpandEnvironmentVariables($Value.Trim().Trim('"')))).TrimEnd('\', '/') }
   catch { return $Value.Trim().Trim('"').TrimEnd('\', '/') }
 }
-$UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
 $ComparableBin = Get-ComparablePath $BinDir
-$AlreadyInPath = $false
-foreach ($Entry in ($UserPath -split ';')) {
-  if ($Entry -and (Get-ComparablePath $Entry) -ieq $ComparableBin) { $AlreadyInPath = $true; break }
-}
-if (-not $AlreadyInPath) {
-  $Updated = if ([string]::IsNullOrWhiteSpace($UserPath)) { $ComparableBin } else { "$ComparableBin;$UserPath" }
-  [Environment]::SetEnvironmentVariable('Path', $Updated, 'User')
-  if ($env:Path -notlike "*$ComparableBin*") { $env:Path = "$ComparableBin;$env:Path" }
-  Write-Host "[OK] Added to the Windows user Path: $ComparableBin"
+if ($env:RUNX_INSTALL_TEST_MODE -eq '1' -or $env:RUNX_SKIP_PATH_UPDATE -eq '1') {
+  Write-Host "[OK] Windows user Path update skipped: $ComparableBin"
 } else {
-  Write-Host "[OK] Already in the Windows user Path: $ComparableBin"
+  $UserPath = [Environment]::GetEnvironmentVariable('Path', 'User')
+  $AlreadyInPath = $false
+  foreach ($Entry in ($UserPath -split ';')) {
+    if ($Entry -and (Get-ComparablePath $Entry) -ieq $ComparableBin) { $AlreadyInPath = $true; break }
+  }
+  if (-not $AlreadyInPath) {
+    $Updated = if ([string]::IsNullOrWhiteSpace($UserPath)) { $ComparableBin } else { "$ComparableBin;$UserPath" }
+    [Environment]::SetEnvironmentVariable('Path', $Updated, 'User')
+    if ($env:Path -notlike "*$ComparableBin*") { $env:Path = "$ComparableBin;$env:Path" }
+    Write-Host "[OK] Added to the Windows user Path: $ComparableBin"
+  } else {
+    Write-Host "[OK] Already in the Windows user Path: $ComparableBin"
+  }
 }
 
 Remove-Item -Recurse -Force -ErrorAction SilentlyContinue -LiteralPath $Staging

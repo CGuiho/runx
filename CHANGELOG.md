@@ -15,6 +15,27 @@ owner: runx
 
 # Changelog
 
+## 0.14.6 - 2026-08-23
+
+### Fixed
+
+- Write the Windows `current.json` activation pointer as explicit BOM-free
+  UTF-8 so Windows PowerShell 5.1 installations activate the stable launcher
+  instead of failing on the leading `EF BB BF` bytes.
+- Accept legacy BOM-prefixed pointers at the launcher's file-decoding boundary
+  while retaining strict JSON fields and pointer validation.
+- Compute Windows installer SHA-256 digests through the .NET cryptography API
+  without depending on PowerShell module auto-loading for `Get-FileHash`.
+- Correct protocol-v1 release lookup so `runx-windows-amd64` maps to
+  `runx-payload-windows-amd64.exe` rather than the nonexistent
+  `runx-payload-runx-windows-amd64.exe`.
+- Publish checksummed payload and launcher compatibility aliases so installed
+  0.14.3–0.14.5 clients with the defective lookup can upgrade into the fixed
+  release.
+- Gate release publication on a real Windows PowerShell clean install,
+  injected activation rollback, and same-version reinstall using native
+  launcher and payload binaries.
+
 ## 0.14.5 - 2026-08-23
 
 ### Fixed

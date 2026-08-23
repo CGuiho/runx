@@ -13,6 +13,7 @@ children:
   - runx-docs
   - runx-schemas
   - runx-examples
+  - runx-github
 files:
   .gitignore: Ignores local dependencies, caches, and generated build outputs.
   bun.lock: Preserved lockfile for the legacy TypeScript reference implementation.
@@ -22,7 +23,6 @@ files:
   mirror.yaml: Mirror semantic version configuration using Git tags as the version source.
   package.json: npm native-bootstrap metadata and Go-backed contributor command aliases; it contains no RunX domain implementation.
   tsconfig.json: Preserved compiler configuration for the legacy TypeScript reference implementation.
-  xdocs.config.toml: Legacy XDocs metadata configuration retained until tooling parity with xdocs.yaml is verified.
   xdocs.yaml: XDocs metadata configuration with automatic documentation-update mode and owned-tree scan exclusions.
   runx.yaml: RunX command catalog for this repository's supported development and validation commands.
 documents:
