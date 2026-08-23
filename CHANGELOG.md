@@ -15,6 +15,15 @@ owner: runx
 
 # Changelog
 
+## 0.14.3 - 2026-08-22
+
+### Changed
+
+- Transition version: still published as `@guiho/runx/v0.14.3` but the updater,
+  version normalizer, and installers now understand both `@guiho/runx/v*`
+  and `runx/v*` tags. This allows `0.14.3` to upgrade to the upcoming
+  `runx/v0.14.4` format while remaining installable via the legacy tag.
+
 ## 0.14.2 - 2026-08-22
 
 ### Fixed

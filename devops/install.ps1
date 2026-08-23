@@ -24,7 +24,7 @@ $PayloadAsset = "runx-payload-$Platform"
 $LauncherAsset = "runx-launcher-$Platform"
 
 function Normalize-Version([string]$Value) {
-  return ($Value -replace '^@guiho/runx/v', '' -replace '^@guiho/runx@', '' -replace '^v', '')
+  return ($Value -replace '^@guiho/runx/v', '' -replace '^@guiho/runx@', '' -replace '^runx/v', '' -replace '^runx@', '' -replace '^v', '')
 }
 
 function Test-SemVer([string]$Value) {
@@ -63,7 +63,11 @@ function Resolve-Selection {
 }
 
 $TargetVersion = Resolve-Selection
-$EncodedTag = [Uri]::EscapeDataString("@guiho/runx/v$TargetVersion")
+# Transition: prefer new tag runx/v* if it exists, fallback to legacy @guiho/runx/v*.
+$EncodedTagNew = [Uri]::EscapeDataString("runx/v$TargetVersion")
+$EncodedTagOld = [Uri]::EscapeDataString("@guiho/runx/v$TargetVersion")
+$ProbeNew = "https://github.com/$Repo/releases/download/$EncodedTagNew/checksums.txt"
+try { Invoke-WebRequest -Uri $ProbeNew -Method Head -UseBasicParsing -TimeoutSec 10 | Out-Null; $EncodedTag = $EncodedTagNew } catch { $EncodedTag = $EncodedTagOld }
 $AssetBase = "https://github.com/$Repo/releases/download/$EncodedTag"
 
 $GuihoRoot = Join-Path $HOME '.guiho'

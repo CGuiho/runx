@@ -53,7 +53,7 @@ case "$OS_NAME/$MACHINE" in
   *) fail "unsupported platform: $OS_NAME/$MACHINE" ;;
 esac
 
-normalize_version(){ printf '%s\n' "${1#@guiho/runx/v}" | sed -e 's/^@guiho\/runx@//' -e 's/^v//'; }
+normalize_version(){ printf '%s\n' "${1#@guiho/runx/v}" | sed -e 's/^@guiho\/runx@//' -e 's/^runx\/v//' -e 's/^runx@//' -e 's/^v//'; }
 is_semver(){ printf '%s\n' "$1" | grep -Eq '^(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)(-[0-9A-Za-z.-]+)?(\+[0-9A-Za-z.-]+)?$'; }
 
 channel_of(){
@@ -114,7 +114,15 @@ resolve_selection(){
 }
 
 resolve_selection
-TAG_ENCODED="%40guiho%2Frunx%2Fv$VERSION"
+# Transition: try new tag runx/v* first, fallback to legacy @guiho/runx/v* for pre-0.14.4 releases.
+TAG_ENCODED_NEW="runx%2Fv$VERSION"
+TAG_ENCODED_OLD="%40guiho%2Frunx%2Fv$VERSION"
+# Probe which tag exists: prefer new format if it exists for this version.
+if curl --fail --silent --head --location --max-time 10 "$DOWNLOAD_BASE/$TAG_ENCODED_NEW/checksums.txt" >/dev/null 2>&1; then
+  TAG_ENCODED="$TAG_ENCODED_NEW"
+else
+  TAG_ENCODED="$TAG_ENCODED_OLD"
+fi
 ASSET_BASE="$DOWNLOAD_BASE/$TAG_ENCODED"
 PAYLOAD_ASSET="runx-payload-$PLATFORM"
 LAUNCHER_ASSET="runx-launcher-$PLATFORM"

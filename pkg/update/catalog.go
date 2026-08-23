@@ -106,6 +106,8 @@ func ResolveBuildTarget(buildTarget, goos, goarch string) (ReleasePlatform, erro
 func NormalizeReleaseVersion(tag string) string {
 	v := strings.TrimPrefix(tag, "@guiho/runx/v")
 	v = strings.TrimPrefix(v, "@guiho/runx@")
+	v = strings.TrimPrefix(v, "runx/v")
+	v = strings.TrimPrefix(v, "runx@")
 	v = strings.TrimPrefix(v, "v")
 	return v
 }

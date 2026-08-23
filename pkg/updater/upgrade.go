@@ -116,6 +116,8 @@ func UpgradeSelf(opts UpgradeOptions) (*UpgradeEnvelope, error) {
 	var targetEntry *update.ReleaseCatalogEntry
 	reqVer := strings.TrimPrefix(opts.RequestedVersion, "@guiho/runx/v")
 	reqVer = strings.TrimPrefix(reqVer, "@guiho/runx@")
+	reqVer = strings.TrimPrefix(reqVer, "runx/v")
+	reqVer = strings.TrimPrefix(reqVer, "runx@")
 	reqVer = strings.TrimPrefix(reqVer, "v")
 
 	if reqVer != "" {
