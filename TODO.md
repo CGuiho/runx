@@ -26,7 +26,7 @@ owner: runx
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 0 |
+| in progress | 1 |
 | testing | 3 |
 | stopped | 0 |
 | completed | 22 |
@@ -358,4 +358,14 @@ owner: runx
 - Validation: [docs/validation/windows-installer-pointer-encoding.md](docs/validation/windows-installer-pointer-encoding.md)
 - Pull requests: [#59](https://github.com/CGuiho/runx/pull/59), [#60](https://github.com/CGuiho/runx/pull/60), [#61](https://github.com/CGuiho/runx/pull/61)
 - Release: [runx/v0.14.8](https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.8), workflow [32636794191](https://github.com/CGuiho/runx/actions/runs/32636794191).
+- Parent: GUIHO CLI Convention 0001 compliance task 23.
+
+### 25. Guarantee Windows Installer Staging Cleanup
+
+- Status: in progress
+- Priority: highest
+- Created: `2026-08-23T13:42:00+02:00`
+- Updated: `2026-08-23T13:42:00+02:00`
+- Outcome: Every Windows installer outcome removes only its unique RunX staging directory, including download, verification, activation, and injected failure paths.
+- Spec: [docs/todo/windows-installer-staging-cleanup.md](docs/todo/windows-installer-staging-cleanup.md)
 - Parent: GUIHO CLI Convention 0001 compliance task 23.
