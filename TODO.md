@@ -27,9 +27,9 @@ owner: runx
 | --- | ---: |
 | todo | 0 |
 | in progress | 0 |
-| testing | 4 |
+| testing | 3 |
 | stopped | 0 |
-| completed | 22 |
+| completed | 23 |
 
 ## Tasks
 
@@ -362,10 +362,12 @@ owner: runx
 
 ### 25. Guarantee Windows Installer Staging Cleanup
 
-- Status: testing
+- Status: completed
 - Priority: highest
 - Created: `2026-08-23T13:42:00+02:00`
-- Updated: `2026-08-23T13:47:00+02:00`
-- Outcome: Every Windows installer outcome removes only its unique RunX staging directory, including download, verification, activation, and injected failure paths.
-- Spec: [docs/todo/windows-installer-staging-cleanup.md](docs/todo/windows-installer-staging-cleanup.md)
+- Updated: `2026-08-23T13:56:00+02:00`
+- Outcome: Every Windows installer outcome removes only its unique RunX staging directory; public failure, recovery install, real upgrade, and zero-leftover checks passed.
+- Spec: [docs/todo/done/windows-installer-staging-cleanup.md](docs/todo/done/windows-installer-staging-cleanup.md)
+- Pull request: [#62](https://github.com/CGuiho/runx/pull/62)
+- Release: [runx/v0.14.9](https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.9), workflow [32637716640](https://github.com/CGuiho/runx/actions/runs/32637716640).
 - Parent: GUIHO CLI Convention 0001 compliance task 23.
