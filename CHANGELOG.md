@@ -15,6 +15,18 @@ owner: runx
 
 # Changelog
 
+## 0.14.7 - 2026-08-23
+
+### Fixed
+
+- Verify every downloaded whole-release artifact against `checksums.txt`
+  without incorrectly requiring the checksum manifest to hash itself.
+- Extend the native Windows release gate through a complete whole-release
+  upgrade using the standard non-self-hashing checksum manifest.
+- Protocol-v1 installations running 0.14.3–0.14.6 must use the canonical
+  installer once because their already-installed verifier rejects every valid
+  checksum manifest; 0.14.7 and later can use `runx upgrade` normally.
+
 ## 0.14.6 - 2026-08-23
 
 ### Fixed
