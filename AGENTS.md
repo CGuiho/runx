@@ -107,6 +107,19 @@ skill, native installers, and package-local documentation.
 - Compile release asset matrix: `go run devops/build-binaries.go --version <version> --commit <commit> --build-date <RFC3339>`
 - Verify release assets: `go run devops/verify-release-assets.go`
 
+## GUIHO Essentials
+
+This project uses Essentials to handle its foundational work.
+Essentials is a swarm of essential, reusable agent skills you can use in every
+project you work on. To work with Essentials, read the agent skill
+`guiho-s-essentials`. It catalogs every Essentials skill, what it helps you do,
+and when to use it.
+
+## GUIHO Mandume
+
+This project uses Mandume to handle its SWE work.
+Mandume is a swarm to work in software engineering. It is a collection of agent skills and procedures for software engineering. To work with Mandume, read the agent skill `guiho-s-mandume` and the repository file `MANDUME.md`. `MANDUME.md` is written when Mandume is set up on a project and when the changes in the configuration are needed, it defines how Mandume works for that project.
+
 ## Semantic Project Versioning -- GUIHO Mirror
 
 Use the `guiho-s-mirror` skill whenever versioning, tags, changelogs, or release
