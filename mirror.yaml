@@ -1,7 +1,7 @@
 # yaml-language-server: $schema=https://raw.githubusercontent.com/CGuiho/mirror/main/mirror/schema/mirror.schema.json
 schema: 1
 project:
-  name: "@guiho/runx"
+  name: "runx"
 version:
   scheme: semver
   source: "git"
