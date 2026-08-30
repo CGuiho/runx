@@ -16,28 +16,6 @@ owner: runx
 
 # RunX Agent
 
-## Agent
-
-Always read this: /c/GUIHO/superiority/agents/guiho-a-0001-swe.AGENTS.md (C:\GUIHO\superiority\agents\guiho-a-0001-swe.AGENTS.md)
-Stop if you can not find it.
-
-## Required CLI Engineering
-
-- Use `guiho-a-0001-swe` as the coordinating GUIHO Software Engineer/SWE agent
-  for CLI architecture, planning, execution, review, validation, and release
-  work.
-- Load and follow the `guiho-s-0035-cli-engineer-go` agent skill whenever creating,
-  upgrading, refactoring, reviewing, testing, packaging, installing, or
-  releasing the RunX CLI.
-- `guiho-s-0035-cli-engineer-go` is a skill, not an agent. It supplements the SWE
-  agent and does not replace the lifecycle controller required by that agent.
-- During Go CLI work, also load the XDocs and Mirror skills at the boundaries
-  defined by the Go CLI engineering skill and the approved migration RFC.
-- The approved RFC 0034 migration may make breaking changes. RunX is pre-1.0;
-  do not preserve legacy aliases, configuration discovery, command shapes, or
-  release names when they conflict with the approved migration plan.
-
-
 ## Repository Notes
 
 - RunX is the open-source Go/Cobra CLI for a documented,
@@ -106,6 +84,18 @@ skill, native installers, and package-local documentation.
 - Build: `go build ./...`
 - Compile release asset matrix: `go run devops/build-binaries.go --version <version> --commit <commit> --build-date <RFC3339>`
 - Verify release assets: `go run devops/verify-release-assets.go`
+
+## GUIHO Conventions
+
+User conventions are stored under `conventions/` in repository `CGuiho/guiho`.
+
+* **Local:** `C:/GUIHO/guiho/conventions` — read directly, e.g. `cat /c/GUIHO/guiho/conventions/<file>.md`
+* **Remote:** if `C:/GUIHO/guiho` is not present locally, the repository is remote at `github.com/CGuiho/guiho` — read via GitHub CLI, e.g. `gh api repos/CGuiho/guiho/contents/conventions --jq ".[].name"` or `gh api repos/CGuiho/guiho/contents/conventions/<file>.md --jq .content | base64 -d`
+
+Check local first, then remote via `gh` if missing.
+
+## GUIHO Conventions for This Project
+
 
 ## GUIHO Essentials
 
