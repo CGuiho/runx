@@ -33,6 +33,7 @@ type Command struct {
 	Shell       string    `yaml:"shell,omitempty" json:"shell,omitempty"`
 	Tags        []string  `yaml:"tags,omitempty" json:"tags,omitempty"`
 	Confirm     string    `yaml:"confirm,omitempty" json:"confirm,omitempty"`
+	UserOnly    *bool     `yaml:"userOnly,omitempty" json:"userOnly,omitempty"`
 	Commands    []Command `yaml:"commands,omitempty" json:"commands,omitempty"`
 	RunX        string    `yaml:"runx,omitempty" json:"runx,omitempty"`
 }
@@ -56,6 +57,7 @@ type ResolvedCommand struct {
 	Shell         string        `json:"shell"`
 	Tags          []string      `json:"tags"`
 	Confirm       string        `json:"confirm"`
+	UserOnly      bool          `json:"userOnly"`
 	CatalogPath   string        `json:"catalogPath"`
 	CatalogSource CatalogSource `json:"catalogSource"`
 }

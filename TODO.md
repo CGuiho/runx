@@ -374,10 +374,10 @@ owner: runx
 
 ### 26. RX Short Alias and User-Only Commands
 
-- Status: todo
+- Status: in progress
 - Priority: highest
 - Created: `2026-08-30T16:15:00Z`
-- Updated: `2026-08-30T16:15:00Z`
+- Updated: `2026-08-30T16:40:00Z`
 - Outcome: `rx` lists on bare invocation and delegates `rx <selector>` to `runx run` with version/help parity; per-command `userOnly` guard refuses agent execution without spawn while `runx reveal` remains allowed; both binaries install/upgrade/uninstall transactionally as one minor release.
 - Spec: [docs/todo/2026-08-30-rx-and-user-only-commands.md](docs/todo/2026-08-30-rx-and-user-only-commands.md)
 - Brainstorm: [docs/brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md](docs/brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md)
