@@ -96,6 +96,19 @@ Check local first, then remote via `gh` if missing.
 
 ## GUIHO Conventions for This Project
 
+> **MANDATORY — READ BEFORE ANY WORK:** Every agent working on this project **MUST** read `guiho-convention-0001-cli.md` **before doing anything else** — planning, brainstorming, architecture, implementation, review, validation, or release.
+>
+> * **Local:** `C:/GUIHO/guiho/conventions/guiho-convention-0001-cli.md` — `cat /c/GUIHO/guiho/conventions/guiho-convention-0001-cli.md`
+> * **Remote fallback (if `C:/GUIHO/guiho` missing):** `gh api repos/CGuiho/guiho/contents/conventions/guiho-convention-0001-cli.md --jq .content | base64 -d`
+> * **Why this one:** RunX is the GUIHO Go/Cobra CLI (`main.go` + `cmd/` + `pkg/`). `guiho-convention-0001-cli.md` (GUIHO CLI Convention) is the sole authority for technology stack (Go + Cobra), mandatory tooling (`mirror.yaml` / `runx.yaml` / `xdocs.yaml`), flags, help tree, installation lifecycle (`devops/install.sh` / `install.ps1`), stable launcher + versioned payloads, CLI home (`~/.guiho/runx`), configuration, agent artifacts, startup update check, and release channel contracts. No CLI work in this repository is valid without it.
+>
+> **Do not proceed with any task until you have read and understood this convention.**
+
+| Priority | Convention | Path | Applies To |
+|---|---|---|---|
+| **1 — MANDATORY** | GUIHO CLI Convention | `guiho-convention-0001-cli.md` | Every change in this repository |
+| 2 — Reference | GUIHO SWE Convention | `guiho-convention-0000-swe.md` | Lifecycle/phase work when relevant |
+| 2 — Reference | GUIHO Agent Artifacts Convention | `guiho-convention-0002-agent-artifacts.md` | Skills/prompts/instructions (`guiho-s-*`, `guiho-p-*`, `guiho-i-*`) |
 
 ## GUIHO Essentials
 

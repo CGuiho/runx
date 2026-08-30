@@ -25,7 +25,7 @@ owner: runx
 
 | Status | Count |
 | --- | ---: |
-| todo | 0 |
+| todo | 1 |
 | in progress | 0 |
 | testing | 3 |
 | stopped | 0 |
@@ -371,3 +371,17 @@ owner: runx
 - Pull request: [#62](https://github.com/CGuiho/runx/pull/62)
 - Release: [runx/v0.14.9](https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.14.9), workflow [32637716640](https://github.com/CGuiho/runx/actions/runs/32637716640).
 - Parent: GUIHO CLI Convention 0001 compliance task 23.
+
+### 26. RX Short Alias and User-Only Commands
+
+- Status: todo
+- Priority: highest
+- Created: `2026-08-30T16:15:00Z`
+- Updated: `2026-08-30T16:15:00Z`
+- Outcome: `rx` lists on bare invocation and delegates `rx <selector>` to `runx run` with version/help parity; per-command `userOnly` guard refuses agent execution without spawn while `runx reveal` remains allowed; both binaries install/upgrade/uninstall transactionally as one minor release.
+- Spec: [docs/todo/2026-08-30-rx-and-user-only-commands.md](docs/todo/2026-08-30-rx-and-user-only-commands.md)
+- Brainstorm: [docs/brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md](docs/brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md)
+- Requirements: [docs/requirements/2026-08-30-rx-and-user-only-commands.md](docs/requirements/2026-08-30-rx-and-user-only-commands.md)
+- Architecture: [docs/architecture/2026-08-30-rx-and-user-only-commands.md](docs/architecture/2026-08-30-rx-and-user-only-commands.md)
+- Plan: [docs/plans/2026-08-30-rx-and-user-only-commands.md](docs/plans/2026-08-30-rx-and-user-only-commands.md)
+- Validation: `gofmt`, `go vet`, `go test -count=1 ./...`, `go build`, `build-binaries`, `verify-release-assets`, strict XDocs, `mirror config check` + `mirror version plan minor`
