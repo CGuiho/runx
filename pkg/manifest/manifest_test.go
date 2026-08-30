@@ -282,3 +282,76 @@ commands:
 		})
 	}
 }
+
+func TestUserOnlyField(t *testing.T) {
+	manifestContent := `version: "2.0.0"
+namespace: "test-app"
+scripts:
+  directory: "scripts"
+commands:
+  - uid: "normal-cmd"
+    id: "normal"
+    summary: "Normal command."
+    description: "A normal command."
+    command: "echo normal"
+  - uid: "guarded-cmd"
+    id: "guarded"
+    summary: "Guarded command."
+    description: "A guarded command."
+    command: "echo secret"
+    userOnly: true
+  - uid: "explicit-false-cmd"
+    id: "explicit-false"
+    summary: "Explicit false command."
+    description: "Explicit false userOnly."
+    command: "echo false"
+    userOnly: false
+`
+	m, err := manifest.ParseManifestBytes([]byte(manifestContent))
+	require.NoError(t, err)
+	require.Len(t, m.Commands, 3)
+	assert.Nil(t, m.Commands[0].UserOnly)
+	require.NotNil(t, m.Commands[1].UserOnly)
+	assert.True(t, *m.Commands[1].UserOnly)
+	require.NotNil(t, m.Commands[2].UserOnly)
+	assert.False(t, *m.Commands[2].UserOnly)
+
+	index, err := manifest.IndexManifest(m, "runx.yaml")
+	require.NoError(t, err)
+	assert.False(t, index["normal"].UserOnly)
+	assert.True(t, index["guarded"].UserOnly)
+	assert.False(t, index["explicit-false"].UserOnly)
+
+	dir := t.TempDir()
+	require.NoError(t, os.WriteFile(filepath.Join(dir, "runx.yaml"), []byte(manifestContent), 0o644))
+	catalog, err := manifest.Load(context.Background(), manifest.LoadOptions{CWD: dir})
+	require.NoError(t, err)
+	resNormal, ok := catalog.Resolve("normal")
+	require.True(t, ok)
+	assert.False(t, resNormal.UserOnly)
+	resGuarded, ok := catalog.Resolve("guarded")
+	require.True(t, ok)
+	assert.True(t, resGuarded.UserOnly)
+	resExplicitFalse, ok := catalog.Resolve("explicit-false")
+	require.True(t, ok)
+	assert.False(t, resExplicitFalse.UserOnly)
+
+	groupUserOnlyManifest := `version: "2.0.0"
+namespace: "test-app"
+scripts:
+  directory: "scripts"
+commands:
+  - group: "tools"
+    summary: "Tools group."
+    userOnly: true
+    commands:
+      - uid: "sub-cmd"
+        id: "sub"
+        summary: "Sub command."
+        description: "A sub command."
+        command: "echo sub"
+`
+	_, err = manifest.ParseManifestBytes([]byte(groupUserOnlyManifest))
+	require.Error(t, err)
+	assert.Contains(t, err.Error(), `group "tools" cannot declare userOnly`)
+}

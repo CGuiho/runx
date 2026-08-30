@@ -1,7 +1,7 @@
 ---
 name: RX and User-Only Commands Requirements
-purpose: Define the product scope and acceptance criteria for the rx short alias and the user-only command guard
-description: Specifies the rx bare-list / run delegation, version/help parity, dual-binary lifecycle, and the per-command human-only restriction with agent refusal
+purpose: Define the product scope and acceptance criteria for the rx short alias and the informational user-only flag
+description: Specifies the rx bare-list / run delegation, version/help parity, dual-binary lifecycle, and the per-command informational userOnly flag taught via the agent skill
 created: "2026-08-30T15:30:00Z"
 flags:
   - approved
@@ -15,7 +15,7 @@ keywords:
   - runx list
   - runx run
   - user-only
-  - allowAgent
+  - userOnly
   - installer
 owner: runx-requirements
 ---
@@ -30,7 +30,7 @@ RunX is the GUIHO Go/Cobra CLI for a `runx.yaml` command catalog. Two complement
 
 1. **`rx` — a short, ergonomic alias for RunX.** Bare `rx` lists the catalog (`runx list`). `rx <selector> ...` runs a catalog command (`runx run <selector> ...`). `-v/--version` and `-h/--help` behave identically to RunX. Installation, upgrade, and uninstall manage both binaries transactionally.
 
-2. **User-only commands — a per-command guard that marks certain catalog entries as human-only.** When an agent attempts to run a guarded command, RunX refuses with a friendly, agent-readable message explaining that the command must be run by the user.
+2. **User-only commands — an informational per-command flag `userOnly` that marks certain catalog entries as user-only.** There is no CLI enforcement: if an agent runs a `userOnly` command it still runs. The agent skill teaches agents to recognize the flag, tell the user “Hey, this is user-only, only a user should run this,” and only execute if the user insists after that warning. `reveal` remains the human copy-paste hatch.
 
 Both ship together as one minor release. No new database, cloud resource, or paid service is involved.
 
@@ -43,14 +43,14 @@ Both ship together as one minor release. No new database, cloud resource, or pai
 ## Target Users
 
 - **Primary:** Developers and operators who use RunX daily and want the shortest possible invocation (`rx`).
-- **Secondary:** Teams where a `runx.yaml` contains sensitive, destructive, or credentialed commands (deploy, production migration, secret rotation) that must never be auto-executed by an AI agent.
-- **Agent consumer:** AI agents using the bundled `guiho-s-runx` skill. Agents must be able to discover the guard and respect it without extra configuration.
+- **Secondary:** Teams where a `runx.yaml` contains sensitive, destructive, or credentialed commands (deploy, production migration, secret rotation) that should be marked as user-only so agents warn before running them.
+- **Agent consumer:** AI agents using the bundled `guiho-s-runx` skill. Agents discover `userOnly` via `runx list/describe --format json` and the skill guidance.
 
 ## Roles and Permissions
 
 - No new authentication or session model. File-system access to `runx.yaml` governs who can declare a user-only command.
-- Catalog author (human) decides which commands are user-only.
-- Agent is the restricted actor. The guard is advisory-enforced by the CLI: any invocation hitting a guarded command receives the refusal, regardless of caller. The skill teaches agents to treat the message as a hard stop, while a human can still run the command directly in their shell after seeing the printed command (e.g., via `runx reveal`).
+- Catalog author (human) decides which commands are user-only by setting `userOnly: true`.
+- Agent is the advisory consumer: the flag is informational. The CLI does not block execution. The skill teaches: see `userOnly: true` → tell the user it is user-only and you should not normally execute it; if the user explicitly insists after the warning, you may execute.
 
 ## MVP Scope
 
@@ -63,19 +63,18 @@ Both ship together as one minor release. No new database, cloud resource, or pai
 - `rx` delegates by invoking the active RunX payload under the hood; it does not duplicate Cobra parsing, manifest loading, or execution logic.
 - Installers (`install.sh`, `install.ps1`), upgrader, launcher activation, pointer (`~/.guiho/runx/current.json`), resource layout, `checksums.txt`, `artifacts.json`, and uninstaller handle both binaries atomically with rollback.
 
-### In Scope — User-Only Guard
+### In Scope — User-Only Flag (Informational)
 
-- Per-command manifest field that marks a command as user-only (field name `userOnly` proposed; architecture will lock the final name).
-- Default is `false` / unset → backwards compatible: existing catalogs without the field are agent-runnable as before.
-- When a guarded command is selected for `runx run` (and therefore `rx` delegation), the CLI does **not** spawn the configured command. It prints a friendly agent-readable refusal to stderr and exits with a deterministic non-zero code (proposed `2` — usage/validation error — to be locked in architecture).
-- Refusal message must contain the user-requested guidance: that the command is marked as user-only and must be run by the user, and that the agent should not run it. Exact wording to be finalized but must be stable and documented.
-- Guard applies to direct UIDs, canonical selectors, shorthand IDs, and numeric indexes — every resolution path that `runx run` supports.
-- `runx reveal <selector>` remains allowed for guarded commands so a human can copy the command text without executing it. `runx list` and `runx describe` surface the guard without executing.
+- Per-command manifest field `userOnly?: boolean` on leaf commands. Optional, default `false` / omitted → backwards compatible.
+- Strict YAML validation: leaf-only, groups cannot declare `userOnly`; type must be boolean; unknown fields remain rejected.
+- Propagated to `ResolvedCommand.userOnly` and visible via `runx list --format json`, `runx describe`, `runx check` without execution.
+- `runx reveal <selector>` remains allowed for `userOnly` commands (human copy-paste).
+- Agent skill documents `userOnly` with example, discovery via JSON, and the warning script (“Hey, this is user-only, only a user should run this. If you insist I can run it.”). No CLI exit-code change.
 
 ### Dependencies
 
 - RX depends on the existing RunX payload and `runx list` / `runx run` contracts.
-- User-only guard depends on strict manifest parsing and the existing selector resolution order.
+- `userOnly` flag depends on strict manifest parsing and the existing selector resolution order.
 
 ## User Workflows
 
@@ -90,17 +89,17 @@ Both ship together as one minor release. No new database, cloud resource, or pai
 1. User types `rx 2` or `rx deploy -- --dry-run`.
 2. CLI resolves selector `2` / `deploy` and runs the stored command exactly as `runx run 2` would, forwarding child args losslessly and preserving exit code.
 
-### Workflow 3 — Author Marks a Command Human-Only
+### Workflow 3 — Author Marks a Command User-Only
 
-1. Author edits `runx.yaml` and sets the guard field on a sensitive command (e.g., `deploy-prod`).
-2. `runx check` passes; `runx list` shows the command but does not run it.
-3. Agent later attempts `runx run deploy-prod` or `rx deploy-prod`.
+1. Author edits `runx.yaml` and sets `userOnly: true` on a sensitive command (e.g., `deploy-prod`).
+2. `runx check` passes; `runx list --format json` shows `"userOnly": true`.
+3. Agent later discovers the flag via `list/describe` or the skill before attempting `runx run deploy-prod` or `rx deploy-prod`.
 
-### Workflow 4 — Agent Hits the Guard
+### Workflow 4 — Agent Sees the Flag (Informational)
 
-1. Agent runs `runx run deploy-prod` (or `rx deploy-prod`).
-2. CLI refuses without spawning, prints the user-only message to stderr.
-3. Agent reports the refusal to the user and stops; user runs the command manually if desired (or copies via `runx reveal deploy-prod`).
+1. Agent resolves `deploy-prod` and sees `userOnly: true` (or reads the skill).
+2. Agent tells the user: “Hey, this is user-only, only a user should run this.” It does not execute unless the user explicitly insists.
+3. If the user insists, the agent may execute; otherwise the user runs it manually or copies via `runx reveal deploy-prod`.
 
 ### Workflow 5 — Install / Upgrade / Uninstall
 
@@ -120,14 +119,14 @@ Both ship together as one minor release. No new database, cloud resource, or pai
 - **RX-F6:** RX does not introduce new top-level Cobra commands beyond delegation; it reuses the RunX payload so help/version output never drifts.
 - **RX-F7:** Unknown flags or selectors produce the same exit code and error style as RunX (exit 2 for usage/unknown-flag, 1 for runtime failure).
 
-### User-Only — Functional
+### User-Only — Functional (Informational)
 
-- **UO-F1:** A catalog leaf may declare `userOnly: true` (or final field name) via strict YAML.
-- **UO-F2:** When a guarded command is resolved for execution, the CLI refuses without spawning, prints the agent-readable refusal, and exits non-zero.
-- **UO-F3:** The refusal message states that the command is marked as user-only / must be run by the user and that the agent should not run it.
-- **UO-F4:** The guard is visible without execution: `runx list` and `runx describe` / `runx check` surface that the command is user-only (format to be locked in architecture — e.g., JSON field, tag, or flag).
-- **UO-F5:** `runx reveal <selector>` for a guarded command prints the exact stored command (stdout) and does not refuse — it is the human copy-paste escape hatch.
-- **UO-F6:** Omitting the field or setting `userOnly: false` preserves current behavior (runnable by anyone).
+- **UO-F1:** A catalog leaf may declare `userOnly: true` via strict YAML (boolean). Groups cannot declare it.
+- **UO-F2:** Omitting the field or setting `userOnly: false` preserves current behavior (no advisory).
+- **UO-F3:** The flag is visible without execution: `runx list --format json` includes `userOnly` in each `ResolvedCommand`; `runx describe` / `runx check` surface it; no execution is needed to discover it.
+- **UO-F4:** There is no CLI refusal or exit-code change. `runx run <guarded>` and `rx <guarded>` still execute the stored command (agent skill is the teaching layer).
+- **UO-F5:** `runx reveal <selector>` for a `userOnly` command prints the exact stored command (stdout) as the human copy-paste hatch.
+- **UO-F6:** The agent skill contains the informational warning script and the “if user insists, you may execute” policy.
 
 ### Lifecycle — Functional
 
@@ -140,45 +139,44 @@ Both ship together as one minor release. No new database, cloud resource, or pai
 
 - **NF-1 — Convention 0001 compliance:** Flags use full long form; only `-v/--version` and `-h/--help` have short aliases; help-tree, global-flags rules, CLI home, and stable launcher are preserved.
 - **NF-2 — No foreground network:** Bare invocations (`runx`, `rx`) perform no network fetch; update checks remain background, single-flight, leased.
-- **NF-3 — Determinism:** List, describe, check, reveal, run delegation, and refusal are deterministic given the same catalog and arguments.
-- **NF-4 — Safety:** Listing, describing, checking, and revealing never spawn a configured command; guarded runs never spawn.
+- **NF-3 — Determinism:** List, describe, check, reveal, and run delegation are deterministic given the same catalog and arguments.
+- **NF-4 — Safety:** Listing, describing, checking, and revealing never spawn a configured command. Informational `userOnly` does not change spawn behavior.
 - **NF-5 — Parity:** `runx list` vs `rx` bare, and `runx run` vs `rx <selector>`, are indistinguishable except for the invoked binary name.
 
 ## Data Owned By The Product
 
 - No new database or persistent state.
-- `runx.yaml` catalog is the source of truth; the new per-command guard field is part of that trusted executable code.
+- `runx.yaml` catalog is the source of truth; `userOnly` is part of that trusted executable code.
 - `~/.guiho/runx/current.json` pointer now logically governs two launchers but remains one pointer (active + previous).
 - `artifacts.json` and `checksums.txt` are the source of truth for ownership and integrity of both launchers/payloads.
 
 ## Integrations
 
 - **GitHub Releases:** Each release publishes both `runx` and `rx` launchers + payloads as native assets plus `checksums.txt`, `artifacts.json`, skill ZIP, prompts, instruction, and schemas.
-- **Agent skill (`guiho-s-runx`):** Updated to document `rx` ergonomics and the user-only guard, including how agents should handle the refusal.
+- **Agent skill (`guiho-s-runx`):** Updated to document `rx` ergonomics and the informational `userOnly` flag, including the warning script and the “if user insists” policy.
 - **No external APIs** beyond the existing release catalog fetch for upgrades.
 
 ## Non-Goals
 
 - No `rx` interactive TUI, shell completions v1, or command-specific help beyond delegation.
-- No per-group or per-namespace guard in v1 — only per-command leaf guard.
-- No OS-level user identity check — guard is catalog-declared, CLI-enforced.
-- No `--allow-agent` override in v1 (deferred; could be added backwards-compatibly if needed).
+- No per-group or per-namespace `userOnly` inheritance in v1 — only per-command leaf flag.
+- No OS-level user identity check — `userOnly` is catalog-declared, informational.
+- No CLI enforcement / refusal for `userOnly` (intentionally informational; skill teaches, CLI still executes).
+- No `--allow-agent` override (not needed without enforcement).
 - No change to `runx run` shell adapter selection or path translation.
-- No change to manifest parent/child composition beyond the new guard field.
+- No change to manifest parent/child composition beyond the new flag.
 - No production deployment or DNS/traffic mutation.
 
-## Open Questions (Recorded, Not Blocking MVP)
+## Open Questions (Resolved for MVP)
 
-1. Exact manifest field name: `userOnly` vs `allowAgent` vs `humanOnly`. Prefer `userOnly: true` for readability — architecture will accept.
-2. Exact refusal exit code: `2` (usage/validation) vs `3` (policy). `2` keeps it in the usage-error family.
-3. Exact refusal wording — finalize to stable, testable string containing "user-only" and "must be run by the user" and "agent should not run it".
-4. Whether `runx list --format json` should include a `userOnly` boolean in each `ResolvedCommand` — strongly recommended for discoverability.
-5. Whether guarded `runx run --dry-run` should also refuse or should still render the dry-run plan (propose: dry-run also refuses, because even a plan implies intent to run).
+1. Manifest field name locked: `userOnly: true` (informational boolean).
+2. `runx list --format json` includes `userOnly` in each `ResolvedCommand` — implemented.
+3. No enforcement: `runx run --dry-run` on a `userOnly` command still renders the plan (because there is no guard).
 
 ## Architecture Inputs
 
 - **Must be strict typed YAML:** New field goes through `pkg/manifest/types.go` and the strict decoder; unknown fields remain rejected.
-- **Must update JSON schemas:** `schemas/runx.schema.json` and embedded schema copies must accept the new field.
+- **Not a config JSON schema change:** `schemas/runx.schema.json` / `runx.global.schema.json` are config schemas (agent.evolution) — no change needed for the manifest `userOnly` flag.
 - **Must be XDocs-aware:** New binary `cmd/rx` and manifest field require descriptor updates.
 - **Must be Mirror-aware:** New public capability = `minor` bump; installers + release matrix change belongs to the same release.
 - **Known risks:** Dual-binary drift (help/version divergence), installer rollback completeness for two launchers, manifest backward compatibility, and agent skill currency.

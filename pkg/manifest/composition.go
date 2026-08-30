@@ -271,10 +271,14 @@ func registerCommand(catalog loadedCatalog, entry Command, prefix []string, stat
 	if confirm == "" {
 		confirm = "never"
 	}
+	userOnly := false
+	if entry.UserOnly != nil {
+		userOnly = *entry.UserOnly
+	}
 	state.commands = append(state.commands, ResolvedCommand{
 		UID: entry.UID, ID: entry.ID, Selector: selector, Summary: entry.Summary, Description: entry.Description,
 		Command: entry.Command, CWD: cwd, Shell: shell, Tags: append([]string{}, entry.Tags...), Confirm: confirm,
-		CatalogPath: catalog.path, CatalogSource: catalog.source,
+		UserOnly: userOnly, CatalogPath: catalog.path, CatalogSource: catalog.source,
 	})
 	return nil
 }

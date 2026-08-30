@@ -107,6 +107,9 @@ func validateEntries(entries []Command, namespace string, topLevel bool) error {
 		if !identifierPattern.MatchString(entry.Group) || strings.TrimSpace(entry.Summary) == "" {
 			return fmt.Errorf("group %q requires an identifier-safe group and summary", entry.Group)
 		}
+		if entry.UserOnly != nil {
+			return fmt.Errorf("group %q cannot declare userOnly", entry.Group)
+		}
 		if seen[entry.Group] {
 			return fmt.Errorf("duplicate sibling command or group name %q", entry.Group)
 		}
