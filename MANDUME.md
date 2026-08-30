@@ -65,17 +65,21 @@ The orchestrator (this `pi` session) never spawns internal subagents. It delegat
 
 2. **Orchestrator delegates one unit at a time** — picks a worker by `Class` (`mastermind` for judgment, `workhorse` for labor) and `Usage` (`paid-api-rate` primary, `5h-limited`/`free` fallback to spend subscriptions). Writes a brief to `docs/plans/<plan>/execution/handoffs/<date>-<unit>-<worker>.md` with Goal, Context, Skills to load, Constraints, Output contract.
 
-3. **Call the worker synchronously with full permission:**
+3. **Call the worker synchronously with full permission but stream live by default so you stay responsive (unless the harness does not allow it):**
 
    ```bash
-   # pi mastermind/workhorse
-   pi --model <provider>/<model>:<thinking> --tools read,bash,edit,write,grep,find,ls -p --no-session "$(cat brief.md)"
-   # agy workhorse (Opus 4.6 / Gemini 3.7 Flash High)
-   agy --model claude-opus-4-6-thinking --dangerously-skip-permissions --print "$(cat brief.md)"
-   agy --model gemini-3.7-flash-high --effort high --dangerously-skip-permissions --print "$(cat brief.md)"
+   # pi mastermind/workhorse — stream to file so orchestrator can tail while waiting
+   pi --model <provider>/<model>:<thinking> --tools read,bash,edit,write,grep,find,ls -p --no-session "$(cat brief.md)" > "out-<worker>.log" 2>&1 &
+   tail -n 80 -f out-<worker>.log &  # live stream, does not block
+   wait  # still waits for exit, but you can answer "What are you doing?" from tail
+   # agy workhorse (Opus 4.6 / Gemini 3.7 Flash High) — same streaming pattern
+   agy --model claude-opus-4-6-thinking --dangerously-skip-permissions --print "$(cat brief.md)" > "out-<worker>.log" 2>&1 &
+   agy --model gemini-3.7-flash-high --effort high --dangerously-skip-permissions --print "$(cat brief.md)" > "out-<worker>.log" 2>&1 &
+   tail -n 80 -f out-<worker>.log &
+   wait
    ```
 
-   Waits for exit, captures stdout/stderr, checks `limit/quota/exhausted` in error → fallback to other worker in same class.
+   Never cut a worker with a short synchronous `timeout` (do not use `timeout: 600` to kill `xhigh` thinking). Stream to `out-<worker>.log` and `tail` by default when the harness allows it (all current harnesses — `pi`, `agy`, `codex`, `opencode`, `cline` — do), so you can answer `"What are you doing?"` / `"Why are you working?"` from `todo.md`/`docs/plans/`/`docs/questions/` *plus* live `tail` while workers run. If a harness truly does not support streaming, document it in the hand-off brief and fall back to synchronous wait. After `wait`, captures stdout/stderr log path, exit code and checks `limit/quota/exhausted` → fallback.
 
 4. **Verify before integrating** — orchestrator diffs files against acceptance criteria, runs `runx`/`xdocs` checks, commits via `guiho-s-0032-git-commit`. On failure, retries once with refined brief, then records to `docs/questions/<plan>/YYYY-MM-DD-<topic>.md` and `docs/issues/` and continues.
 
@@ -93,14 +97,17 @@ The orchestrator (this `pi` session) never spawns internal subagents. It delegat
 
 1. **Partition the plan into independent units** — `docs/plans/<plan>/plan.md` units that touch different files/dirs (frontend vs backend, independent features). The orchestrator groups them by `todo.md` and file ownership so workers never write the same file.
 
-2. **Dispatch a batch in parallel (always if possible)** — for each independent unit, write its brief (`docs/plans/<plan>/execution/handoffs/<date>-<unit>-<worker>.md`), then launch workers concurrently (up to **10**):
+2. **Dispatch a batch in parallel (always if possible) with live streaming by default** — for each independent unit, write its brief (`docs/plans/<plan>/execution/handoffs/<date>-<unit>-<worker>.md`), then launch workers concurrently (up to **10**) **streaming to per-worker logs by default** (unless the harness does not allow it):
 
    ```bash
-   # from orchestrator — launch N workers in background, each with full permission
+   # from orchestrator — launch N workers in background, each streaming to its own log
    agy --model claude-opus-4-6-thinking --dangerously-skip-permissions --print "$(cat brief-engineer-2.md)" > out-2.log 2>&1 &
    agy --model gemini-3.7-flash-high --effort high --dangerously-skip-permissions --print "$(cat brief-engineer-3.md)" > out-3.log 2>&1 &
    pi --model zai/glm-5.3-flash:max --tools read,bash,edit,write,grep,find,ls -p --no-session "$(cat brief-engineer.md)" > out-1.log 2>&1 &
-   wait  # orchestrator waits for all, stays responsive to your questions via `docs/` state
+   tail -n 80 -f out-2.log &  # stream live while waiting — proves you're not frozen
+   tail -n 80 -f out-3.log &
+   tail -n 80 -f out-1.log &
+   wait  # orchestrator waits for all, stays responsive to "What are you doing?" via docs state + tails
    ```
 
    Use `Usage` to spread load and respect limits (see below). Any harness the user registers in `MANDUME.md` works the same — `pi`, `agy`, `codex`, `opencode`, `cline`, etc. — the instructions are identical: **full permission** (`--tools read,bash,edit,write,grep,find,ls` for `pi`, `--dangerously-skip-permissions` for `agy`/others).
