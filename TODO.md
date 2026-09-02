@@ -1,5 +1,3 @@
-
-
 #### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Crist&oacute;v&atilde;o GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
 # GUIHO RunX TODO List
