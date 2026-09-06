@@ -15,6 +15,28 @@ owner: runx
 
 # Changelog
 
+## 0.16.0 - 2026-09-06
+
+### Added
+
+- Thin `rx` launcher (`cmd/rx`): bare `rx` lists the catalog
+  (`runx list`), `rx <selector> ...` runs a catalog command
+  (`runx run <selector> ...`), with identical `-v`/`--version`
+  and `-h`/`--help` behavior by delegating to the active RunX
+  payload resolved from `~/.guiho/runx/current.json`.
+- Informational per-command `userOnly` manifest flag (leaf-only,
+  default `false`): visible via `runx list --format json`,
+  `runx describe`, and `runx check`; the CLI still executes and
+  the agent skill teaches agents to warn before running.
+- RX planning record: brainstorm, requirements, architecture
+  (ADRs 001-005), plan, and RX-1/RX-3 execution handoffs under
+  `docs/`.
+
+### Changed
+
+- Mirror project name migrated to `runx` for the canonical
+  `runx/v*` tag format.
+
 ## 0.14.9 - 2026-08-23
 
 ### Fixed
