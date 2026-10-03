@@ -3,7 +3,7 @@ name: RunX Inspection Lifecycle Boundary
 purpose: Define the separately authorized runtime prerequisite tracked by RunX issue 64.
 description: Default non-mutating catalog inspection and dry-run scheduling contract, fixture evidence and build-review gate.
 created: 2026-10-03
-flags: [in-progress]
+flags: [testing]
 tags: [runx, runtime, readiness]
 keywords: [issue-64, scheduling, filesystem, dry-run]
 ---
@@ -15,7 +15,7 @@ keywords: [issue-64, scheduling, filesystem, dry-run]
 ## Todo Index
 
 - Index: [TODO.md](../../TODO.md), task 28.
-- Status: in progress
+- Status: testing
 - GitHub project item: [RunX #64](https://github.com/CGuiho/runx/issues/64)
 - Project: [GUIHO #2](https://github.com/users/CGuiho/projects/2)
 - GitHub component: `runx`
@@ -60,3 +60,8 @@ validation and mirror fresh Project/Component/Status readback. This unit does no
 certify the tool installation or any family. XDocs data validation remains
 skipped pending its independent runtime reconciliation; project YAML grants no
 automatic descriptor/frontmatter writes.
+
+Fresh GitHub readback at `2026-10-03T22:03:14Z` confirms issue #64 remains
+OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. Parent
+independent review, reviewed-range delivery and any installed-binary replacement
+remain pending.

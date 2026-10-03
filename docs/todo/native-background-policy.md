@@ -3,7 +3,7 @@ name: Deploy RunX Native Background Policy
 purpose: Define the owned policy rollout tracked by RunX issue 63.
 description: Current native transport, model authority, task binding and independent-review acceptance for RunX instructions.
 created: 2026-10-03
-flags: [in-progress]
+flags: [testing]
 tags: [mandume, native-background, readiness]
 keywords: [OpenCode, Convention 0011, runx, issue-63]
 ---
@@ -15,7 +15,7 @@ keywords: [OpenCode, Convention 0011, runx, issue-63]
 ## Todo Index
 
 - Index: [TODO.md](../../TODO.md), task 27.
-- Status: in progress
+- Status: testing
 - GitHub project item: [RunX #63](https://github.com/CGuiho/runx/issues/63)
 - Project: [GUIHO #2](https://github.com/users/CGuiho/projects/2)
 - GitHub component: `runx`
@@ -52,3 +52,7 @@ prerequisite. Keep this issue OPEN/Testing for independent and later human
 review. XDocs CLI validation is skipped while its runtime build boundary remains
 unverified; RunX's YAML grants no descriptor/frontmatter writes. No automatic
 resource/bootstrap commands are permitted for this policy unit.
+
+Fresh GitHub readback at `2026-10-03T22:03:14Z` confirms issue #63 remains
+OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. Parent
+independent review and reviewed-range delivery remain pending.

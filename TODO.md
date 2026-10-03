@@ -21,8 +21,8 @@
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 3 |
-| testing | 3 |
+| in progress | 1 |
+| testing | 5 |
 | stopped | 0 |
 | completed | 23 |
 
@@ -383,9 +383,9 @@
 
 ### 27. Deploy RunX Native Background Policy
 
-- Status: in progress
+- Status: testing
 - Created: `2026-10-03T21:29:41Z`
-- Updated: `2026-10-03`
+- Updated: `2026-10-03T22:03:14Z`
 - Outcome: Current RunX worker instructions use OpenCode-only capable native background agents, canonical models and verified task bindings.
 - Spec: [docs/todo/native-background-policy.md](docs/todo/native-background-policy.md)
 - GitHub project item: [RunX #63](https://github.com/CGuiho/runx/issues/63)
@@ -394,9 +394,9 @@
 
 ### 28. RunX Inspection Lifecycle Boundary
 
-- Status: in progress
+- Status: testing
 - Created: `2026-10-03T21:50:24Z`
-- Updated: `2026-10-03`
+- Updated: `2026-10-03T22:03:14Z`
 - Outcome: Catalog inspection and parsed dry runs preserve project/global resource files and schedule no worker or child command.
 - Spec: [docs/todo/inspection-lifecycle-boundary.md](docs/todo/inspection-lifecycle-boundary.md)
 - GitHub project item: [RunX #64](https://github.com/CGuiho/runx/issues/64)
