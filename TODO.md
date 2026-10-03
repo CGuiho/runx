@@ -1,18 +1,27 @@
-#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Crist&oacute;v&atilde;o GUIHO](https://guiho.co/cguiho) All Rights Reserved.
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
 # GUIHO RunX TODO List
 
+## GitHub Project
+
+- GitHub repository: `CGuiho/runx`
+- URL: [GUIHO #2](https://github.com/users/CGuiho/projects/2)
+- GitHub component: `runx`
+- GitHub is authoritative; this ledger mirrors confirmed remote task state.
+  Historical tasks below retain their existing status and links; their broader
+  reconciliation is separate readiness work.
+
 ## Parent TODO
 
-- Parent: [../guiho/TODO.md](../guiho/TODO.md)
+- Parent: [../guiho/todo.md](../guiho/todo.md)
 - Local context: Open-source command-catalog CLI, bundled agent skill, native installers, and package documentation.
 
 ## Status Summary
 
 | Status | Count |
 | --- | ---: |
-| todo | 1 |
-| in progress | 0 |
+| todo | 0 |
+| in progress | 2 |
 | testing | 3 |
 | stopped | 0 |
 | completed | 23 |
@@ -371,3 +380,14 @@
 - Architecture: [docs/architecture/2026-08-30-rx-and-user-only-commands.md](docs/architecture/2026-08-30-rx-and-user-only-commands.md)
 - Plan: [docs/plans/2026-08-30-rx-and-user-only-commands.md](docs/plans/2026-08-30-rx-and-user-only-commands.md)
 - Validation: `gofmt`, `go vet`, `go test -count=1 ./...`, `go build`, `build-binaries`, `verify-release-assets`, strict XDocs, `mirror config check` + `mirror version plan minor`
+
+### 27. Deploy RunX Native Background Policy
+
+- Status: in progress
+- Created: `2026-10-03T21:29:41Z`
+- Updated: `2026-10-03`
+- Outcome: Current RunX worker instructions use OpenCode-only capable native background agents, canonical models and verified task bindings.
+- Spec: [docs/todo/native-background-policy.md](docs/todo/native-background-policy.md)
+- GitHub project item: [RunX #63](https://github.com/CGuiho/runx/issues/63)
+- GitHub component: `runx`
+- Delivery: Owned commits on main; no push until parent independent review.
