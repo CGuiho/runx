@@ -385,22 +385,29 @@
 
 - Status: testing
 - Created: `2026-10-03T21:29:41Z`
-- Updated: `2026-10-03T22:03:14Z`
+- Updated: `2026-10-03T22:13:16Z`
 - Outcome: Current RunX worker instructions use OpenCode-only capable native background agents, canonical models and verified task bindings.
 - Spec: [docs/todo/native-background-policy.md](docs/todo/native-background-policy.md)
 - GitHub project item: [RunX #63](https://github.com/CGuiho/runx/issues/63)
 - GitHub component: `runx`
+- Related files:
+  - [docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) - Scoped technical self-review and acceptance mapping.
+  - [docs/validation/2026-10-04-readiness-runx-prerequisite.md](docs/validation/2026-10-04-readiness-runx-prerequisite.md) - Policy checks, binary/filesystem evidence and verified task identities.
+  - [docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md](docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) - Safe commands and pending independent-review delivery gate.
 - Delivery: Owned commits on main; no push until parent independent review.
 
 ### 28. RunX Inspection Lifecycle Boundary
 
 - Status: testing
 - Created: `2026-10-03T21:50:24Z`
-- Updated: `2026-10-03T22:03:14Z`
+- Updated: `2026-10-03T22:13:16Z`
 - Outcome: Catalog inspection and parsed dry runs preserve project/global resource files and schedule no worker or child command.
 - Spec: [docs/todo/inspection-lifecycle-boundary.md](docs/todo/inspection-lifecycle-boundary.md)
 - GitHub project item: [RunX #64](https://github.com/CGuiho/runx/issues/64)
 - GitHub component: `runx`
 - Related files:
   - [docs/questions/readiness-tool-prerequisite/2026-10-03-inspection-default.md](docs/questions/readiness-tool-prerequisite/2026-10-03-inspection-default.md) - Source-scheduling scope waiver and reversible decision.
+  - [docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) - Scoped technical self-review and acceptance mapping.
+  - [docs/validation/2026-10-04-readiness-runx-prerequisite.md](docs/validation/2026-10-04-readiness-runx-prerequisite.md) - Runtime regressions, process traces and task-binary provenance.
+  - [docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md](docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) - Exact safe inspection commands and delivery gates.
 - Delivery: Owned commits on main; global binary installation and push await parent independent review.

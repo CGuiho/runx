@@ -53,6 +53,12 @@ review. XDocs CLI validation is skipped while its runtime build boundary remains
 unverified; RunX's YAML grants no descriptor/frontmatter writes. No automatic
 resource/bootstrap commands are permitted for this policy unit.
 
-Fresh GitHub readback at `2026-10-03T22:03:14Z` confirms issue #63 remains
+Fresh GitHub readback at `2026-10-03T22:13:16Z` confirms issue #63 remains
 OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. Parent
 independent review and reviewed-range delivery remain pending.
+
+## Evidence and Handoff
+
+- [Technical self-review](../reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) — assigned acceptance mapping and findings.
+- [Validation record](../validation/2026-10-04-readiness-runx-prerequisite.md) — policy and separate runtime checks, exact build identity and readbacks.
+- [Independent-review handoff](../reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) — safe commands and no-push delivery gate.

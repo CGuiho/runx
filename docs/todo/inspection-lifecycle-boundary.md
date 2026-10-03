@@ -61,7 +61,13 @@ certify the tool installation or any family. XDocs data validation remains
 skipped pending its independent runtime reconciliation; project YAML grants no
 automatic descriptor/frontmatter writes.
 
-Fresh GitHub readback at `2026-10-03T22:03:14Z` confirms issue #64 remains
+Fresh GitHub readback at `2026-10-03T22:13:16Z` confirms issue #64 remains
 OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. Parent
 independent review, reviewed-range delivery and any installed-binary replacement
 remain pending.
+
+## Evidence and Handoff
+
+- [Technical self-review](../reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) — acceptance mapping and scoped findings.
+- [Validation record](../validation/2026-10-04-readiness-runx-prerequisite.md) — meaningful negative/positive regressions, payload filesystem/process evidence and provenance.
+- [Independent-review handoff](../reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) — exact safe commands, pending delivery and installed-build boundaries.
