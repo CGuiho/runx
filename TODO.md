@@ -21,7 +21,7 @@
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 2 |
+| in progress | 3 |
 | testing | 3 |
 | stopped | 0 |
 | completed | 23 |
@@ -391,3 +391,16 @@
 - GitHub project item: [RunX #63](https://github.com/CGuiho/runx/issues/63)
 - GitHub component: `runx`
 - Delivery: Owned commits on main; no push until parent independent review.
+
+### 28. RunX Inspection Lifecycle Boundary
+
+- Status: in progress
+- Created: `2026-10-03T21:50:24Z`
+- Updated: `2026-10-03`
+- Outcome: Catalog inspection and parsed dry runs preserve project/global resource files and schedule no worker or child command.
+- Spec: [docs/todo/inspection-lifecycle-boundary.md](docs/todo/inspection-lifecycle-boundary.md)
+- GitHub project item: [RunX #64](https://github.com/CGuiho/runx/issues/64)
+- GitHub component: `runx`
+- Related files:
+  - [docs/questions/readiness-tool-prerequisite/2026-10-03-inspection-default.md](docs/questions/readiness-tool-prerequisite/2026-10-03-inspection-default.md) - Source-scheduling scope waiver and reversible decision.
+- Delivery: Owned commits on main; global binary installation and push await parent independent review.
