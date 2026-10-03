@@ -44,8 +44,14 @@ owner: runx
 - Configuration resolves by `--config`, effective cwd `runx.yaml`, then
   `~/.guiho/runx/runx.yaml`; never search parent directories.
 - Treat manifests as trusted executable code. Listing, describing, checking,
-  and dry runs must never spawn a configured command.
-- Keep the bundled `skills/guiho-s-runx/SKILL.md` aligned with the CLI contract.
+  revealing, and parsed dry runs must never spawn a configured command or
+  lifecycle worker, refresh agent resources/instructions, or write config,
+  cache, or worker leases. These paths are safe by default without environment
+  opt-outs; referenced local/HTTPS catalogs may still be read. Only a true
+  `run --dry-run` flag before the selector selects this boundary;
+  `--dry-run=false` and child flags retain real execution and lifecycle behavior.
+- Keep both `skills/guiho-s-runx/SKILL.md` and the runtime embedded copy
+  `embed/skills/guiho-s-runx.SKILL.md` aligned with the CLI contract.
 - Generated `library/`, `bin/`, `bundle/`, and `vendor/` outputs are ignored;
   never edit them manually.
 - Do not publish packages or push tags unless the user explicitly requests a
@@ -233,6 +239,7 @@ tmux-session: runx  # orchestrator session on su-57; convention = this project's
 - Every task is a real issue in its owning repository, attached to this Project with exactly one nonblank Component; a Project draft alone is insufficient. Read back issue repository/state, Project membership, Component and Status after every change, then mirror the accepted remote state locally.
 - To-do file: `TODO.md` (established casing; repo root)
 - Current policy task: https://github.com/CGuiho/runx/issues/63; [local requirements](docs/todo/native-background-policy.md).
+- Separate runtime prerequisite: https://github.com/CGuiho/runx/issues/64; [inspection boundary](docs/todo/inspection-lifecycle-boundary.md).
 - Reserved port: pending — reserve in `apps.md` (`CGuiho/guiho`)
 
 ### Workers
