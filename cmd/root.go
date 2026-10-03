@@ -249,6 +249,18 @@ func scheduleLifecycle(command *cobra.Command, deps Dependencies, info BuildInfo
 	if strings.HasPrefix(name, "__") || name == "uninstall" {
 		return
 	}
+	// Inspection must not launch even a silent lifecycle worker: maintenance
+	// writes agent resources, and update workers write cache/lease state.
+	switch name {
+	case "check", "list", "describe", "reveal":
+		return
+	case "run":
+		// Cobra has already parsed RunX flags; post-selector child arguments
+		// must not opt a real run into this boundary.
+		if dryRun, _ := command.Flags().GetBool("dry-run"); dryRun {
+			return
+		}
+	}
 	executable, err := deps.Executable()
 	if err != nil {
 		return
