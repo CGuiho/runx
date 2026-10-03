@@ -2,6 +2,22 @@
 
 # Mandume
 
+> **INACTIVE HISTORICAL RECORD — superseded 2026-10-03.** All instructions,
+> harnesses, worker rows, permission assumptions, CLI examples, fallback and tail
+> contracts below are retained for chronology only and MUST NOT be executed.
+> The current sole worker authority is [AGENTS.md § Mandume](AGENTS.md#mandume),
+> governed by actual [GUIHO Convention 0011](../guiho/conventions/guiho-convention-0011-agent-readiness.md)
+> and [models Convention 0007](../guiho/conventions/guiho-convention-0007-models.md).
+> Current support is OpenCode only, always-native background subagents with
+> actual task-capable child permissions, explicit authorized provider/model and
+> available variant, and harness completion notifications. There is no current
+> CLI-worker escape, native poll/tail requirement or silent fallback. MiMo serves
+> both roles with provider-default thinking and no variant. DND human-facing
+> notifications off never disables native child completion. A native-less CLI
+> clause is dormant pending future CG authorization of another harness.
+
+## Historical Body (Inactive)
+
 > **All agents run by default with full permission** — full workspace read/write/execute, no sandbox or approval prompts. Every worker `Command` is executed with the same permissions as the calling agent.
 
 ## Mode
