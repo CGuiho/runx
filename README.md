@@ -67,6 +67,17 @@ the child and is forwarded without reinterpretation. The numeric `IDX` printed
 by `runx list` is convenient for interactive use; prefer stable UIDs for
 automation because indexes belong to the current resolved listing.
 
+`check`, `list`, `describe`, `reveal`, and `run --dry-run` are the read-only
+catalog boundary. They do not execute a catalog child, schedule an update or
+agent-maintenance worker, or create/refresh project instructions, configuration,
+global skills, or lifecycle cache/lease files. No environment toggle is required.
+Catalog resolution may still read referenced local or HTTPS child catalogs.
+For `run`, only a true RunX `--dry-run` flag before the selector selects this
+boundary: `runx run --dry-run=false <uid>` and `runx run <uid> --dry-run` are
+real executions. Existing confirmation requirements also apply to dry runs;
+an unapproved noninteractive `confirm: always` dry run returns exit code `2`
+without executing the child or scheduling workers.
+
 Selectors resolve in a deterministic order: exact global UID, canonical
 group-scoped selector, then an unqualified ID shorthand only when that ID has a
 single owner. A UID may equal another command's ID; the UID still wins. Duplicate
@@ -141,9 +152,11 @@ Both `AGENTS.md` and `CLAUDE.md` are updated when both exist; otherwise the one
 that exists is used, or `AGENTS.md` is created. Existing content and line endings
 are preserved, malformed markers fail safely, and no catalog command or network
 request runs during bootstrap. Help, version, agent-management, uninstall, and
-non-repository paths do not perform repository bootstrap. Other foreground
-startup reads only the local cache and starts bounded detached workers where
-appropriate.
+non-repository paths do not perform repository bootstrap. Catalog inspection
+and parsed dry runs skip lifecycle scheduling entirely. Real `run` executions
+retain bounded detached update and agent-maintenance workers; bare invocation,
+`init`, and explicit agent/setup actions retain their existing resource-writing
+behavior and require the corresponding authorization.
 Self-upgrades verify published checksums and preserve the embedded build target,
 including ARMv6 versus ARMv7.
 
