@@ -16,6 +16,8 @@ keywords:
   - release
 ---
 
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
+
 # RunX CLI Reference
 
 ## Runtime Authority
@@ -76,9 +78,13 @@ bootstrap.
 A newer stable version may add a validated notice read from
 `~/.guiho/runx/cache.json`. Foreground startup performs no remote request.
 Ordinary invocations start hidden detached workers for a bounded release check
-and automatic agent maintenance. A cache lease coalesces simultaneous update
-workers and stale leases recover automatically. Internal worker commands are
-hidden from help and cannot recursively start workers.
+and automatic agent maintenance, except that catalog inspection (`check`,
+`list`, `describe`, `reveal`) and parsed `run --dry-run` skip both workers before
+executable resolution. They create no lifecycle cache or worker lease. Real
+`run` executions retain both workers; explicit setup/agent actions and bare
+bootstrap retain their existing mutation contract. A cache lease coalesces
+simultaneous update workers and stale leases recover automatically. Internal
+worker commands are hidden from help and cannot recursively start workers.
 
 ## Configuration Resolution
 
@@ -140,6 +146,15 @@ to stdout; diagnostics use stderr. Human `list` output uses padded columns so
 the `IDX`, `UID`, `SELECTOR`, and `SUMMARY` fields align across supported
 terminals.
 
+`check`, `list`, `describe`, `reveal`, and parsed `run --dry-run=true` also
+preserve project and global resources: no instruction/configuration rewrite,
+global skill/agent projection refresh, lifecycle worker, cache write, or lease
+creation. This default scheduling boundary requires no environment opt-out.
+Reading referenced local or HTTPS catalogs remains part of catalog resolution;
+read-only does not mean network-free. The boundary applies to these inspection
+paths, not to real execution, bare bootstrap, `init`, explicit resource mutation,
+upgrade, or uninstall.
+
 `runx reveal <uid-or-selector-or-index>` accepts exactly one selector and the
 catalog location/diagnostic flags `--cwd`, `--config`, and `--verbose`. It
 reuses the catalog resolver used by `runx run` and writes the selected manifest
@@ -152,6 +167,13 @@ selector. Flag parsing stops at the selector and every later token is forwarded
 without RunX reinterpretation. POSIX shells use positional parameters,
 PowerShell uses JSON-backed splatting, and cmd uses environment-backed argument
 transport. Child values are never interpolated into generated shell source.
+
+Only a true RunX `--dry-run` Boolean parsed before the selector suppresses
+execution and lifecycle scheduling. `runx run --dry-run=false <uid>` remains
+a real run. `runx run <uid> --dry-run` forwards that flag to the child and
+also remains a real run. Dry runs retain existing opt-in confirmation behavior:
+an unapproved noninteractive or JSON `confirm: always` dry run returns `2`
+without executing a child or scheduling a worker.
 
 For `confirm: always`, an interactive text invocation prints the exact
 `runx run --yes <selector>` retry and asks `Are you sure? [y/N]`. Only `y` or
