@@ -14,8 +14,10 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.4.1"
+  version: "0.4.2"
 ---
+
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
 # GUIHO RunX
 
@@ -30,6 +32,14 @@ metadata:
 5. Run `runx describe <uid-or-selector-or-index>` before unfamiliar work.
 6. Run `runx run --dry-run <uid-or-selector-or-index>` before any mutation or
    high-impact command.
+
+`check`, `list`, `describe`, `reveal`, and parsed `run --dry-run=true` are the
+read-only catalog boundary. They execute no catalog child, schedule neither
+lifecycle worker, and do not create or refresh project instructions/config,
+global skill/agent projections, or lifecycle cache/lease files. No environment
+opt-out is needed. Catalog resolution may still read local or HTTPS references.
+Use a binary whose source/build identity includes this boundary; older installed
+versions may still schedule resource-writing workers during inspection.
 
 RunX manifests are trusted executable code. A group name is not a safety
 boundary. Never add `--yes` unless the developer explicitly authorizes the
@@ -76,6 +86,13 @@ current resolved listing, and must not replace stable UIDs in automation.
 RunX options such as `--dry-run`, `--yes`, `--cwd`, and `--format` belong before
 the selector. Every token after the selector is forwarded to the child without
 being interpreted as a RunX flag.
+
+For example, `runx run --dry-run <uid>` is inspection, but
+`runx run --dry-run=false <uid>` and `runx run <uid> --dry-run` are real
+executions. Dry runs retain existing confirmation requirements; an unapproved
+noninteractive or JSON `confirm: always` dry run returns exit code `2` without
+executing the child or scheduling workers. Use `describe` or `reveal` to inspect
+such a command without confirmation; do not add `--yes` merely to bypass it.
 
 On Windows, `shell: auto` uses the resolved Git Bash executable only when the
 inherited `MSYSTEM` marker proves a Git Bash/MSYS caller and the executable is
@@ -145,10 +162,12 @@ exists, or a new `AGENTS.md`. Unmanaged content and line endings are preserved;
 malformed markers fail safely. Help, version, agent-management, uninstall, and
 non-repository paths do not perform repository instruction bootstrap.
 
-Ordinary RunX commands schedule a silent, non-blocking worker that keeps the
-bundled skill current and reconciles the same repository-root instruction
-targets. A current installation is not rewritten. Background failures never
-fail or pollute the foreground command.
+Real `run` executions retain silent, non-blocking update and agent-maintenance
+workers. Maintenance keeps the bundled skill current and reconciles the same
+repository-root instruction targets. A current installation is not rewritten.
+Background failures never fail or pollute the foreground command. Catalog
+inspection and parsed dry runs skip both workers entirely; this does not grant
+permission for bare bootstrap, `init`, real execution, or explicit mutation.
 
 Explicit `runx agent ...` commands remain the manual repair and local-scope
 interface. Explicit agent-resource removal and `runx uninstall` do not schedule
