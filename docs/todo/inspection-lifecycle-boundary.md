@@ -61,13 +61,21 @@ certify the tool installation or any family. XDocs data validation remains
 skipped pending its independent runtime reconciliation; project YAML grants no
 automatic descriptor/frontmatter writes.
 
-Fresh GitHub readback at `2026-10-03T22:13:16Z` confirms issue #64 remains
-OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. Parent
-independent review, reviewed-range delivery and any installed-binary replacement
-remain pending.
+Fresh GitHub readback at `2026-10-03T22:30:09Z` confirms issue #64 remains
+OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. A new independent
+native General reviewer accepted the scheduler boundary, repeated the meaningful
+old-source failure and actual filesystem/process checks, and plain-pushed the
+implementation through `dccc8fe` under express parent authority. The checked
+`0.0.0-dev.readiness.runx.dccc8fe` build is active at existing `/usr/local/bin/runx`;
+old binary and both exact existing skill files are backed up. Installed-binary
+inspection passes 43 invocations with identical snapshots and no worker/child or
+mutating filesystem syscall. Three real-run controls retain both workers and child
+argument forwarding. The implementer's held gates are satisfied; human acceptance
+and separately owned XDocs/full-readiness setup remain pending.
 
 ## Evidence and Handoff
 
 - [Technical self-review](../reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) — acceptance mapping and scoped findings.
 - [Validation record](../validation/2026-10-04-readiness-runx-prerequisite.md) — meaningful negative/positive regressions, payload filesystem/process evidence and provenance.
 - [Independent-review handoff](../reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) — exact safe commands, pending delivery and installed-build boundaries.
+- [Independent acceptance and activation](../reviews/implementation/2026-10-04-readiness-runx-independent-review.md) — checked installed identity, hashes/backups, real runtime proof, reviewed delivery and remaining gaps.

@@ -385,7 +385,7 @@
 
 - Status: testing
 - Created: `2026-10-03T21:29:41Z`
-- Updated: `2026-10-03T22:13:16Z`
+- Updated: `2026-10-03T22:30:09Z`
 - Outcome: Current RunX worker instructions use OpenCode-only capable native background agents, canonical models and verified task bindings.
 - Spec: [docs/todo/native-background-policy.md](docs/todo/native-background-policy.md)
 - GitHub project item: [RunX #63](https://github.com/CGuiho/runx/issues/63)
@@ -394,13 +394,14 @@
   - [docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) - Scoped technical self-review and acceptance mapping.
   - [docs/validation/2026-10-04-readiness-runx-prerequisite.md](docs/validation/2026-10-04-readiness-runx-prerequisite.md) - Policy checks, binary/filesystem evidence and verified task identities.
   - [docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md](docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) - Safe commands and pending independent-review delivery gate.
-- Delivery: Owned commits on main; no push until parent independent review.
+  - [docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md) - Independent acceptance, reviewed plain push, installed-tool checks and remaining gaps.
+- Delivery: Independently accepted implementation range plain-pushed through `dccc8fe`; reviewer evidence and synchronized mirrors follow under explicit parent push authority. OPEN/Testing remains pending human acceptance.
 
 ### 28. RunX Inspection Lifecycle Boundary
 
 - Status: testing
 - Created: `2026-10-03T21:50:24Z`
-- Updated: `2026-10-03T22:13:16Z`
+- Updated: `2026-10-03T22:30:09Z`
 - Outcome: Catalog inspection and parsed dry runs preserve project/global resource files and schedule no worker or child command.
 - Spec: [docs/todo/inspection-lifecycle-boundary.md](docs/todo/inspection-lifecycle-boundary.md)
 - GitHub project item: [RunX #64](https://github.com/CGuiho/runx/issues/64)
@@ -410,4 +411,5 @@
   - [docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) - Scoped technical self-review and acceptance mapping.
   - [docs/validation/2026-10-04-readiness-runx-prerequisite.md](docs/validation/2026-10-04-readiness-runx-prerequisite.md) - Runtime regressions, process traces and task-binary provenance.
   - [docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md](docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) - Exact safe inspection commands and delivery gates.
-- Delivery: Owned commits on main; global binary installation and push await parent independent review.
+  - [docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md) - Installed-binary filesystem/process proof, exact backups/provenance and reviewed delivery.
+- Delivery: Independently accepted implementation plain-pushed through `dccc8fe`; checked dev build active at existing `/usr/local/bin/runx` with both exact existing skill copies refreshed and backed up. OPEN/Testing remains pending human acceptance.

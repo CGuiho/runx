@@ -53,12 +53,18 @@ review. XDocs CLI validation is skipped while its runtime build boundary remains
 unverified; RunX's YAML grants no descriptor/frontmatter writes. No automatic
 resource/bootstrap commands are permitted for this policy unit.
 
-Fresh GitHub readback at `2026-10-03T22:13:16Z` confirms issue #63 remains
-OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. Parent
-independent review and reviewed-range delivery remain pending.
+Fresh GitHub readback at `2026-10-03T22:30:09Z` confirms issue #63 remains
+OPEN on Project #2 (`GUIHO`), Component `runx`, Status `Testing`. A new independent
+native General reviewer accepted the complete policy/source unit and plain-pushed
+the thirteen-commit implementation range through `dccc8fe` under express parent
+authority, verifying HEAD = origin/main = live main and preserving existing task/
+option identities. The implementer's earlier NOPUSH gate is satisfied; subsequent
+review evidence and mirror commits are also parent-authorized for reviewed delivery.
+Human acceptance and complete readiness setup remain pending.
 
 ## Evidence and Handoff
 
 - [Technical self-review](../reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) — assigned acceptance mapping and findings.
 - [Validation record](../validation/2026-10-04-readiness-runx-prerequisite.md) — policy and separate runtime checks, exact build identity and readbacks.
 - [Independent-review handoff](../reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) — safe commands and no-push delivery gate.
+- [Independent acceptance and activation](../reviews/implementation/2026-10-04-readiness-runx-independent-review.md) — actual full policy review, bounded negative probes, reviewed plain delivery and precise remaining gaps.
