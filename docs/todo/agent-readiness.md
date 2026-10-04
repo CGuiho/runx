@@ -4,7 +4,7 @@ purpose: Define readiness outcome and acceptance for task 29 in TODO.md.
 description: Distinct owning readiness task with verified remote binding and bounded
   seed lineage.
 created: '2026-10-04T01:20:16Z'
-owner: CGuiho/runx
+owner: runx-todo
 flags:
 - in-progress
 - readiness-seed
