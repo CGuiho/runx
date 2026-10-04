@@ -26,5 +26,7 @@ flags: []
 status: stable
 ---
 
+
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 The documentation tree records the approved product direction, executable
 design specifications, and verification evidence.

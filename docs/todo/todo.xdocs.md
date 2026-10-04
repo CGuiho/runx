@@ -24,23 +24,36 @@ files:
   guiho-convention-0001-cli-compliance-migration.md: Tracks every unit and gate in the breaking GUIHO CLI Convention 0001 compliance migration.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
-  bounded-update-worker.md: Task specification for the bounded RunX update worker audit prompted by XDocs issue 14.
-  linux-installer-latest-release.md: Task specification for reliable latest RunX Bash installation.
-  automatic-agent-maintenance.md: Task specification for automatic RunX skill and AGENTS.md maintenance.
-  automatic-agent-maintenance-implementation.md: Completed implementation record for automatic RunX agent maintenance.
-  protect-branches-and-tag-creation.md: Completed task specification with active RunX ruleset IDs, protected patterns, and verification evidence.
-  rfc-0034-cli-compliance-migration.md: Task specification linked from TODO task 1 for the full RunX CLI contract migration.
-  rfc-0034-cli-compliance-migration-implementation.md: Completed implementation, independent correction, and validation handoff for TODO task 1.
+  bounded-update-worker.md: Task specification for the bounded RunX update worker
+    audit prompted by XDocs issue 14.
+  linux-installer-latest-release.md: Task specification for reliable latest RunX Bash
+    installation.
+  automatic-agent-maintenance.md: Task specification for automatic RunX skill and
+    AGENTS.md maintenance.
+  automatic-agent-maintenance-implementation.md: Completed implementation record for
+    automatic RunX agent maintenance.
+  protect-branches-and-tag-creation.md: Completed task specification with active RunX
+    ruleset IDs, protected patterns, and verification evidence.
+  rfc-0034-cli-compliance-migration.md: Task specification linked from TODO task 1
+    for the full RunX CLI contract migration.
+  rfc-0034-cli-compliance-migration-implementation.md: Completed implementation, independent
+    correction, and validation handoff for TODO task 1.
   upgrade-reliability.md: Completed task specification for RunX upgrade reliability.
   unicode-help-tree.md: Completed task specification for the RunX Unicode help tree.
-  platform-aware-startup-greeting.md: Task specification for the platform-aware RunX greeting.
-  windows-installer-utf8.md: Task specification for Windows installer encoding and instruction idempotence.
+  platform-aware-startup-greeting.md: Task specification for the platform-aware RunX
+    greeting.
+  windows-installer-utf8.md: Task specification for Windows installer encoding and
+    instruction idempotence.
   beautiful-welcome-window.md: Task specification for the RunX welcome window.
   simplified-install-command.md: Task specification for the simple installer command.
   forward-command-arguments.md: Task specification for safe child argument forwarding.
   issues-36-39.md: In-progress task specification for RunX issues 36 and 39.
-  issues-36-39-implementation.md: Execution progress, validation evidence, and handoff for RunX issues 36 and 39.
-  guiho-convention-0001-cli-compliance-migration.md: Proposed task ledger for full GUIHO CLI Convention 0001 compliance.
+  issues-36-39-implementation.md: Execution progress, validation evidence, and handoff
+    for RunX issues 36 and 39.
+  guiho-convention-0001-cli-compliance-migration.md: Proposed task ledger for full
+    GUIHO CLI Convention 0001 compliance.
+  agent-readiness.md: 'Acceptance and verified binding for distinct readiness issue
+    #65.'
 tags:
   - todo
 keywords:
@@ -58,4 +71,6 @@ flags: []
 status: stable
 ---
 
+
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 Task specifications linked from the package-local RunX TODO index.

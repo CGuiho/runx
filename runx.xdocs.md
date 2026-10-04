@@ -50,6 +50,8 @@ flags: []
 status: stable
 ---
 
+
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 RunX production behavior is owned by one testable Cobra command tree and focused
 Go packages. Structured manifest validation, exact command revelation, command execution, idempotent
 bare-invocation agent bootstrap, cached lifecycle workers, agent resources,

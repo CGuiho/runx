@@ -413,3 +413,26 @@
   - [docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md](docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) - Exact safe inspection commands and delivery gates.
   - [docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md) - Installed-binary filesystem/process proof, exact backups/provenance and reviewed delivery.
 - Delivery: Independently accepted implementation plain-pushed through `dccc8fe`; checked dev build active at existing `/usr/local/bin/runx` with both exact existing skill copies refreshed and backed up. OPEN/Testing remains pending human acceptance.
+
+## Readiness Task Seed — 2026-10-04
+
+### 29. Set up verified agent readiness for runx
+
+- Status: in progress
+- Created: `2026-10-04T01:20:16Z`
+- Updated: `2026-10-04T01:20:19.199606+00:00`
+- Outcome: Complete evidence-based Convention 0011 readiness within the adopted owning scope.
+- Spec: [docs/todo/agent-readiness.md](docs/todo/agent-readiness.md)
+- GitHub project item: [Issue #65](https://github.com/CGuiho/runx/issues/65)
+- GitHub component: `runx`
+- Project item ID: `PVTI_lAHOBUk1ds4AULOgzg-YlUY`
+- Readback: owning issue OPEN; GUIHO Project #2; exact Component; In Progress.
+- Seed delivery: local main commits only; independent parent review/delivery pending. Full setup remains open.
+
+## Readiness Seed Status Summary
+
+| Scope | in progress |
+| --- | ---: |
+| Newly bound readiness issue only | 1 |
+
+Earlier summary rows remain the historical helper snapshot; GitHub is authoritative for all existing task states. This bounded seed does not resynchronize old tasks.
