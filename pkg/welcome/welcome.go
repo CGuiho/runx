@@ -7,8 +7,6 @@ import (
 	"strings"
 )
 
-const welcomeWidth = 58
-
 const (
 	ansiReset = "\x1b[0m"
 	ansiBold  = "\x1b[1m"
@@ -20,6 +18,10 @@ const (
 	ansiOffWhite  = "\x1b[38;2;237;242;244m"
 	ansiBrightRed = "\x1b[38;2;239;35;60m"
 	ansiDarkRed   = "\x1b[38;2;217;4;41m"
+
+	// ansiAccent is RunX's primary brand colour, used for the GUIHO
+	// attribution, the version and the website in the Author detail.
+	ansiAccent = ansiBrightRed + ansiBold
 )
 
 var platformLabels = map[string]string{
@@ -100,95 +102,46 @@ func renderWithColor(platform, architecture, version, updateNotice string, withC
 	architecture = archLabel(architecture)
 	version = strings.TrimPrefix(version, "v")
 
-	// Box width: widest logo line + 4 padding
-	innerWidth := 0
-	for _, line := range runxLogo {
-		if l := len([]rune(line)); l > innerWidth {
-			innerWidth = l
-		}
-	}
-	innerWidth += 4
-	if innerWidth < 56 {
-		innerWidth = 56
-	}
-	// Ensure tagline fits
 	tagline := "Documented command catalog"
-	if len([]rune(tagline))+4 > innerWidth {
-		innerWidth = len([]rune(tagline)) + 4
-	}
-
-	var b strings.Builder
 	logoColor := ansiBrightRed
 	taglineColor := ansiSlate
 
-	// Logo centered — no border per user request
-	for _, line := range runxLogo {
-		lineLen := len([]rune(line))
-		pad := innerWidth - lineLen
-		left := pad / 2
-		right := pad - left
-		inner := strings.Repeat(" ", left) + line + strings.Repeat(" ", right)
-		b.WriteString(colorize(withColor, strings.TrimRight(inner, " "), logoColor+ansiBold))
-		b.WriteString("\n")
-	}
-	// Tagline centered, dim slate — no border
-	tagPad := innerWidth - len([]rune(tagline))
-	tagLeft := tagPad / 2
-	tagRight := tagPad - tagLeft
-	tagInner := strings.Repeat(" ", tagLeft) + tagline + strings.Repeat(" ", tagRight)
-	b.WriteString(colorize(withColor, strings.TrimRight(tagInner, " "), taglineColor+ansiDim))
-	b.WriteString("\n")
-	// GUIHO line centered — no border
-	guihoLine := "GUIHO \u00b7 Crist\u00f3v\u00e3o GUIHO"
-	guihoPad := innerWidth - len([]rune(guihoLine))
-	guihoLeft := guihoPad / 2
-	guihoRight := guihoPad - guihoLeft
-	guihoInner := strings.Repeat(" ", guihoLeft) + guihoLine + strings.Repeat(" ", guihoRight)
-	b.WriteString(colorize(withColor, strings.TrimRight(guihoInner, " "), taglineColor))
+	var b strings.Builder
+	// One blank line before, so the welcome never touches the prompt line
 	b.WriteString("\n")
 
-	// ── Outside box ─────────────────────────
+	for _, line := range runxLogo {
+		b.WriteString(colorize(withColor, line, logoColor+ansiBold))
+		b.WriteString("\n")
+	}
+	b.WriteString(colorize(withColor, tagline, taglineColor+ansiDim))
+	b.WriteString("\n")
+	b.WriteString(colorize(withColor, "GUIHO \u00b7 Crist\u00f3v\u00e3o GUIHO", ansiAccent))
 	b.WriteString("\n\n")
 
-	// Creator
-	b.WriteString(colorize(withColor, fmt.Sprintf("%-9s", "Creator"), ansiSlate))
-	b.WriteString("  ")
-	b.WriteString(colorize(withColor, "Cristóvão GUIHO", ansiOffWhite+ansiBold))
+	// Details — platform, version, author
+	writeDetail(&b, withColor, "Platform", colorize(withColor, platform+" "+architecture, ansiOffWhite))
+	writeDetail(&b, withColor, "Version", colorize(withColor, "v"+version, ansiAccent))
+	writeDetail(&b, withColor, "Author",
+		colorize(withColor, "GUIHO (", ansiOffWhite)+
+			colorize(withColor, "www.guiho.co", ansiAccent)+
+			colorize(withColor, ")", ansiOffWhite))
 	b.WriteString("\n")
-	// Platform
-	if withColor {
-		b.WriteString("  ")
-		b.WriteString(colorize(true, "platform", ansiSlate))
-		b.WriteString("      ")
-		b.WriteString(colorize(true, platform+" "+architecture, ansiOffWhite))
-		b.WriteString("\n")
-	} else {
-		b.WriteString(fmt.Sprintf("  platform      %s %s\n", platform, architecture))
-	}
-	// Version
-	if withColor {
-		b.WriteString("  ")
-		b.WriteString(colorize(true, "version", ansiSlate))
-		b.WriteString("       ")
-		b.WriteString(colorize(true, "v"+version, ansiBrightRed+ansiBold))
-		b.WriteString("\n\n")
-	} else {
-		b.WriteString(fmt.Sprintf("  version       v%s\n\n", version))
-	}
 
 	// Help hint
 	b.WriteString("Run ")
 	b.WriteString(colorize(withColor, "runx --help", ansiOffWhite+ansiBold))
 	b.WriteString(" to see available commands.")
+	b.WriteString("\n")
 
-	// Update notice (inside hello, below help)
+	// Update notice (below the help hint)
 	if strings.TrimSpace(updateNotice) != "" {
 		// updateNotice is expected as "⚠ New version available: vX.Y.Z\n  run runx upgrade to update"
 		parts := strings.Split(strings.TrimRight(updateNotice, "\n"), "\n")
-		b.WriteString("\n\n")
-		// First line triangle in bright red
+		b.WriteString("\n")
+		// First line triangle in the brand accent
 		if len(parts) > 0 {
-			b.WriteString(colorize(withColor, parts[0], ansiBrightRed+ansiBold))
+			b.WriteString(colorize(withColor, parts[0], ansiAccent))
 		}
 		if len(parts) > 1 {
 			b.WriteString("\n")
@@ -210,9 +163,21 @@ func renderWithColor(platform, architecture, version, updateNotice string, withC
 				b.WriteString(colorize(withColor, p, ansiSlate))
 			}
 		}
+		b.WriteString("\n")
 	}
+	// One blank line after, so the welcome never touches the next prompt
 	b.WriteString("\n")
 	return b.String()
+}
+
+// detailLabelWidth fits the longest detail label ("Platform") so values align.
+const detailLabelWidth = 8
+
+// writeDetail writes one left-aligned detail row; value is already
+// colorized by the caller when colour is enabled.
+func writeDetail(b *strings.Builder, withColor bool, label, value string) {
+	padded := colorize(withColor, fmt.Sprintf("%-*s", detailLabelWidth, label), ansiSlate)
+	fmt.Fprintf(b, "%s  %s\n", padded, value)
 }
 
 // ShouldUseColor reports whether colored output should be used for the current terminal.
