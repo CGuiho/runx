@@ -15,6 +15,20 @@ owner: runx
 
 # Changelog
 
+## 0.16.1 - 2026-10-17
+
+### Changed
+
+- Left-aligned the bare `runx` welcome window to match the corrected
+  sibling hello windows: the logo rows, tagline and GUIHO attribution
+  now start at column 0 instead of receiving centering padding, and the
+  window is framed by exactly one leading and one trailing blank line.
+- Capitalised the welcome detail labels (`Platform`, `Version`,
+  `Author`) with aligned values, replaced the `Creator` line with
+  `Author  GUIHO (www.guiho.co)` (website in the brand accent), and
+  removed the now-dead centering helpers. The cached update notice
+  still renders below the help hint.
+
 ## 0.16.0 - 2026-09-06
 
 ### Added
