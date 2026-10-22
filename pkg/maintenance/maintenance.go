@@ -33,6 +33,8 @@ Start with ` + "`runx check --format json`" + ` and ` + "`runx list --format jso
 stable UIDs, use ` + "`runx describe <uid>`" + `, and run
 ` + "`runx run --dry-run <uid>`" + ` before unfamiliar or side-effecting work.
 RunX options precede the selector; post-selector tokens belong to the child.
+` + "`runx smart`" + ` lists the catalog when bare and runs the selected command
+otherwise; the installed ` + "`rxs`" + ` launcher provides the same behavior.
 ` + ManagedEnd + "\n"
 }
 
