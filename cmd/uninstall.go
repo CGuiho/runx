@@ -119,6 +119,11 @@ func buildUninstallPlan(cwd string, preserveConfig, preserveData bool) (*uninsta
 	}
 
 	appendIfExists(&plan.Remove, launcherPath)
+	rxsPath, err := rxsLauncherPath()
+	if err != nil {
+		return nil, err
+	}
+	appendIfExists(&plan.Remove, rxsPath)
 	if _, err := os.Stat(cliDir); err == nil {
 		if preserveConfig || preserveData {
 			plan.Preserve = append(plan.Preserve,
@@ -157,6 +162,20 @@ func buildUninstallPlan(cwd string, preserveConfig, preserveData bool) (*uninsta
 	return plan, nil
 }
 
+// rxsLauncherPath returns the shared-bin rxs launcher that RunX owns beside
+// its stable launcher: $HOME/.guiho/bin/rxs(.exe).
+func rxsLauncherPath() (string, error) {
+	bin, err := installstate.BinDir()
+	if err != nil {
+		return "", err
+	}
+	name := "rxs"
+	if runtime.GOOS == "windows" {
+		name = "rxs.exe"
+	}
+	return filepath.Join(bin, name), nil
+}
+
 func instructionMarkerNames() []string {
 	if runtime.GOOS == "windows" {
 		return []string{"AGENTS.md", "CLAUDE.md"}
@@ -190,13 +209,17 @@ func renderUninstallPlan(command *cobra.Command, plan *uninstallPlan) {
 }
 
 // removeOwnedPath fails closed unless the target is inside the CLI-owned home,
-// is the launcher, or is a managed skill projection.
+// is one of the CLI-owned launchers, or is a managed skill projection.
 func removeOwnedPath(path string) error {
 	cliDir, err := installstate.CLIDir()
 	if err != nil {
 		return err
 	}
 	launcherPath, err := installstate.LauncherPath()
+	if err != nil {
+		return err
+	}
+	rxsPath, err := rxsLauncherPath()
 	if err != nil {
 		return err
 	}
@@ -207,6 +230,7 @@ func removeOwnedPath(path string) error {
 	cleanPath := filepath.Clean(path)
 	cleanCLI := filepath.Clean(cliDir)
 	if cleanPath == cleanLauncherPath(launcherPath) ||
+		cleanPath == filepath.Clean(rxsPath) ||
 		cleanPath == filepath.Clean(filepath.Join(home, ".agents", "skills", "guiho-s-runx")) ||
 		cleanPath == filepath.Clean(filepath.Join(home, ".claude", "skills", "guiho-s-runx")) ||
 		isWithin(cleanPath, cleanCLI) {
