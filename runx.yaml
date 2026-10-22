@@ -41,6 +41,13 @@ commands:
   - uid: runx-tooling-build-binaries
     id: build-binaries
     summary: Compile the native release asset matrix.
-    description: Build the eight-platform pure-Go release binaries plus supporting artifacts into bundle/.
+    description: Build the eight-platform pure-Go payload binaries plus the runx and rxs launchers for every platform (eight payloads plus two launchers per platform) and supporting artifacts into bundle/.
     command: go run devops/build-binaries.go --version 0.0.0-dev --commit local --build-date 1970-01-01T00:00:00Z
+    confirm: never
+
+  - uid: runx-tooling-verify-release-assets
+    id: verify-release-assets
+    summary: Verify the compiled release asset matrix.
+    description: Validate the bundle/ release assets, artifacts.json ownership manifest, and checksums.txt against the protocol-v1 release contract without building anything.
+    command: go run devops/verify-release-assets.go
     confirm: never
