@@ -18,6 +18,7 @@ $GuihoRoot = Join-Path $HOME '.guiho'
 $CliDir = Join-Path $GuihoRoot 'runx'
 $BinDir = Join-Path $GuihoRoot 'bin'
 $LauncherPath = Join-Path $BinDir 'runx.exe'
+$RxsLauncherPath = Join-Path $BinDir 'rxs.exe'
 $ProjectDir = (Get-Location).Path
 
 $Remove = New-Object System.Collections.Generic.List[string]
@@ -30,6 +31,7 @@ $Preserve.Add("$(Join-Path $GuihoRoot '.temp') (shared staging root)")
 $Preserve.Add("user Path entry for $BinDir")
 
 if (Test-Path -LiteralPath $LauncherPath) { $Remove.Add($LauncherPath) }
+if (Test-Path -LiteralPath $RxsLauncherPath) { $Remove.Add($RxsLauncherPath) }
 if (Test-Path -LiteralPath $CliDir) {
   if ($PreserveConfig -or $PreserveData) {
     $Preserve.Add("$(Join-Path $CliDir 'runx.global.yaml')")
@@ -76,11 +78,12 @@ function Remove-OwnedPath([string]$Target) {
   $Full = [IO.Path]::GetFullPath($Target).TrimEnd('\', '/')
   $FullCli = [IO.Path]::GetFullPath($CliDir).TrimEnd('\', '/')
   $FullLauncher = [IO.Path]::GetFullPath($LauncherPath)
+  $FullRxsLauncher = [IO.Path]::GetFullPath($RxsLauncherPath)
   $AllowedSkills = @(
     [IO.Path]::GetFullPath((Join-Path $HOME '.agents\skills\guiho-s-runx')),
     [IO.Path]::GetFullPath((Join-Path $HOME '.claude\skills\guiho-s-runx'))
   )
-  $Owned = ($Full -ieq $FullCli) -or ($Full -like "$FullCli\*") -or ($Full -ieq $FullLauncher) -or (($AllowedSkills | Where-Object { $_ -ieq $Full }).Count -gt 0)
+  $Owned = ($Full -ieq $FullCli) -or ($Full -like "$FullCli\*") -or ($Full -ieq $FullLauncher) -or ($Full -ieq $FullRxsLauncher) -or (($AllowedSkills | Where-Object { $_ -ieq $Full }).Count -gt 0)
   if (-not $Owned) { throw "refusing to remove unowned path: $Target" }
   if (Test-Path -LiteralPath $Target) {
     # Windows cannot delete a running executable; quarantine by rename first so
@@ -91,12 +94,14 @@ function Remove-OwnedPath([string]$Target) {
       $Quarantine = "$Target.uninstall-quarantine-" + [Guid]::NewGuid().ToString('N')
       Move-Item -Force -LiteralPath $Target -Destination $Quarantine
       Write-Host "[PENDING] Quarantined for deletion after reboot: $Quarantine"
-      reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v "runx-uninstall-cleanup" /d "cmd.exe /c rd /s /q `"$Quarantine`"" /f | Out-Null
+      $CleanupValue = "runx-uninstall-cleanup-" + [Guid]::NewGuid().ToString('N')
+      reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\RunOnce" /v "$CleanupValue" /d "cmd.exe /c rd /s /q `"$Quarantine`" 2>nul || del /f /q `"$Quarantine`"" /f | Out-Null
     }
   }
 }
 
 if (Test-Path -LiteralPath $LauncherPath) { Remove-OwnedPath $LauncherPath }
+if (Test-Path -LiteralPath $RxsLauncherPath) { Remove-OwnedPath $RxsLauncherPath }
 if (Test-Path -LiteralPath $CliDir) {
   if (-not ($PreserveConfig -or $PreserveData)) {
     Remove-OwnedPath $CliDir
