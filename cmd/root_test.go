@@ -167,6 +167,8 @@ func TestLiveHelpTreeAndDocs(t *testing.T) {
 	assert.Contains(t, out, "describe <uid-or-selector-or-index>")
 	assert.Contains(t, out, "reveal <uid-or-selector-or-index>")
 	assert.Contains(t, out, "run [options] <uid-or-selector-or-index> [--] [child arguments...]")
+	assert.Contains(t, out, "smart [options] [<uid-or-selector-or-index> [--] [child arguments...]]")
+	assert.Contains(t, out, "List the catalog, or run a command by selector.")
 	assert.Contains(t, out, "└── -v, --version")
 	assert.NotContains(t, out, "â”œ")
 	out, _, err = executeTest(t, cwd, "list", "--help-tree-depth", "1", "--help-tree")
@@ -186,6 +188,12 @@ func TestLiveHelpTreeAndDocs(t *testing.T) {
 	out, _, err = executeTest(t, cwd, "run", "--help-tree-depth", "1")
 	require.NoError(t, err)
 	assert.Contains(t, out, "runx run")
+	out, _, err = executeTest(t, cwd, "smart", "--help-tree-depth", "1", "--help-tree")
+	require.NoError(t, err)
+	assert.Contains(t, out, "runx smart")
+	out, _, err = executeTest(t, cwd, "smart", "--help-docs")
+	require.NoError(t, err)
+	assert.Contains(t, out, "# runx smart")
 }
 
 func TestOnlyApprovedShortAliases(t *testing.T) {
@@ -207,6 +215,9 @@ func TestOnlyApprovedShortAliases(t *testing.T) {
 	reveal, _, err := root.Find([]string{"reveal"})
 	require.NoError(t, err)
 	assert.Empty(t, reveal.Aliases)
+	smart, _, err := root.Find([]string{"smart"})
+	require.NoError(t, err)
+	assert.Empty(t, smart.Aliases)
 	for key, value := range seen {
 		if key != "runx:version" && !strings.HasSuffix(key, ":help") {
 			t.Fatalf("unexpected short alias %s=%s", key, value)
@@ -477,7 +488,7 @@ func TestEmbeddedSkillConfirmationPolicyIsOptIn(t *testing.T) {
 func TestEveryPublicScopeSupportsDeveloperContext(t *testing.T) {
 	cwd := t.TempDir()
 	paths := [][]string{
-		{}, {"list"}, {"describe"}, {"run"}, {"check"}, {"init"}, {"agent"},
+		{}, {"list"}, {"describe"}, {"run"}, {"smart"}, {"check"}, {"init"}, {"agent"},
 		{"agent", "skill"}, {"agent", "skill", "install"}, {"agent", "skill", "uninstall"},
 		{"agent", "skill", "update"}, {"agent", "skill", "list"}, {"agent", "skill", "show"},
 		{"agent", "instruction"}, {"agent", "instruction", "apply"}, {"agent", "instruction", "remove"},

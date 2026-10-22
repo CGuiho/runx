@@ -113,7 +113,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 		Use: "runx", Short: "A language-agnostic, documented command catalog and local CLI executor",
 		Long:         "RunX is a strict YAML command catalog and local CLI executor.",
 		SilenceUsage: true, SilenceErrors: true, Args: cobra.NoArgs,
-		PersistentPreRunE: func(command *cobra.Command, _ []string) error {
+		PersistentPreRunE: func(command *cobra.Command, args []string) error {
 			if command.Flags().Changed("help-tree-depth") && helpTreeDepth < 1 {
 				return withExitCode(2, fmt.Errorf("--help-tree-depth must be a positive integer"))
 			}
@@ -133,7 +133,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 				fmt.Fprint(command.OutOrStdout(), markdown)
 				return errDeveloperHelp
 			}
-			scheduleLifecycle(command, deps, info)
+			scheduleLifecycle(command, args, deps, info)
 			return nil
 		},
 		RunE: func(command *cobra.Command, _ []string) error {
@@ -187,7 +187,7 @@ func NewRootCommand(deps Dependencies, info BuildInfo) *cobra.Command {
 	root.PersistentFlags().Bool("color", false, "Enable ANSI color output when supported.")
 
 	root.AddCommand(
-		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newCheckCommand(deps), newInitCommand(deps, info),
+		newListCommand(deps), newDescribeCommand(deps), newRevealCommand(deps), newRunCommand(deps), newSmartCommand(deps), newCheckCommand(deps), newInitCommand(deps, info),
 		newAgentCommand(deps), newUpgradeCommand(deps, info), newUninstallCommand(deps), newUpdateWorkerCommand(deps, info),
 		newMaintenanceWorkerCommand(deps), newSelfTestCommand(deps, info),
 	)
@@ -240,7 +240,7 @@ func isTerminalReader(reader io.Reader) bool {
 	return isatty.IsTerminal(file.Fd()) || isatty.IsCygwinTerminal(file.Fd())
 }
 
-func scheduleLifecycle(command *cobra.Command, deps Dependencies, info BuildInfo) {
+func scheduleLifecycle(command *cobra.Command, args []string, deps Dependencies, info BuildInfo) {
 	top := command
 	for top.Parent() != nil && top.Parent().Parent() != nil {
 		top = top.Parent()
@@ -257,6 +257,15 @@ func scheduleLifecycle(command *cobra.Command, deps Dependencies, info BuildInfo
 	case "run":
 		// Cobra has already parsed RunX flags; post-selector child arguments
 		// must not opt a real run into this boundary.
+		if dryRun, _ := command.Flags().GetBool("dry-run"); dryRun {
+			return
+		}
+	case "smart":
+		// Bare smart lists the catalog and parsed dry runs share the run
+		// contract; both stay inside the read-only inspection boundary.
+		if len(args) == 0 {
+			return
+		}
 		if dryRun, _ := command.Flags().GetBool("dry-run"); dryRun {
 			return
 		}
