@@ -13,7 +13,33 @@ keywords:
 owner: runx
 ---
 
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
+
 # Changelog
+
+## 0.17.0 - 2026-10-22
+
+### Added
+
+- `runx smart` subcommand: bare `runx smart` lists the catalog and
+  `runx smart <selector> [--] [child arguments...]` runs one catalog
+  command, sharing the canonical list and run implementations with
+  byte-identical listing output and identical confirmation handling,
+  dry-run JSON, child argument forwarding, and exit-code preservation.
+- `rxs` short launcher and its `rxs-launcher-<os>-<arch>` release assets
+  (eight platforms) declared in `artifacts.json` and `checksums.txt`;
+  `rxs` is installed at `$HOME/.guiho/bin/rxs` (`rxs.exe` on Windows) and
+  preserves `-v`/`--version`, `-h`/`--help`, `--help-tree`,
+  `--help-docs`, and `--help-tree-depth` entry-point parity with `runx`.
+
+### Changed
+
+- Renamed the unshipped `rx` launcher to `rxs` because `rx` collides
+  with an unrelated Linux command; no `rx` binary, alias, or
+  compatibility artifact ships.
+- Install, upgrade, and uninstall (including `runx uninstall`) now manage
+  both stable launchers (`runx` and `rxs`) transactionally: both are
+  verified before activation and rolled back together on failure.
 
 ## 0.16.1 - 2026-10-17
 
