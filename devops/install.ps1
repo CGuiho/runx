@@ -1,5 +1,6 @@
 # GUIHO RunX installer (Convention 0001).
-# Installs the stable launcher into $HOME\.guiho\bin\, immutable payloads into
+# Installs the stable runx and rxs launchers into $HOME\.guiho\bin\,
+# immutable payloads into
 # $HOME\.guiho\runx\versions\<version>\, activates via an atomic current.json
 # pointer, verifies every artifact against checksums.txt and artifacts.json,
 # and rolls back completely on failure.
@@ -27,6 +28,7 @@ $Platform = switch ($env:PROCESSOR_ARCHITECTURE.ToUpperInvariant()) {
 }
 $PayloadAsset = "runx-payload-$Platform.exe"
 $LauncherAsset = "runx-launcher-$Platform.exe"
+$RxsLauncherAsset = "rxs-launcher-$Platform.exe"
 
 function Normalize-Version([string]$Value) {
   return ($Value -replace '^@guiho/runx/v', '' -replace '^@guiho/runx@', '' -replace '^runx/v', '' -replace '^runx@', '' -replace '^v', '')
@@ -91,13 +93,15 @@ Write-Host 'Initiating GUIHO CLI Upgrade / Installation Sequence...'
 Write-Host "Target Version: $TargetVersion"
 Write-Host "Platform:       $Platform"
 Write-Host "Payload Asset:  $PayloadAsset"
+Write-Host "Launcher Asset: $LauncherAsset"
+Write-Host "rxs Asset:      $RxsLauncherAsset"
 Write-Host "Source URL:     $AssetBase"
 Write-Host "Staging:        $Staging"
 
 function Download([string]$Name) {
   Invoke-WebRequest -Uri "$AssetBase/$Name" -OutFile (Join-Path $Staging $Name) -UseBasicParsing
 }
-foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'checksums.txt', 'artifacts.json', 'guiho-s-runx.zip', 'guiho-i-runx.md', 'guiho-p-runx.md', 'guiho-p-runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json')) {
+foreach ($Asset in @($PayloadAsset, $LauncherAsset, $RxsLauncherAsset, 'checksums.txt', 'artifacts.json', 'guiho-s-runx.zip', 'guiho-i-runx.md', 'guiho-p-runx.md', 'guiho-p-runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json')) {
   Download $Asset
 }
 
@@ -127,7 +131,7 @@ function Verify-ManifestDigest([string]$Name) {
     if ($Entry.sha256.ToLowerInvariant() -ne $Actual) { throw "artifacts.json digest mismatch for $Name" }
   }
 }
-foreach ($Asset in @($PayloadAsset, $LauncherAsset, 'guiho-s-runx.zip', 'guiho-i-runx.md', 'guiho-p-runx.md', 'guiho-p-runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json', 'artifacts.json')) {
+foreach ($Asset in @($PayloadAsset, $LauncherAsset, $RxsLauncherAsset, 'guiho-s-runx.zip', 'guiho-i-runx.md', 'guiho-p-runx.md', 'guiho-p-runx-uninstall.md', 'runx.schema.json', 'runx.global.schema.json', 'artifacts.json')) {
   Verify-Checksum $Asset
   Verify-ManifestDigest $Asset
 }
@@ -204,33 +208,46 @@ $Utf8NoBom = New-Object System.Text.UTF8Encoding($false)
 [IO.File]::WriteAllText((Join-Path $Staging 'current.json.new'), $PointerJson, $Utf8NoBom)
 
 $LauncherPath = Join-Path $BinDir 'runx.exe'
+$RxsLauncherPath = Join-Path $BinDir 'rxs.exe'
 $BackupLauncher = Join-Path $Staging 'launcher.previous'
+$BackupRxsLauncher = Join-Path $Staging 'rxs-launcher.previous'
 $HadLauncher = Test-Path -LiteralPath $LauncherPath
 if ($HadLauncher) { Copy-Item -LiteralPath $LauncherPath -Destination $BackupLauncher }
+$HadRxsLauncher = Test-Path -LiteralPath $RxsLauncherPath
+if ($HadRxsLauncher) { Copy-Item -LiteralPath $RxsLauncherPath -Destination $BackupRxsLauncher }
 
 function Commit-Activation {
   New-Item -ItemType Directory -Force -Path $BinDir | Out-Null
   Move-Item -Force -LiteralPath (Join-Path $Staging 'current.json.new') -Destination $PointerPath
   Copy-Item -LiteralPath (Join-Path $Staging $LauncherAsset) -Destination "$LauncherPath.tmp" -Force
   Move-Item -Force -LiteralPath "$LauncherPath.tmp" -Destination $LauncherPath
+  Copy-Item -LiteralPath (Join-Path $Staging $RxsLauncherAsset) -Destination "$RxsLauncherPath.tmp" -Force
+  Move-Item -Force -LiteralPath "$RxsLauncherPath.tmp" -Destination $RxsLauncherPath
 }
 function Restore-Installation {
   Restore-Pointer
   if ($HadLauncher) { Copy-Item -Force -LiteralPath $BackupLauncher -Destination $LauncherPath }
   else { Remove-Item -Force -ErrorAction SilentlyContinue -LiteralPath $LauncherPath }
+  if ($HadRxsLauncher) { Copy-Item -Force -LiteralPath $BackupRxsLauncher -Destination $RxsLauncherPath }
+  else { Remove-Item -Force -ErrorAction SilentlyContinue -LiteralPath $RxsLauncherPath }
   Remove-Item -Recurse -Force -ErrorAction SilentlyContinue -LiteralPath $DestVersionDir
   if ($HadVersionDir) { Copy-Item -LiteralPath $BackupVersionDir -Destination $DestVersionDir -Recurse }
 }
 
 $ActualVersion = ''
+$RxsActualVersion = ''
 try {
   Commit-Activation
   if ($env:RUNX_INSTALL_TEST_FAIL_AFTER_ACTIVATION -eq '1') { throw 'injected post-activation failure' }
   $env:RUNX_DISABLE_UPDATE_WORKER = '1'; $env:RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = '1'
-  try { $ActualVersion = (& $LauncherPath --version).Trim() } finally {
+  try {
+    $ActualVersion = (& $LauncherPath --version).Trim()
+    $RxsActualVersion = (& $RxsLauncherPath --version).Trim()
+  } finally {
     $env:RUNX_DISABLE_UPDATE_WORKER = $PreviousUpdate; $env:RUNX_DISABLE_AGENT_MAINTENANCE_WORKER = $PreviousMaintenance
   }
   if ($ActualVersion -ne $TargetVersion) { throw "activated launcher reports '$ActualVersion', want $TargetVersion" }
+  if ($RxsActualVersion -ne $TargetVersion) { throw "activated rxs launcher reports '$RxsActualVersion', want $TargetVersion" }
 } catch {
   $Failure = $_.Exception.Message
   Restore-Installation
@@ -263,6 +280,7 @@ if ($env:RUNX_INSTALL_TEST_MODE -eq '1' -or $env:RUNX_SKIP_PATH_UPDATE -eq '1') 
 
 Write-Host "[OK] Installed and verified RunX $ActualVersion"
 Write-Host "Launcher: $LauncherPath"
+Write-Host "rxs launcher: $RxsLauncherPath"
 Write-Host "Active payload: $(Join-Path $DestVersionDir 'runx-payload.exe')"
 Write-Host "RunX home: $CliDir"
 } finally {
