@@ -22,6 +22,7 @@ files:
   forward-command-arguments.md: Defines GitHub issue 25 argument ownership, safe forwarding, and dry-run acceptance.
   issues-36-39.md: Defines the combined GitHub issue 36 identity-resolution and issue 39 init-default outcome.
   guiho-convention-0001-cli-compliance-migration.md: Tracks every unit and gate in the breaking GUIHO CLI Convention 0001 compliance migration.
+  2026-10-22-runx-smart-and-rxs-launcher.md: Defines runx smart, the rxs launcher, dual-launcher lifecycle coverage, and the 0.17.0 release acceptance.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   bounded-update-worker.md: Task specification for the bounded RunX update worker
@@ -54,6 +55,15 @@ documents:
     GUIHO CLI Convention 0001 compliance.
   agent-readiness.md: 'Acceptance and verified binding for distinct readiness issue
     #65.'
+  2026-10-22-runx-smart-and-rxs-launcher.md: Task specification for the runx smart
+    command, the rxs launcher, and the authorized 0.17.0 minor release.
+  2026-08-30-rx-and-user-only-commands.md: Prior task specification for the short
+    alias and informational userOnly flag, superseded in launcher naming by runx
+    smart and rxs.
+  inspection-lifecycle-boundary.md: Default non-mutating catalog inspection and
+    dry-run scheduling contract with fixture evidence and build-review gate.
+  native-background-policy.md: Current native transport, model authority, task
+    binding, and independent-review acceptance for RunX instructions.
 tags:
   - todo
 keywords:

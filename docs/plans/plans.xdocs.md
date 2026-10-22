@@ -2,7 +2,8 @@
 subject: runx-plans
 description: Executable implementation plans for RunX milestones.
 parent: runx-docs
-children: []
+children:
+  - runx-plan-runx-smart
 files:
   alpha-implementation.md: Breaks the accepted alpha into implementation and validation units.
   automatic-agent-maintenance.md: Implements non-blocking automatic global skill and nearest AGENTS.md reconciliation for issue 11.
@@ -20,6 +21,7 @@ files:
   windows-git-bash-auto-shell.md: Fixes issue 47 caller-aware Windows shell:auto behavior and sequences its protected patch delivery.
   windows-self-upgrade.md: Sequences synchronous Windows replacement, rollback coverage, validation, issue closure, and patch delivery.
   upgrade-reliability-implementation.md: Sequences release discovery, streamed progress, transactional replacement, recovery, installers, and validation.
+  2026-08-30-rx-and-user-only-commands.md: Four sealed units plus release for the short alias and informational userOnly flag; launcher naming is superseded by runx smart and rxs.
 documents:
   alpha-implementation.md: Plan used for the initial RunX implementation.
   automatic-agent-maintenance.md: Approved automatic agent-maintenance implementation plan.
@@ -37,6 +39,7 @@ documents:
   windows-git-bash-auto-shell.md: Approved executable plan for preserving Git Bash caller semantics during Windows automatic shell execution.
   windows-self-upgrade.md: Approved executable plan for fixing Windows native self-upgrade and delivering its patch.
   upgrade-reliability-implementation.md: Approved executable plan for GitHub issues 12 and 13.
+  2026-08-30-rx-and-user-only-commands.md: Four-unit plan for the short alias and informational userOnly flag; launcher naming is superseded by runx smart and rxs.
 tags:
   - plans
 keywords:
