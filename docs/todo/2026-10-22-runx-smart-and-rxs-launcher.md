@@ -32,7 +32,7 @@ ergonomics already accepted in the RX planning record.
 ## Todo Index
 
 - Task: `30. RunX Smart Command and rxs Launcher`
-- Status: in progress
+- Status: testing
 - Index: [TODO.md](../../TODO.md)
 - GitHub project item: [RunX #66](https://github.com/CGuiho/runx/issues/66)
 - GitHub component: `runx`
@@ -126,6 +126,17 @@ and uninstall transactionally, and the next minor release publishes them.
 
 - Record validation evidence, handoff notes, Mirror plan/apply evidence, the
   published asset list, and installed `rxs` smoke output.
+
+## Delivery
+
+- Handoff and evidence:
+  [docs/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md](../reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md)
+- Release: `runx/v0.17.0`, 48 assets, including eight `rxs-launcher-*` files;
+  publish workflow run 39728177667 succeeded.
+- Installed locally at `0.17.0` with both launchers verified.
+- Residual risks (pre-existing Windows CI failure, `curl | sh` mismatch,
+  whole-release launcher refresh) are recorded in the handoff for human
+  review, not silently changed.
 
 ## Lifecycle Waiver
 

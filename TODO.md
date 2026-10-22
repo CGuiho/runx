@@ -21,8 +21,8 @@
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 2 |
-| testing | 5 |
+| in progress | 1 |
+| testing | 6 |
 | stopped | 0 |
 | completed | 23 |
 
@@ -416,10 +416,10 @@
 
 ### 30. RunX Smart Command and rxs Launcher
 
-- Status: in progress
+- Status: testing
 - Priority: highest
 - Created: `2026-10-22T00:00:00Z`
-- Updated: `2026-10-22T00:00:00Z`
+- Updated: `2026-10-22T05:45:00Z`
 - Outcome: `runx smart` lists the catalog when bare and runs a catalog command by selector with the canonical list/run behavior, while the new `rxs` launcher at `$HOME/.guiho/bin/rxs` forwards to it with root-flag parity; both launchers install, upgrade, uninstall, and publish transactionally as the next minor release.
 - Spec: [docs/todo/2026-10-22-runx-smart-and-rxs-launcher.md](docs/todo/2026-10-22-runx-smart-and-rxs-launcher.md)
 - GitHub project item: [RunX #66](https://github.com/CGuiho/runx/issues/66)
@@ -429,7 +429,8 @@
   - [docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-release-plumbing.md](docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-release-plumbing.md) - Release plumbing worker brief.
   - [docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-agent-artifacts-docs.md](docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-agent-artifacts-docs.md) - Agent artifacts and documentation worker brief.
   - [docs/todo/2026-08-30-rx-and-user-only-commands.md](docs/todo/2026-08-30-rx-and-user-only-commands.md) - Prior RX record whose launcher name this task supersedes.
-- Delivery: Implementation delegated to three native background workers; minor release publication authorized by CG on 2026-10-22.
+  - [docs/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md](docs/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md) - Self-review handoff, validation evidence, release evidence, and disclosed residual risks.
+- Delivery: Three native background workers delivered the core CLI, release plumbing, and agent artifacts; `runx/v0.17.0` published with 48 assets including eight `rxs-launcher-*` files, and the local installation runs `0.17.0` with both launchers verified.
 
 ## Readiness Task Seed — 2026-10-04
 

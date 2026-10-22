@@ -6,6 +6,7 @@ children:
   - runx-architecture-reviews
   - runx-implementation-reviews
   - runx-plan-reviews
+  - runx-reviews-handoff
 files: {}
 documents:
   guiho-convention-0001-cli-compliance-audit.md: Repository-wide compliance audit of RunX against GUIHO CLI Convention 0001.
