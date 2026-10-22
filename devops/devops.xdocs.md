@@ -5,14 +5,14 @@ parent: runx
 children:
   - runx-conventionv1-devops
 files:
-  build-binaries.go: Builds eight immutable payloads, eight stable launchers, transition compatibility aliases for the 0.14.3–0.14.5 upgrader defect, agent resources, schemas, artifacts.json, and deterministic checksums.
-  verify-release-assets.go: Verifies the exact protocol-v1 artifact set including transition aliases, manifest digests, every SHA-256 entry, and the skill archive structure.
+  build-binaries.go: Builds eight immutable payloads, eight stable runx launchers, eight stable rxs launchers, transition compatibility aliases for the 0.14.3–0.14.5 upgrader defect, agent resources, schemas, artifacts.json, and deterministic checksums.
+  verify-release-assets.go: Verifies the exact protocol-v1 artifact set (46 declared artifacts, 47 checksum entries) including transition aliases, manifest digests, every SHA-256 entry, and the skill archive structure.
   extract-release-notes.go: Extracts one exact version section from CHANGELOG.md for protected-tag publication.
-  install.ps1: Stages under one unique $HOME/.guiho/.temp/ child, unconditionally removes that child in finally, hashes with .NET SHA-256, verifies and self-tests, writes BOM-free current.json, installs the canonical launcher/payload layout, rolls back on failure, and configures PATH idempotently.
-  install_ps1_test.go: Verifies script contracts and syntax, then runs native Windows PowerShell clean install, injected rollback, reinstall, different-version upgrade, same-version idempotence, and zero leftover installer staging after every outcome.
-  install.sh: Detects Linux AMD64, ARM64, ARMv7, ARMv6 or Darwin targets, supports --version/--channel selection across full release pagination, verifies checksums and manifest digests, self-tests before activation, installs the canonical layout with rollback, and updates PATH idempotently.
-  uninstall.ps1: Shares the uninstallation contract with REMOVE/PRESERVE planning, preservation options, dry-run, fail-closed confirmation, managed-block-only instruction removal, and Windows delete-on-close quarantine semantics.
-  uninstall.sh: Shares the uninstallation contract with REMOVE/PRESERVE planning, preservation options, dry-run, fail-closed confirmation, owned-path-only removal, and managed-block-only instruction removal.
+  install.ps1: Stages under one unique $HOME/.guiho/.temp/ child, unconditionally removes that child in finally, hashes with .NET SHA-256, verifies and self-tests, writes BOM-free current.json, installs the canonical runx and rxs launcher/payload layout with both launchers backed up and rolled back together, verifies both launchers after activation, and configures PATH idempotently.
+  install_ps1_test.go: Verifies script contracts and syntax (including rxs launcher coverage), then runs native Windows PowerShell clean install, injected rollback, reinstall, different-version upgrade, same-version idempotence, and zero leftover installer staging after every outcome against fake releases that declare and serve the rxs launcher.
+  install.sh: Detects Linux AMD64, ARM64, ARMv7, ARMv6 or Darwin targets, supports --version/--channel selection across full release pagination, verifies checksums and manifest digests, self-tests before activation, installs the canonical runx and rxs launcher layout with both launchers backed up and rolled back together, verifies both launchers after activation, and updates PATH idempotently.
+  uninstall.ps1: Shares the uninstallation contract with REMOVE/PRESERVE planning, preservation options, dry-run, fail-closed confirmation, managed-block-only instruction removal, runx and rxs launcher removal, and Windows delete-on-close quarantine semantics.
+  uninstall.sh: Shares the uninstallation contract with REMOVE/PRESERVE planning, preservation options, dry-run, fail-closed confirmation, owned-path-only removal including the rxs launcher, and managed-block-only instruction removal.
   build-binaries.ts: Legacy Bun 14-asset builder retained as migration history and not invoked by current scripts or workflows.
   verify-release-assets.ts: Legacy Bun asset verifier retained as migration history and not invoked by current scripts or workflows.
   extract-release-notes.ts: Legacy Bun release-note extractor retained as migration history and not invoked by current workflows.
@@ -27,17 +27,22 @@ tags:
   - releases
 keywords:
   - runx
+  - rxs
   - checksums
   - cross compilation
   - Raspberry Pi
-  - 11 artifacts
+  - 46 declared artifacts
 flags: []
 status: stable
 ---
 
 The Go programs and shell installers are current release authority. Releases
-contain the protocol-v1 launcher/payload matrix, agent resources, schemas,
-ownership/checksum manifests, and checksummed compatibility aliases that let
-0.14.3–0.14.5 installations enter the corrected upgrade path. Windows CI runs
+contain the protocol-v1 launcher/payload matrix — eight stable runx launchers
+and eight stable rxs launchers beside the versioned payloads — agent resources,
+schemas, ownership/checksum manifests, and checksummed compatibility aliases
+that let 0.14.3–0.14.5 installations enter the corrected upgrade path. Both
+installers verify and roll back both launchers as one transaction; all three
+uninstall interfaces remove both launchers while preserving the shared
+`$HOME/.guiho/bin/` directory. Windows CI runs
 the actual PowerShell installer through clean-install and reinstall activation.
 TypeScript files in this directory are retained history only.
