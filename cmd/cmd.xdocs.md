@@ -4,7 +4,7 @@ description: Fresh, dependency-injected Cobra command tree for RunX domain, help
 parent: runx
 children:
   - runx-launcher-command
-  - runx-rx
+  - runx-rxs
 files:
   root.go: Constructs fresh Cobra trees, maps exits, bootstraps bare-invocation agent integration, injects dependencies including terminal detection and build information, schedules hidden lifecycle workers, exposes the hidden installation self-test, and owns the help-tree flags including --help-tree-global-flags.
   catalog.go: Implements real manifest-backed check, aligned list, numeric-index-aware describe/reveal/run, and safe-default interactive confirmation with exact retries; owns the shared list and run execution bodies reused by the smart command.

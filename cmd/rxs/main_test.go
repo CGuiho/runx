@@ -12,9 +12,9 @@ func TestTranslateArgs(t *testing.T) {
 		expected []string
 	}{
 		{
-			name:     "bare rx",
+			name:     "bare rxs runs payload smart",
 			input:    []string{},
-			expected: []string{"list"},
+			expected: []string{"smart"},
 		},
 		{
 			name:     "version flag short",
@@ -67,59 +67,69 @@ func TestTranslateArgs(t *testing.T) {
 			expected: []string{"--color"},
 		},
 		{
-			name:     "list with format json",
+			name:     "list options forward through smart",
 			input:    []string{"--format", "json"},
-			expected: []string{"list", "--format", "json"},
+			expected: []string{"smart", "--format", "json"},
 		},
 		{
 			name:     "list with cwd",
 			input:    []string{"--cwd", "/tmp"},
-			expected: []string{"list", "--cwd", "/tmp"},
+			expected: []string{"smart", "--cwd", "/tmp"},
 		},
 		{
 			name:     "list with config",
 			input:    []string{"--config", "custom.yaml"},
-			expected: []string{"list", "--config", "custom.yaml"},
+			expected: []string{"smart", "--config", "custom.yaml"},
 		},
 		{
 			name:     "list with verbose",
 			input:    []string{"--verbose"},
-			expected: []string{"list", "--verbose"},
+			expected: []string{"smart", "--verbose"},
 		},
 		{
-			name:     "run with selector",
+			name:     "selector forwards through smart",
 			input:    []string{"build"},
-			expected: []string{"run", "build"},
+			expected: []string{"smart", "build"},
 		},
 		{
-			name:     "run with numeric index",
+			name:     "numeric index forwards through smart",
 			input:    []string{"1"},
-			expected: []string{"run", "1"},
+			expected: []string{"smart", "1"},
 		},
 		{
-			name:     "run with selector and child args",
+			name:     "selector with child args",
 			input:    []string{"build", "--foo", "bar"},
-			expected: []string{"run", "build", "--foo", "bar"},
+			expected: []string{"smart", "build", "--foo", "bar"},
 		},
 		{
-			name:     "run with selector and delimiter child args",
+			name:     "selector with delimiter child args",
 			input:    []string{"build", "--", "--dry-run"},
-			expected: []string{"run", "build", "--", "--dry-run"},
+			expected: []string{"smart", "build", "--", "--dry-run"},
 		},
 		{
-			name:     "run with options before selector",
+			name:     "options before selector",
 			input:    []string{"--cwd", "/tmp", "deploy"},
-			expected: []string{"run", "--cwd", "/tmp", "deploy"},
+			expected: []string{"smart", "--cwd", "/tmp", "deploy"},
 		},
 		{
-			name:     "run with dry-run before selector",
+			name:     "dry-run before selector",
 			input:    []string{"--dry-run", "1"},
-			expected: []string{"run", "--dry-run", "1"},
+			expected: []string{"smart", "--dry-run", "1"},
 		},
 		{
-			name:     "run with yes before selector",
+			name:     "yes before selector",
 			input:    []string{"--yes", "deploy"},
-			expected: []string{"run", "--yes", "deploy"},
+			expected: []string{"smart", "--yes", "deploy"},
+		},
+		{
+			name:     "list or run translation stays in the payload",
+			input:    []string{"--format", "json", "build"},
+			expected: []string{"smart", "--format", "json", "build"},
+		},
+		{
+			name:     "explicit dry-run false forwards through smart",
+			input:    []string{"--dry-run=false", "deploy"},
+			expected: []string{"smart", "--dry-run=false", "deploy"},
 		},
 	}
 

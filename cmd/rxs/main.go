@@ -1,6 +1,8 @@
-// Command rx is the short alias launcher installed at $HOME/.guiho/bin/rx(.exe).
-// It translates ergonomics (bare rx -> runx list, rx <selector> -> runx run <selector>,
-// version and help passthrough) and delegates to the committed active RunX payload.
+// Command rxs is the short launcher installed at $HOME/.guiho/bin/rxs(.exe).
+// It delegates to the committed active RunX payload: bare rxs runs the payload
+// smart subcommand (catalog listing), root entry flags pass through unchanged,
+// and every other argument list forwards as smart <args> so the payload owns
+// the list-or-run translation.
 package main
 
 import (
@@ -12,6 +14,8 @@ import (
 	"github.com/CGuiho/runx/pkg/launcher"
 )
 
+// isRootPassthrough reports whether the argument list belongs to the payload
+// root: the version and help entry points that smart must not own.
 func isRootPassthrough(args []string) bool {
 	if len(args) == 0 {
 		return false
@@ -29,60 +33,38 @@ func isRootPassthrough(args []string) bool {
 	return false
 }
 
+// translateArgs maps rxs ergonomics onto the payload: root entry flags reach
+// the payload root unchanged, and everything else forwards through the smart
+// subcommand so the payload parses its own options before the selector.
 func translateArgs(rawArgs []string) []string {
 	if len(rawArgs) == 0 {
-		return []string{"list"}
+		return []string{"smart"}
 	}
 	if isRootPassthrough(rawArgs) {
 		return rawArgs
 	}
-
-	hasPositional := false
-	for i := 0; i < len(rawArgs); {
-		arg := rawArgs[i]
-		if arg == "--" {
-			if i+1 < len(rawArgs) {
-				hasPositional = true
-			}
-			break
-		}
-		if strings.HasPrefix(arg, "-") {
-			if (arg == "--cwd" || arg == "--config" || arg == "--format" || arg == "--help-tree-depth") && i+1 < len(rawArgs) {
-				i += 2
-			} else {
-				i++
-			}
-		} else {
-			hasPositional = true
-			break
-		}
-	}
-
-	if !hasPositional {
-		return append([]string{"list"}, rawArgs...)
-	}
-	return append([]string{"run"}, rawArgs...)
+	return append([]string{"smart"}, rawArgs...)
 }
 
 func main() {
 	args := translateArgs(os.Args[1:])
 	pointer, err := installstate.ReadPointer()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "rx launcher: %v\n", err)
+		fmt.Fprintf(os.Stderr, "rxs launcher: %v\n", err)
 		os.Exit(5)
 	}
 	payload, err := launcher.PayloadPath(pointer)
 	if err != nil {
 		fallback, fallbackErr := launcher.FallbackPath(pointer)
 		if fallbackErr != nil || fallback == "" {
-			fmt.Fprintf(os.Stderr, "rx launcher: %v\n", err)
+			fmt.Fprintf(os.Stderr, "rxs launcher: %v\n", err)
 			os.Exit(5)
 		}
 		payload = fallback
 	}
 	code, err := delegate(payload, args...)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "rx launcher: %v\n", err)
+		fmt.Fprintf(os.Stderr, "rxs launcher: %v\n", err)
 		os.Exit(5)
 	}
 	os.Exit(code)
