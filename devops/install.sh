@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # GUIHO RunX installer (Convention 0001).
-# Installs the stable launcher into $HOME/.guiho/bin/, immutable payloads into
+# Installs the stable runx and rxs launchers into $HOME/.guiho/bin/,
+# immutable payloads into
 # $HOME/.guiho/runx/versions/<version>/, activates via an atomic current.json
 # pointer, verifies every artifact against checksums.txt and artifacts.json,
 # and rolls back completely on failure.
@@ -126,6 +127,7 @@ fi
 ASSET_BASE="$DOWNLOAD_BASE/$TAG_ENCODED"
 PAYLOAD_ASSET="runx-payload-$PLATFORM"
 LAUNCHER_ASSET="runx-launcher-$PLATFORM"
+RXS_LAUNCHER_ASSET="rxs-launcher-$PLATFORM"
 
 GUIHO_ROOT="$HOME/.guiho"
 CLI_DIR="$GUIHO_ROOT/runx"
@@ -138,13 +140,14 @@ mkdir -p "$TEMP_ROOT"
 STAGING="$(mktemp -d "$TEMP_ROOT/runx-install-XXXXXXXX")"
 
 printf '%s\n' 'Initiating GUIHO CLI Upgrade / Installation Sequence...'
-printf 'Target Version: %s\nPlatform:       %s\nPayload Asset:  %s\nSource URL:     %s\nStaging:         %s\n' \
-  "$VERSION" "$PLATFORM" "$PAYLOAD_ASSET" "$ASSET_BASE" "$STAGING"
+printf 'Target Version: %s\nPlatform:       %s\nPayload Asset:  %s\nLauncher Asset: %s\nrxs Asset:      %s\nSource URL:     %s\nStaging:         %s\n' \
+  "$VERSION" "$PLATFORM" "$PAYLOAD_ASSET" "$LAUNCHER_ASSET" "$RXS_LAUNCHER_ASSET" "$ASSET_BASE" "$STAGING"
 
 download(){ curl --fail --location --progress-bar --output "$STAGING/$2" "$ASSET_BASE/$2"; }
 
 download "$ASSET_BASE" "$PAYLOAD_ASSET"
 download "$ASSET_BASE" "$LAUNCHER_ASSET"
+download "$ASSET_BASE" "$RXS_LAUNCHER_ASSET"
 download "$ASSET_BASE" checksums.txt
 download "$ASSET_BASE" artifacts.json
 download "$ASSET_BASE" guiho-s-runx.zip
@@ -167,7 +170,7 @@ manifest_digest(){
   ' "$STAGING/artifacts.json"
 }
 
-FILES="$PAYLOAD_ASSET $LAUNCHER_ASSET guiho-s-runx.zip guiho-i-runx.md guiho-p-runx.md guiho-p-runx-uninstall.md runx.schema.json runx.global.schema.json artifacts.json"
+FILES="$PAYLOAD_ASSET $LAUNCHER_ASSET $RXS_LAUNCHER_ASSET guiho-s-runx.zip guiho-i-runx.md guiho-p-runx.md guiho-p-runx-uninstall.md runx.schema.json runx.global.schema.json artifacts.json"
 for asset in $FILES; do
   verify_checksum "$asset" "$asset"
   declared="$(manifest_digest x "$asset")"
@@ -232,8 +235,11 @@ else
 fi
 
 LAUNCHER_PATH="$BIN_DIR/runx"
+RXS_LAUNCHER_PATH="$BIN_DIR/rxs"
 BACKUP_LAUNCHER=""
+BACKUP_RXS_LAUNCHER=""
 if [ -e "$LAUNCHER_PATH" ]; then BACKUP_LAUNCHER="$STAGING/launcher.previous"; cp -- "$LAUNCHER_PATH" "$BACKUP_LAUNCHER"; fi
+if [ -e "$RXS_LAUNCHER_PATH" ]; then BACKUP_RXS_LAUNCHER="$STAGING/rxs-launcher.previous"; cp -- "$RXS_LAUNCHER_PATH" "$BACKUP_RXS_LAUNCHER"; fi
 
 commit(){
   mv -- "$STAGING/current.json.new" "$POINTER_PATH"
@@ -241,11 +247,15 @@ commit(){
   cp -- "$STAGING/$LAUNCHER_ASSET" "$LAUNCHER_PATH.tmp"
   chmod 0755 "$LAUNCHER_PATH.tmp"
   mv -f -- "$LAUNCHER_PATH.tmp" "$LAUNCHER_PATH"
+  cp -- "$STAGING/$RXS_LAUNCHER_ASSET" "$RXS_LAUNCHER_PATH.tmp"
+  chmod 0755 "$RXS_LAUNCHER_PATH.tmp"
+  mv -f -- "$RXS_LAUNCHER_PATH.tmp" "$RXS_LAUNCHER_PATH"
 }
 
 restore_previous(){
   rollback_pointer
-  if [ -n "$BACKUP_LAUNCHER" ]; then cp -- "$BACKUP_LAUNCHER" "$LAUNCHER_PATH"; chmod 0755 "$LAUNCHER_PATH"; fi
+  if [ -n "$BACKUP_LAUNCHER" ]; then cp -- "$BACKUP_LAUNCHER" "$LAUNCHER_PATH"; chmod 0755 "$LAUNCHER_PATH"; else rm -f -- "$LAUNCHER_PATH"; fi
+  if [ -n "$BACKUP_RXS_LAUNCHER" ]; then cp -- "$BACKUP_RXS_LAUNCHER" "$RXS_LAUNCHER_PATH"; chmod 0755 "$RXS_LAUNCHER_PATH"; else rm -f -- "$RXS_LAUNCHER_PATH"; fi
   rm -rf -- "$DEST_VERSION_DIR"
 }
 
@@ -253,6 +263,8 @@ if ! commit; then restore_previous; fail 'activation failed and was rolled back'
 
 ACTUAL_VERSION="$(RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$LAUNCHER_PATH" --version)" || { restore_previous; fail 'activated launcher failed version verification'; }
 if [ "$ACTUAL_VERSION" != "$VERSION" ]; then restore_previous; fail "activated launcher reports $ACTUAL_VERSION, want $VERSION"; fi
+RXS_ACTUAL_VERSION="$(RUNX_DISABLE_UPDATE_WORKER=1 RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1 "$RXS_LAUNCHER_PATH" --version)" || { restore_previous; fail 'activated rxs launcher failed version verification'; }
+if [ "$RXS_ACTUAL_VERSION" != "$VERSION" ]; then restore_previous; fail "activated rxs launcher reports $RXS_ACTUAL_VERSION, want $VERSION"; fi
 
 if [ "${RUNX_SKIP_PATH_UPDATE:-0}" != 1 ]; then
   case ":$PATH:" in *":$BIN_DIR:"*) ;; *)
@@ -262,6 +274,6 @@ if [ "${RUNX_SKIP_PATH_UPDATE:-0}" != 1 ]; then
 fi
 
 printf '[OK] Installed and verified RunX %s\n' "$ACTUAL_VERSION"
-printf 'Launcher: %s\nActive payload: %s/%s\nRunX home: %s\nAgent skill: %s\n' \
-  "$LAUNCHER_PATH" "$DEST_VERSION_DIR" "$PAYLOAD_FILE" "$CLI_DIR" "$RESOURCES_DIR/skills/guiho-s-runx"
+printf 'Launcher: %s\nrxs launcher: %s\nActive payload: %s/%s\nRunX home: %s\nAgent skill: %s\n' \
+  "$LAUNCHER_PATH" "$RXS_LAUNCHER_PATH" "$DEST_VERSION_DIR" "$PAYLOAD_FILE" "$CLI_DIR" "$RESOURCES_DIR/skills/guiho-s-runx"
 [ "${RUNX_SKIP_PATH_UPDATE:-0}" = 1 ] || case ":$PATH:" in *":$BIN_DIR:"*) ;; *) printf 'Restart your shell or run: source ~/.profile\n' ;; esac
