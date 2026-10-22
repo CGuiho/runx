@@ -27,11 +27,12 @@ files:
   runx.yaml: RunX command catalog for this repository's supported development and validation commands.
 documents:
   AGENTS.md: Repository rules for the Go CLI, XDocs, Mirror, validation, and protected release boundaries.
-  CHANGELOG.md: Mirror-managed historical release record.
+  CHANGELOG.md: Mirror-managed historical release record, including the runx smart and rxs launcher release entries.
   CONTRIBUTING.md: Go validation, documentation, and protected release contribution workflow.
-  DOCS.md: Complete production CLI, manifest, execution confirmation, lifecycle, agent, upgrade, installer, legacy-to-native migration, and protocol-v1 release reference.
+  DOCS.md: Complete production CLI, manifest, execution confirmation, smart/rxs ergonomics, lifecycle, agent, upgrade, installer, legacy-to-native migration, and protocol-v1 release reference.
   LICENSE.md: MIT license.
-  README.md: Public installation with concise verified bootstrap commands, legacy-to-native migration, and cross-shell PATH guidance, plus manifest-v2, stable UID, numeric-index, safe confirmation, command, and Go release overviews.
+  MANDUME.md: Inactive historical Mandume guidance retained for reference; the active worker authority lives in AGENTS.md.
+  README.md: Public installation with concise verified bootstrap commands and a runx smart/rxs quick start, plus manifest-v2, stable UID, numeric-index, safe confirmation, command, and Go release overviews.
   SECURITY.md: Vulnerability reporting and trusted-manifest boundary.
   TODO.md: Package-local task index and migration status.
 tags:
@@ -41,6 +42,8 @@ tags:
   - open source
 keywords:
   - runx
+  - runx smart
+  - rxs
   - command catalog
   - yaml
   - manifest v2
