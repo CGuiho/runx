@@ -1,10 +1,10 @@
 //go:build ignore
 
 // Command build-binaries compiles the complete Convention 0001 release matrix:
-// eight immutable runx-payload-* executables, eight stable launchers, the
-// bundled skill archive, the agent instruction, both configuration schemas,
-// the artifacts.json ownership manifest, and checksums.txt covering every
-// artifact except itself.
+// eight immutable runx-payload-* executables, eight stable runx launchers,
+// eight stable rxs launchers, the bundled skill archive, the agent
+// instruction, both configuration schemas, the artifacts.json ownership
+// manifest, and checksums.txt covering every artifact except itself.
 package main
 
 import (
@@ -103,10 +103,18 @@ func main() {
 		fmt.Printf("built %s\n", payloadName)
 		buildBinary(filepath.Join(*output, launcherName), item.goos, item.goarch, item.tuning, "./cmd/runx-launcher", *version, *commit, stamp)
 		fmt.Printf("built %s\n", launcherName)
+		// The rxs smart launcher is a second stable launcher beside runx. It
+		// shares the active-payload pointer and has no compatibility alias: the
+		// unshipped rx name is never published.
+		rxsLauncherName := fmt.Sprintf("rxs-launcher-%s%s", item.name, exeSuffix(item.goos))
+		buildBinary(filepath.Join(*output, rxsLauncherName), item.goos, item.goarch, item.tuning, "./cmd/rxs", *version, *commit, stamp)
+		fmt.Printf("built %s\n", rxsLauncherName)
 		payloadInstalledPath := "./.guiho/runx/versions/" + *version + "/" + payloadFileName(item.goos)
 		launcherInstalledPath := "./.guiho/bin/runx" + exeSuffix(item.goos)
+		rxsLauncherInstalledPath := "./.guiho/bin/rxs" + exeSuffix(item.goos)
 		add("payload/"+item.name, payloadName, "payload", item.goos, item.archName(), payloadInstalledPath)
 		add("launcher/"+item.name, launcherName, "launcher", item.goos, item.archName(), launcherInstalledPath)
+		add("rxs-launcher/"+item.name, rxsLauncherName, "launcher", item.goos, item.archName(), rxsLauncherInstalledPath)
 
 		// Releases 0.14.3 through 0.14.5 accidentally looked for an extra
 		// `runx-` segment in protocol-v1 payload and launcher asset names.
