@@ -15,6 +15,8 @@ keywords:
 owner: runx-prompts
 ---
 
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
+
 # RunX Agent Instruction
 
 Load the `guiho-s-runx` skill. From the intended project directory, run
@@ -27,7 +29,9 @@ belong before the selector; every token after it is forwarded to the child.
 Resolve exact global UIDs before canonical selectors or unique unqualified ID
 shorthands. A UID may equal another command's ID; duplicate unqualified IDs
 remain ambiguous and must fail. Never add `--yes` unless the developer
-explicitly authorizes the confirmation-gated command.
+explicitly authorizes the confirmation-gated command. `runx smart` and the
+installed `rxs` short launcher provide the same catalog listing and execution
+ergonomics.
 
 When editing catalogs, use manifest v2: required `namespace`, recursive
 `commands`, command `id` leaves, group `group` nodes, and explicit reciprocal
