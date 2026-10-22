@@ -93,32 +93,38 @@ func newCheckCommand(deps Dependencies) *cobra.Command {
 	return command
 }
 
+// runCatalogList is the canonical catalog listing body shared by the list
+// command and the bare smart command so their output cannot drift.
+func runCatalogList(command *cobra.Command, deps Dependencies, flags catalogFlags) error {
+	catalog, err := loadCatalog(command, deps, flags)
+	if err != nil {
+		return err
+	}
+	commands := manifest.SortedCommands(catalog.Commands)
+	if flags.format == "json" {
+		return writeJSON(command, struct {
+			Configuration string                     `json:"configuration"`
+			Namespace     string                     `json:"namespace"`
+			Commands      []manifest.ResolvedCommand `json:"commands"`
+		}{catalog.Path, catalog.Namespace, commands})
+	}
+	fmt.Fprintf(command.OutOrStdout(), "configuration file loaded: %s\nRunX commands\n\n", catalog.Path)
+	table := tabwriter.NewWriter(command.OutOrStdout(), 0, 4, 2, ' ', 0)
+	fmt.Fprintln(table, "IDX\tUID\tSELECTOR\tSUMMARY")
+	for _, item := range commands {
+		suffix := ""
+		if item.Confirm == "always" {
+			suffix = " [confirm]"
+		}
+		fmt.Fprintf(table, "%d\t%s\t%s\t%s%s\n", item.Index, item.UID, item.Selector, item.Summary, suffix)
+	}
+	return table.Flush()
+}
+
 func newListCommand(deps Dependencies) *cobra.Command {
 	var flags catalogFlags
 	command := &cobra.Command{Use: "list", Short: "List commands in a RunX configuration.", Args: cobra.NoArgs, RunE: func(command *cobra.Command, _ []string) error {
-		catalog, err := loadCatalog(command, deps, flags)
-		if err != nil {
-			return err
-		}
-		commands := manifest.SortedCommands(catalog.Commands)
-		if flags.format == "json" {
-			return writeJSON(command, struct {
-				Configuration string                     `json:"configuration"`
-				Namespace     string                     `json:"namespace"`
-				Commands      []manifest.ResolvedCommand `json:"commands"`
-			}{catalog.Path, catalog.Namespace, commands})
-		}
-		fmt.Fprintf(command.OutOrStdout(), "configuration file loaded: %s\nRunX commands\n\n", catalog.Path)
-		table := tabwriter.NewWriter(command.OutOrStdout(), 0, 4, 2, ' ', 0)
-		fmt.Fprintln(table, "IDX\tUID\tSELECTOR\tSUMMARY")
-		for _, item := range commands {
-			suffix := ""
-			if item.Confirm == "always" {
-				suffix = " [confirm]"
-			}
-			fmt.Fprintf(table, "%d\t%s\t%s\t%s%s\n", item.Index, item.UID, item.Selector, item.Summary, suffix)
-		}
-		return table.Flush()
+		return runCatalogList(command, deps, flags)
 	}}
 	addCatalogFlags(command, &flags)
 	return command
@@ -164,67 +170,75 @@ func newRevealCommand(deps Dependencies) *cobra.Command {
 	return command
 }
 
+// runCatalogRun is the canonical execution body shared by the run command and
+// the selector form of the smart command so behavior cannot drift: confirmation
+// handling, dry-run plans, child argument forwarding, and exit codes are one
+// implementation.
+func runCatalogRun(command *cobra.Command, deps Dependencies, flags catalogFlags, dryRun, yes bool, args []string) error {
+	catalog, err := loadCatalog(command, deps, flags)
+	if err != nil {
+		return err
+	}
+	selected, ok := catalog.Resolve(args[0])
+	if !ok {
+		return withExitCode(3, fmt.Errorf("command %q was not found", args[0]))
+	}
+	childArgs := append([]string{}, args[1:]...)
+	if len(childArgs) > 0 && childArgs[0] == "--" {
+		childArgs = childArgs[1:]
+	}
+	if selected.Confirm == "always" && !yes {
+		retry := confirmationRetry(command, flags, dryRun, args[0], childArgs)
+		if flags.format == "text" && deps.IsTerminal(command.InOrStdin()) {
+			approved, promptErr := promptForConfirmation(command, selected.UID, retry)
+			if promptErr != nil {
+				return withExitCode(2, fmt.Errorf("could not read confirmation: %w", promptErr))
+			}
+			if !approved {
+				return withExitCode(2, fmt.Errorf("command %s was not authorized; to run without prompting: %s", selected.UID, retry))
+			}
+		} else {
+			return withExitCode(2, fmt.Errorf("command %s requires confirmation; rerun exactly: %s", selected.UID, retry))
+		}
+	}
+	plan := struct {
+		UID       string   `json:"uid"`
+		Selector  string   `json:"selector"`
+		Manifest  string   `json:"manifest"`
+		CWD       string   `json:"cwd"`
+		Shell     string   `json:"shell"`
+		Command   string   `json:"command"`
+		Arguments []string `json:"arguments"`
+	}{selected.UID, selected.Selector, selected.CatalogPath, selected.CWD, selected.Shell, selected.Command, childArgs}
+	if dryRun {
+		if flags.format == "json" {
+			return writeJSON(command, plan)
+		}
+		fmt.Fprintf(command.OutOrStdout(), "uid: %s\nselector: %s\nmanifest: %s\ncwd: %s\nshell: %s\ncommand: %s\narguments:\n", plan.UID, plan.Selector, plan.Manifest, plan.CWD, plan.Shell, plan.Command)
+		if len(childArgs) == 0 {
+			fmt.Fprintln(command.OutOrStdout(), "  (none)")
+		} else {
+			for index, value := range childArgs {
+				fmt.Fprintf(command.OutOrStdout(), "  [%d] %q\n", index, value)
+			}
+		}
+		return nil
+	}
+	result, err := executor.ExecuteCommand(executor.ExecutionOptions{Command: selected.Command, Args: childArgs, CWD: selected.CWD, Shell: selected.Shell, In: command.InOrStdin(), Out: command.OutOrStdout(), Err: command.ErrOrStderr()})
+	if err != nil {
+		return withExitCode(1, err)
+	}
+	if result.ExitCode != 0 {
+		return &ChildExitError{Code: result.ExitCode}
+	}
+	return nil
+}
+
 func newRunCommand(deps Dependencies) *cobra.Command {
 	var flags catalogFlags
 	var dryRun, yes bool
 	command := &cobra.Command{Use: "run [options] <uid-or-selector-or-index> [--] [child arguments...]", Short: "Execute one selected catalog command.", Args: cobra.MinimumNArgs(1), RunE: func(command *cobra.Command, args []string) error {
-		catalog, err := loadCatalog(command, deps, flags)
-		if err != nil {
-			return err
-		}
-		selected, ok := catalog.Resolve(args[0])
-		if !ok {
-			return withExitCode(3, fmt.Errorf("command %q was not found", args[0]))
-		}
-		childArgs := append([]string{}, args[1:]...)
-		if len(childArgs) > 0 && childArgs[0] == "--" {
-			childArgs = childArgs[1:]
-		}
-		if selected.Confirm == "always" && !yes {
-			retry := confirmationRetry(command, flags, dryRun, args[0], childArgs)
-			if flags.format == "text" && deps.IsTerminal(command.InOrStdin()) {
-				approved, promptErr := promptForConfirmation(command, selected.UID, retry)
-				if promptErr != nil {
-					return withExitCode(2, fmt.Errorf("could not read confirmation: %w", promptErr))
-				}
-				if !approved {
-					return withExitCode(2, fmt.Errorf("command %s was not authorized; to run without prompting: %s", selected.UID, retry))
-				}
-			} else {
-				return withExitCode(2, fmt.Errorf("command %s requires confirmation; rerun exactly: %s", selected.UID, retry))
-			}
-		}
-		plan := struct {
-			UID       string   `json:"uid"`
-			Selector  string   `json:"selector"`
-			Manifest  string   `json:"manifest"`
-			CWD       string   `json:"cwd"`
-			Shell     string   `json:"shell"`
-			Command   string   `json:"command"`
-			Arguments []string `json:"arguments"`
-		}{selected.UID, selected.Selector, selected.CatalogPath, selected.CWD, selected.Shell, selected.Command, childArgs}
-		if dryRun {
-			if flags.format == "json" {
-				return writeJSON(command, plan)
-			}
-			fmt.Fprintf(command.OutOrStdout(), "uid: %s\nselector: %s\nmanifest: %s\ncwd: %s\nshell: %s\ncommand: %s\narguments:\n", plan.UID, plan.Selector, plan.Manifest, plan.CWD, plan.Shell, plan.Command)
-			if len(childArgs) == 0 {
-				fmt.Fprintln(command.OutOrStdout(), "  (none)")
-			} else {
-				for index, value := range childArgs {
-					fmt.Fprintf(command.OutOrStdout(), "  [%d] %q\n", index, value)
-				}
-			}
-			return nil
-		}
-		result, err := executor.ExecuteCommand(executor.ExecutionOptions{Command: selected.Command, Args: childArgs, CWD: selected.CWD, Shell: selected.Shell, In: command.InOrStdin(), Out: command.OutOrStdout(), Err: command.ErrOrStderr()})
-		if err != nil {
-			return withExitCode(1, err)
-		}
-		if result.ExitCode != 0 {
-			return &ChildExitError{Code: result.ExitCode}
-		}
-		return nil
+		return runCatalogRun(command, deps, flags, dryRun, yes, args)
 	}}
 	addCatalogFlags(command, &flags)
 	command.Flags().BoolVar(&dryRun, "dry-run", false, "Print the execution plan without spawning.")
