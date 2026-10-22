@@ -14,7 +14,7 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.4.2"
+  version: "0.5.0"
 ---
 
 #### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
@@ -72,6 +72,16 @@ Use either:
 runx reveal [--cwd <path>] [--config <path>] [--verbose] <uid-or-selector-or-index>
 runx run [RunX options] <uid-or-selector-or-index> [--] <child arguments...>
 ```
+
+`runx smart` is the ergonomic entry point: bare `runx smart` lists the catalog
+exactly like `runx list`, and `runx smart <selector> [--] [child arguments...]`
+runs exactly like `runx run <selector> ...`. The installed short launcher `rxs`
+(`$HOME/.guiho/bin/rxs`, `rxs.exe` on Windows) exposes the same list and run
+behavior and the root entry points `-v`/`--version`, `-h`/`--help`,
+`--help-tree`, `--help-docs`, and `--help-tree-depth`, delegating to the active
+RunX payload. In both forms, options before the selector are RunX options and
+every token after the selector belongs to the child. `rx` is not a RunX
+command; the name collides with an unrelated Linux tool.
 
 Listing, revealing, describing, checking, help, agent operations, and dry runs
 must never execute a manifest command. Preserve the child command's exact exit
