@@ -4,14 +4,16 @@ description: Agent workflow for safe RunX catalog work, deterministic UID/canoni
 parent: runx-skills
 children: []
 files:
-  SKILL.md: RFC-aligned RunX catalog inspection and exact-command revelation, deterministic UID/canonical/ID and numeric selector guidance, opt-in confirmation rules for explicitly requested never/always values, safe-default prompt and explicit confirmation rules, execution safety, YAML precedence, agent, init, and upgrade guidance.
+  SKILL.md: RunX catalog inspection and exact-command revelation workflow with deterministic selector resolution, runx smart/rxs ergonomics, opt-in confirmation rules, execution safety, YAML precedence, and agent, init, and upgrade guidance.
 documents:
-  SKILL.md: RunX-specific command execution and verified native self-upgrade workflow.
+  SKILL.md: RunX-specific command execution, smart entry-point ergonomics, and verified native self-upgrade workflow.
 tags:
   - agents
   - runx
 keywords:
   - runx
+  - runx smart
+  - rxs
   - cobra
   - command catalog
   - dry run
@@ -23,6 +25,8 @@ keywords:
 flags: []
 status: stable
 ---
+
+#### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
 
 The skill makes manifest inspection, stable UID or interactive numeric-index
 selection, dry runs, and user-requested prompt-or-flag confirmation the default
