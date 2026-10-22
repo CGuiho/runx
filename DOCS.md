@@ -13,6 +13,8 @@ keywords:
   - runx
   - cobra
   - manifest v2
+  - runx smart
+  - rxs
   - release
 ---
 
@@ -39,6 +41,7 @@ runx
 ├── describe <uid-or-selector-or-index>
 ├── reveal <uid-or-selector-or-index>
 ├── run [options] <uid-or-selector-or-index> [--] [child arguments...]
+├── smart [options] [<uid-or-selector-or-index> [--] [child arguments...]]
 ├── check
 ├── init
 ├── agent
@@ -184,6 +187,25 @@ options, the selected identity, the child delimiter, and child arguments.
 Supplying `--yes` before the selector bypasses the prompt. Child process exit
 codes are preserved.
 
+`runx smart` is the primary ergonomic entry point. Bare `runx smart` lists the
+catalog through the canonical list implementation and is byte-identical to
+`runx list` for the same `--cwd`, `--config`, `--format`, and `--verbose`.
+`runx smart <selector> [--] [child arguments...]` executes through the
+canonical run implementation and behaves exactly like `runx run <selector>
+...`, including confirmation handling, dry-run JSON, child argument forwarding,
+and exit-code preservation. Its flags parse natively and stop at the first
+positional, so every token after the selector belongs to the child. `runx smart
+-h`/`--help`, `--help-tree`, `--help-tree-depth`, and `--help-docs` describe
+the `smart` command itself; `-v`/`--version` remains top-level only.
+
+The installed short launcher `rxs` (`$HOME/.guiho/bin/rxs`, `rxs.exe` on
+Windows) delegates to the active RunX payload resolved from
+`~/.guiho/runx/current.json`: bare `rxs` lists the catalog through `smart`,
+`rxs <selector> ...` runs one command, and the root entry points
+`-v`/`--version`, `-h`/`--help`, `--help-tree`, `--help-docs`, and
+`--help-tree-depth` match the `runx` root behavior. `rx` is not a RunX command;
+the name collides with an unrelated Linux tool, so only `rxs` ships.
+
 ## Agent Resources
 
 The Go binary embeds the RunX skill and instruction prompt. Skill install/update
@@ -208,7 +230,7 @@ engine stages every release artifact under `$HOME/.guiho/.temp/runx-upgrade-<id>
 verifies each against `checksums.txt`, runs the staged payload's hidden
 self-test, installs an immutable version directory, atomically swaps the
 `current.json` pointer while retaining the previous verified version, verifies
-the result through the stable launcher, and rolls back the pointer and version
+the result through both stable launchers, and rolls back the pointer and version
 directory on any failure. The running executable is never replaced. Legacy
 direct-binary installations keep the verified staged-replacement updater; every
 terminal outcome prints the two-line reinstallation recovery block pinned to
@@ -222,16 +244,17 @@ only `--version`/`--channel` (PowerShell `-Version`/`-Channel`) selection with
 release-catalog pagination, stage downloads under
 `$HOME/.guiho/.temp/runx-install-<id>`, verify checksums and the
 `artifacts.json` manifest for every artifact, self-test the payload before
-activation, install immutable payloads plus the stable launcher into the
-canonical `.guiho` layout, activate via atomic pointer swap with previous-version
-rollback, preserve configuration and data on reinstall, update the user PATH
-idempotently, and verify the installed launcher version.
+activation, install immutable payloads plus both stable launchers (`runx` and
+`rxs`) into the canonical `.guiho` layout, verify and activate both
+transactionally via atomic pointer swap with previous-version rollback,
+preserve configuration and data on reinstall, update the user PATH
+idempotently, and verify the installed launcher versions.
 
 `devops/uninstall.sh`, `devops/uninstall.ps1`, and `runx uninstall` share one
 uninstallation contract: a REMOVE/PRESERVE plan, `--preserve-config`,
 `--preserve-data`, `--dry-run`, and `--yes`; fail-closed noninteractive use;
-managed-block-only instruction removal; and preservation of shared
-`.guiho/` infrastructure.
+removal of both stable launchers (`runx` and `rxs`); managed-block-only
+instruction removal; and preservation of shared `.guiho/` infrastructure.
 
 ## Exit Codes
 
@@ -249,8 +272,9 @@ managed-block-only instruction removal; and preservation of shared
 
 `devops/build-binaries.go` produces the protocol-v1 matrix: eight immutable
 payload executables (`runx-payload-<os>-<arch>` for Linux AMD64/ARM64/ARMv7/ARMv6,
-Darwin AMD64/ARM64, Windows AMD64/ARM64), eight stable launchers
-(`runx-launcher-<os>-<arch>`), `guiho-s-runx.zip`, `guiho-i-runx.md`,
+Darwin AMD64/ARM64, Windows AMD64/ARM64), two stable launchers per platform
+(`runx-launcher-<os>-<arch>` and `rxs-launcher-<os>-<arch>`),
+`guiho-s-runx.zip`, `guiho-i-runx.md`,
 `runx.schema.json`, `runx.global.schema.json`, an `artifacts.json` ownership
 manifest declaring every artifact's digest, kind, and canonical installed path,
 and a `checksums.txt` covering every artifact except itself.
