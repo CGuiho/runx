@@ -37,6 +37,7 @@ GUIHO_ROOT="$HOME/.guiho"
 CLI_DIR="$GUIHO_ROOT/runx"
 BIN_DIR="$GUIHO_ROOT/bin"
 LAUNCHER="$BIN_DIR/runx"
+RXS_LAUNCHER="$BIN_DIR/rxs"
 PROJECT_DIR="$(pwd)"
 
 REMOVE=()
@@ -51,6 +52,7 @@ add_preserve "$GUIHO_ROOT/.temp (shared staging root)"
 add_preserve "user PATH entry for $BIN_DIR"
 
 if [ -f "$LAUNCHER" ]; then add_remove "$LAUNCHER"; fi
+if [ -f "$RXS_LAUNCHER" ]; then add_remove "$RXS_LAUNCHER"; fi
 if [ -d "$CLI_DIR" ]; then
   if [ "$PRESERVE_CONFIG" = true ] || [ "$PRESERVE_DATA" = true ]; then
     add_preserve "$CLI_DIR/runx.global.yaml"
@@ -107,13 +109,14 @@ remove_path(){
   target="$1"
   # Fail closed on anything that escapes CLI-owned roots.
   case "$target" in
-    "$CLI_DIR"|"$CLI_DIR"/*|"$LAUNCHER"|"$HOME/.agents/skills/guiho-s-runx"|"$HOME/.claude/skills/guiho-s-runx") ;;
+    "$CLI_DIR"|"$CLI_DIR"/*|"$LAUNCHER"|"$RXS_LAUNCHER"|"$HOME/.agents/skills/guiho-s-runx"|"$HOME/.claude/skills/guiho-s-runx") ;;
     *) fail "refusing to remove unowned path: $target" ;;
   esac
   rm -rf -- "$target"
 }
 
 [ -e "$LAUNCHER" ] && remove_path "$LAUNCHER"
+[ -e "$RXS_LAUNCHER" ] && remove_path "$RXS_LAUNCHER"
 if [ -d "$CLI_DIR" ]; then
   if [ "$PRESERVE_CONFIG" = false ] && [ "$PRESERVE_DATA" = false ]; then
     remove_path "$CLI_DIR"
