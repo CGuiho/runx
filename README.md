@@ -5,7 +5,8 @@
 RunX is a native Go/Cobra CLI for documented, language-agnostic command
 catalogs. A project owns one explicit `runx.yaml`; RunX validates and describes
 catalog commands without executing them, `runx reveal` prints one exact command
-for copy-and-paste, and only `runx run` starts a configured command.
+for copy-and-paste, and only `runx run` — directly, through `runx smart`, or
+through the installed `rxs` short launcher — starts a configured command.
 
 ## Install
 
@@ -40,9 +41,34 @@ Both installers accept `--version <semver>` / `-Version <semver>` or
 stable). They stage downloads under `$HOME/.guiho/.temp/`, verify every artifact
 against `checksums.txt` and the release `artifacts.json` manifest, run the
 payload's hidden self-test before activation, install immutable payloads into
-`$HOME/.guiho/runx/versions/<version>/`, activate them through the stable
-launcher at `$HOME/.guiho/bin/runx`, preserve configuration and data on
-reinstall, and roll back completely on failure.
+`$HOME/.guiho/runx/versions/<version>/`, activate them through both stable
+launchers at `$HOME/.guiho/bin/runx` and `$HOME/.guiho/bin/rxs`, preserve
+configuration and data on reinstall, and roll back completely on failure.
+
+## Quick Start
+
+```bash
+runx smart                    # list the catalog
+runx smart test               # run one catalog command
+runx smart --dry-run test     # inspect without executing
+```
+
+`runx smart` is the primary ergonomic entry point. Bare `runx smart` lists the
+catalog exactly like `runx list`, and `runx smart <selector> [--] [child
+arguments...]` runs one catalog command exactly like `runx run <selector> ...`,
+including confirmation handling and exit-code preservation. RunX options such as
+`--dry-run`, `--yes`, `--cwd`, and `--format` belong before the selector; every
+token after the selector belongs to the child and is forwarded without
+reinterpretation.
+
+The installed short launcher `rxs` (`$HOME/.guiho/bin/rxs`, `rxs.exe` on
+Windows) exposes the same entry points: bare `rxs` lists, `rxs <selector> ...`
+runs, and its `-v`/`--version`, `-h`/`--help`, `--help-tree`, `--help-docs`,
+and `--help-tree-depth` entry points match the `runx` root behavior. `rxs`
+delegates to the active RunX payload resolved from `~/.guiho/runx/current.json`.
+
+`rx` is not a RunX command: the name collides with an unrelated Linux tool, so
+RunX ships `rxs` and never `rx`.
 
 ## Start
 
@@ -162,12 +188,12 @@ including ARMv6 versus ARMv7.
 
 ## Uninstall
 
-Uninstallation removes every RunX-owned artifact by default: the stable
-launcher, all versioned payloads, `$HOME/.guiho/runx/`, global configuration,
-persistent data, managed agent-skill copies, the managed instruction block in
-the project's `AGENTS.md`, and the project's `runx.yaml`. The shared
-`$HOME/.guiho/` infrastructure, its `bin/` and `.temp/` directories, and the
-user PATH entry are preserved.
+Uninstallation removes every RunX-owned artifact by default: both stable
+launchers (`runx` and `rxs`), all versioned payloads, `$HOME/.guiho/runx/`,
+global configuration, persistent data, managed agent-skill copies, the managed
+instruction block in the project's `AGENTS.md`, and the project's `runx.yaml`.
+The shared `$HOME/.guiho/` infrastructure, its `bin/` and `.temp/` directories,
+and the user PATH entry are preserved.
 
 Windows (PowerShell):
 
