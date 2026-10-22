@@ -21,7 +21,7 @@
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
+| in progress | 2 |
 | testing | 5 |
 | stopped | 0 |
 | completed | 23 |
@@ -413,6 +413,23 @@
   - [docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md](docs/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) - Exact safe inspection commands and delivery gates.
   - [docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md](docs/reviews/implementation/2026-10-04-readiness-runx-independent-review.md) - Installed-binary filesystem/process proof, exact backups/provenance and reviewed delivery.
 - Delivery: Independently accepted implementation plain-pushed through `dccc8fe`; checked dev build active at existing `/usr/local/bin/runx` with both exact existing skill copies refreshed and backed up. OPEN/Testing remains pending human acceptance.
+
+### 30. RunX Smart Command and rxs Launcher
+
+- Status: in progress
+- Priority: highest
+- Created: `2026-10-22T00:00:00Z`
+- Updated: `2026-10-22T00:00:00Z`
+- Outcome: `runx smart` lists the catalog when bare and runs a catalog command by selector with the canonical list/run behavior, while the new `rxs` launcher at `$HOME/.guiho/bin/rxs` forwards to it with root-flag parity; both launchers install, upgrade, uninstall, and publish transactionally as the next minor release.
+- Spec: [docs/todo/2026-10-22-runx-smart-and-rxs-launcher.md](docs/todo/2026-10-22-runx-smart-and-rxs-launcher.md)
+- GitHub project item: [RunX #66](https://github.com/CGuiho/runx/issues/66)
+- GitHub component: `runx`
+- Related files:
+  - [docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-core-cli.md](docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-core-cli.md) - Core CLI worker brief.
+  - [docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-release-plumbing.md](docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-release-plumbing.md) - Release plumbing worker brief.
+  - [docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-agent-artifacts-docs.md](docs/plans/2026-10-22-runx-smart/execution/handoffs/2026-10-22-agent-artifacts-docs.md) - Agent artifacts and documentation worker brief.
+  - [docs/todo/2026-08-30-rx-and-user-only-commands.md](docs/todo/2026-08-30-rx-and-user-only-commands.md) - Prior RX record whose launcher name this task supersedes.
+- Delivery: Implementation delegated to three native background workers; minor release publication authorized by CG on 2026-10-22.
 
 ## Readiness Task Seed — 2026-10-04
 
