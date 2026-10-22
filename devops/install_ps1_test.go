@@ -99,6 +99,23 @@ func TestUninstallersShareTheContract(t *testing.T) {
 	}
 }
 
+func TestLifecycleScriptsCoverTheRxsLauncher(t *testing.T) {
+	contracts := map[string][]string{
+		"install.sh":    {"rxs-launcher-", "$BIN_DIR/rxs", "$RXS_LAUNCHER_ASSET", `"$RXS_LAUNCHER_PATH" --version`},
+		"install.ps1":   {"rxs-launcher-", "'rxs.exe'", "$RxsLauncherAsset", "$RxsLauncherPath --version"},
+		"uninstall.sh":  {"$BIN_DIR/rxs", "$RXS_LAUNCHER"},
+		"uninstall.ps1": {"'rxs.exe'", "$RxsLauncherPath"},
+	}
+	for name, elements := range contracts {
+		script := readInstaller(t, name)
+		for _, expected := range elements {
+			if !strings.Contains(script, expected) {
+				t.Errorf("%s is missing rxs launcher contract element %q", name, expected)
+			}
+		}
+	}
+}
+
 func TestPowerShellScriptsParse(t *testing.T) {
 	if runtime.GOOS != "windows" {
 		t.Skip("PowerShell parsing is Windows-specific")
@@ -258,21 +275,24 @@ func TestPowerShellInstallerAndWholeReleaseUpgrade(t *testing.T) {
 		}
 
 		launcher := installstate.LauncherPathIn(home)
-		command := exec.Command(launcher, "--version")
-		command.Env = append(os.Environ(),
-			"HOME="+home,
-			"USERPROFILE="+home,
-			"LOCALAPPDATA="+filepath.Join(home, "AppData", "Local"),
-			"APPDATA="+filepath.Join(home, "AppData", "Roaming"),
-			"RUNX_DISABLE_UPDATE_WORKER=1",
-			"RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1",
-		)
-		output, runErr := command.CombinedOutput()
-		if runErr != nil {
-			t.Fatalf("%s launcher failed: %v\n%s", label, runErr, output)
-		}
-		if got := strings.TrimSpace(string(output)); got != wantVersion {
-			t.Fatalf("%s launcher version = %q, want %q", label, got, wantVersion)
+		rxsName := strings.ReplaceAll(installstate.LauncherName(), "runx", "rxs")
+		for name, executable := range map[string]string{"runx launcher": launcher, "rxs launcher": filepath.Join(installstate.BinDirIn(home), rxsName)} {
+			command := exec.Command(executable, "--version")
+			command.Env = append(os.Environ(),
+				"HOME="+home,
+				"USERPROFILE="+home,
+				"LOCALAPPDATA="+filepath.Join(home, "AppData", "Local"),
+				"APPDATA="+filepath.Join(home, "AppData", "Roaming"),
+				"RUNX_DISABLE_UPDATE_WORKER=1",
+				"RUNX_DISABLE_AGENT_MAINTENANCE_WORKER=1",
+			)
+			output, runErr := command.CombinedOutput()
+			if runErr != nil {
+				t.Fatalf("%s %s failed: %v\n%s", label, name, runErr, output)
+			}
+			if got := strings.TrimSpace(string(output)); got != wantVersion {
+				t.Fatalf("%s %s version = %q, want %q", label, name, got, wantVersion)
+			}
 		}
 	}
 
@@ -292,6 +312,8 @@ func TestPowerShellInstallerAndWholeReleaseUpgrade(t *testing.T) {
 				"draft":    false, "prerelease": false,
 				"assets": []map[string]string{
 					{"name": "runx-payload-windows-amd64.exe", "browser_download_url": "https://fixture/runx-payload-windows-amd64.exe"},
+					{"name": "runx-launcher-windows-amd64.exe", "browser_download_url": "https://fixture/runx-launcher-windows-amd64.exe"},
+					{"name": "rxs-launcher-windows-amd64.exe", "browser_download_url": "https://fixture/rxs-launcher-windows-amd64.exe"},
 					{"name": "checksums.txt", "browser_download_url": "https://fixture/checksums.txt"},
 				},
 			}}
@@ -389,8 +411,10 @@ func buildWindowsFixture(t *testing.T, repositoryRoot, fixture, version string) 
 
 	payload := filepath.Join(fixture, "runx-payload-windows-amd64.exe")
 	launcher := filepath.Join(fixture, "runx-launcher-windows-amd64.exe")
+	rxsLauncher := filepath.Join(fixture, "rxs-launcher-windows-amd64.exe")
 	build(payload, ".", fmt.Sprintf("-X main.version=%s -X main.commit=installer-test -X main.buildDate=2026-01-01T00:00:00Z -X main.buildTarget=runx-windows-amd64", version))
 	build(launcher, "./cmd/runx-launcher", "")
+	build(rxsLauncher, "./cmd/rxs", "")
 
 	archivePath := filepath.Join(fixture, "guiho-s-runx.zip")
 	archiveFile, err := os.Create(archivePath)
@@ -426,7 +450,7 @@ func buildWindowsFixture(t *testing.T, repositoryRoot, fixture, version string) 
 	}
 
 	assetNames := []string{
-		filepath.Base(payload), filepath.Base(launcher), "guiho-s-runx.zip",
+		filepath.Base(payload), filepath.Base(launcher), filepath.Base(rxsLauncher), "guiho-s-runx.zip",
 		"guiho-i-runx.md", "guiho-p-runx.md", "guiho-p-runx-uninstall.md",
 		"runx.schema.json", "runx.global.schema.json",
 	}
