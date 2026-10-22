@@ -11,6 +11,7 @@ documents:
   alpha-command-catalog.md: Requirements for the RunX alpha command catalog.
   runx-0.6.0-cli-experience.md: Approved requirements for the RunX 0.6.0 CLI experience release.
   manifest-v2-composition.md: Approved RunX manifest v2 composition requirements.
+  2026-08-30-rx-and-user-only-commands.md: Requirements for the short alias list/run delegation, entry-point parity, dual-binary lifecycle, and the informational userOnly flag.
 tags:
   - requirements
 keywords:

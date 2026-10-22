@@ -64,6 +64,7 @@ documents:
   runx-0.12.1-shell-auto-release.md: Final release, asset, npm, native checksum, reveal, and Git Bash path-probe acceptance for issue 47.
   guiho-convention-0001-first-protocol-v1.md: Validation report for the RunX 0.13.0 protocol-v1 release.
   windows-installer-pointer-encoding.md: Validation report for the RunX PR 59 Windows installer and protocol-v1 upgrade correction.
+  2026-10-04-readiness-runx-prerequisite.md: Filesystem regressions, native task-binary provenance, process traces, safe invocation semantics, and unresolved delivery boundaries for the readiness prerequisite.
 tags:
   - validation
 keywords:

@@ -46,6 +46,8 @@ documents:
   runx-reveal-review.md: Accepted implementation review evidence for the RunX reveal command in PR #50.
   runx-windows-git-bash-auto-shell-review.md: Accepted implementation review evidence for the Windows Git Bash automatic-shell correction in PR #55.
   windows-installer-pointer-encoding-review.md: Accepted implementation review evidence for the Windows installation and upgrade correction in PR 59.
+  2026-10-04-readiness-runx-independent-review.md: Independent scheduler and operating-policy review with runtime regressions, binary and skill provenance, task readbacks, and remaining readiness gaps.
+  2026-10-04-readiness-runx-prerequisite-review.md: Scoped self-review of native operating policy, scheduling exclusions, meaningful regressions, and documentation and task delivery gates.
 tags:
   - reviews
   - implementation

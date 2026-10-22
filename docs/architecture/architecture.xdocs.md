@@ -9,6 +9,7 @@ files:
 documents:
   cli-architecture.md: Technical architecture for the first RunX CLI release.
   guiho-convention-0001-cli-compliance-migration.md: Proposed breaking architecture for full GUIHO CLI Convention 0001 compliance.
+  2026-08-30-rx-and-user-only-commands.md: Accepted architecture for the short alias and informational userOnly flag; the launcher name is superseded by runx smart and rxs.
 tags:
   - architecture
 keywords:
