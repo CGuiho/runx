@@ -14,7 +14,7 @@ keywords:
   - dry run
 owner: guiho-s-runx
 metadata:
-  version: "0.5.0"
+  version: "0.6.0"
 ---
 
 #### &copy; 2026 [GUIHO](https://guiho.co) as represented by [Cristóvão GUIHO](https://guiho.co/cguiho) All Rights Reserved.
