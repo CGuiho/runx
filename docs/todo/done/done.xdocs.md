@@ -17,6 +17,7 @@ files:
   windows-git-bash-auto-shell-implementation.md: Completed task 22 Luna implementation, exact-head review, validation, and patch-release record.
   windows-installer-pointer-encoding.md: Completed task 24 incident record for BOM-free Windows installation, standard whole-release checksums, synchronous upgrade, and idempotence.
   windows-installer-staging-cleanup.md: Completed task 25 public acceptance record for unconditional unique Windows installer staging cleanup.
+  runx-catalog-formatting-preference.md: Completed CG runx.yaml catalog layout preference record for the RunX agent skill.
 documents:
   done.md: Permanent completion ledger for archived RunX tasks.
   manifest-v2-composition.md: Completed task specification for RunX manifest v2 composition.
@@ -32,6 +33,7 @@ documents:
   windows-git-bash-auto-shell-implementation.md: Completed implementation and delivery record for the Windows Git Bash automatic-shell correction.
   windows-installer-pointer-encoding.md: Completed incident, implementation, validation, and 0.14.8 public acceptance record.
   windows-installer-staging-cleanup.md: Completed task specification and 0.14.9 public failure/recovery cleanup evidence.
+  runx-catalog-formatting-preference.md: Completed task specification and acceptance record for CG's compact, table-aligned runx.yaml catalog layout preference.
 tags:
   - todo
   - done

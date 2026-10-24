@@ -35,10 +35,11 @@ change, no manifest reformatting, no CLI behavior change.
 ## Todo Index
 
 - Task: `31. Record CG runx.yaml Catalog Formatting Preference In The Agent Skill`
-- Status: in progress
-- Index: [todo.md](../../todo.md)
-- GitHub project item: [RunX #68](https://github.com/CGuiho/runx/issues/68)
+- Status: completed
+- Index: [done.md](done.md)
+- GitHub project item: [RunX #68](https://github.com/CGuiho/runx/issues/68), closed.
 - GitHub component: `runx`
+- Original index: [../../../todo.md](../../../todo.md)
 
 ## Outcome
 
@@ -50,8 +51,8 @@ example whose columns are mechanically verified to align.
 
 ### In scope
 
-- [skills/guiho-s-runx/SKILL.md](../../skills/guiho-s-runx/SKILL.md) - repository skill source.
-- [embed/skills/guiho-s-runx.SKILL.md](../../embed/skills/guiho-s-runx.SKILL.md) - runtime embedded copy, kept identical in the new section.
+- [skills/guiho-s-runx/SKILL.md](../../../skills/guiho-s-runx/SKILL.md) - repository skill source.
+- [embed/skills/guiho-s-runx.SKILL.md](../../../embed/skills/guiho-s-runx.SKILL.md) - runtime embedded copy, kept identical in the new section.
 - The installed global projection `~/.agents/skills/guiho-s-runx/SKILL.md`,
   refreshed with the same section so the live skill matches.
 
@@ -89,5 +90,5 @@ example whose columns are mechanically verified to align.
 
 ## References
 
-- [todo.md](../../todo.md)
-- [skills/guiho-s-runx/SKILL.md](../../skills/guiho-s-runx/SKILL.md)
+- [todo.md](../../../todo.md)
+- [skills/guiho-s-runx/SKILL.md](../../../skills/guiho-s-runx/SKILL.md)

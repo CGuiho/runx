@@ -90,3 +90,12 @@ keywords:
 - Workflow: [Publish 31469968479](https://github.com/CGuiho/runx/actions/runs/31469968479), successful after the authorized package/source environment approval.
 - Acceptance: non-draft/non-prerelease release with exactly 11 assets, independent checksums and GitHub digests, downloaded Windows AMD64 version/help/help-tree smoke, and npm latest `0.11.1`.
 - Production boundary: no deployment, promotion, traffic, DNS, database, secret, or other production-infrastructure mutation occurred.
+
+## 2026-10-24 - RunX Catalog Formatting Preference
+
+- Specification: [runx-catalog-formatting-preference.md](runx-catalog-formatting-preference.md)
+- Task ledger: [todo.md](../../../todo.md) task `31. Record CG runx.yaml Catalog Formatting Preference In The Agent Skill`.
+- Issue: [CGuiho/runx#68](https://github.com/CGuiho/runx/issues/68), closed as done on human acceptance.
+- Delivery: commits `f7496e9`, `ec77251`, `59ee8d0`, `8b9541d`, `fda8bbb`, `c1e67f3` — the `Compact Catalog Layout (CG preference, 2026-10-24)` agent-skill section, worker brief, verification result note, `metadata.version` 0.6.0, and the testing record.
+- Acceptance: CG accepted the result; mechanical lane-column, YAML-example and `runx check` verification passed and an UltraCode review returned `verified-complete`; the section is byte-identical across `skills/guiho-s-runx/SKILL.md`, `embed/skills/guiho-s-runx.SKILL.md`, and the installed global projection.
+- Production boundary: agent-skill documentation only; no CLI behavior change.
