@@ -21,8 +21,8 @@
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 2 |
-| testing | 6 |
+| in progress | 1 |
+| testing | 7 |
 | stopped | 0 |
 | completed | 23 |
 
@@ -434,15 +434,17 @@
 
 ### 31. Record CG runx.yaml Catalog Formatting Preference In The Agent Skill
 
-- Status: in progress
+- Status: testing
 - Created: `2026-10-24T17:43:34Z`
-- Updated: `2026-10-24T17:43:34Z`
+- Updated: `2026-10-24T18:09:20Z`
 - Outcome: The RunX agent skill instructs agents to write and show runx.yaml catalogs one command per line (at most two lines per command) with `uid`, `id`, `command` first and every key aligned in its own table column.
 - Spec: [docs/todo/runx-catalog-formatting-preference.md](docs/todo/runx-catalog-formatting-preference.md)
 - GitHub project item: [RunX #68](https://github.com/CGuiho/runx/issues/68)
 - GitHub component: `runx`
 - Related files:
   - [docs/plans/2026-10-24-runx-catalog-formatting/execution/handoffs/2026-10-24-skill-section-general.md](docs/plans/2026-10-24-runx-catalog-formatting/execution/handoffs/2026-10-24-skill-section-general.md) - Worker brief for the skill-section unit.
+  - [docs/plans/2026-10-24-runx-catalog-formatting/execution/results/2026-10-24-skill-section-general.md](docs/plans/2026-10-24-runx-catalog-formatting/execution/results/2026-10-24-skill-section-general.md) - Worker verification transcript, validation evidence, and deviations.
+- Delivery: Native background worker (`general`, `vercel/xiaomi/mimo-v2.6-pro#high`) delivered the section in `59ee8d0` and its result note in `8b9541d`; parent verified byte-identical section text across both repository copies and the installed projection, exact lane columns, YAML examples, and `runx check`, then added the Convention 0002 `metadata.version` 0.6.0 bump in `fda8bbb`. UltraCode review verdict `verified-complete`, no fix units. OPEN/Testing remains pending human acceptance.
 
 ## Readiness Task Seed — 2026-10-04
 
