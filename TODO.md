@@ -21,7 +21,7 @@
 | Status | Count |
 | --- | ---: |
 | todo | 0 |
-| in progress | 1 |
+| in progress | 2 |
 | testing | 6 |
 | stopped | 0 |
 | completed | 23 |
@@ -431,6 +431,18 @@
   - [docs/todo/2026-08-30-rx-and-user-only-commands.md](docs/todo/2026-08-30-rx-and-user-only-commands.md) - Prior RX record whose launcher name this task supersedes.
   - [docs/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md](docs/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md) - Self-review handoff, validation evidence, release evidence, and disclosed residual risks.
 - Delivery: Three native background workers delivered the core CLI, release plumbing, and agent artifacts; `runx/v0.17.0` published with 48 assets including eight `rxs-launcher-*` files, and the local installation runs `0.17.0` with both launchers verified.
+
+### 31. Record CG runx.yaml Catalog Formatting Preference In The Agent Skill
+
+- Status: in progress
+- Created: `2026-10-24T17:43:34Z`
+- Updated: `2026-10-24T17:43:34Z`
+- Outcome: The RunX agent skill instructs agents to write and show runx.yaml catalogs one command per line (at most two lines per command) with `uid`, `id`, `command` first and every key aligned in its own table column.
+- Spec: [docs/todo/runx-catalog-formatting-preference.md](docs/todo/runx-catalog-formatting-preference.md)
+- GitHub project item: [RunX #68](https://github.com/CGuiho/runx/issues/68)
+- GitHub component: `runx`
+- Related files:
+  - [docs/plans/2026-10-24-runx-catalog-formatting/execution/handoffs/2026-10-24-skill-section-general.md](docs/plans/2026-10-24-runx-catalog-formatting/execution/handoffs/2026-10-24-skill-section-general.md) - Worker brief for the skill-section unit.
 
 ## Readiness Task Seed — 2026-10-04
 

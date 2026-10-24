@@ -23,6 +23,7 @@ files:
   issues-36-39.md: Defines the combined GitHub issue 36 identity-resolution and issue 39 init-default outcome.
   guiho-convention-0001-cli-compliance-migration.md: Tracks every unit and gate in the breaking GUIHO CLI Convention 0001 compliance migration.
   2026-10-22-runx-smart-and-rxs-launcher.md: Defines runx smart, the rxs launcher, dual-launcher lifecycle coverage, and the 0.17.0 release acceptance.
+  runx-catalog-formatting-preference.md: Defines CG's compact column-aligned runx.yaml catalog layout preference for the RunX agent skill.
 documents:
   bash-installer.md: Completed task specification for the canonical RunX Bash installer.
   bounded-update-worker.md: Task specification for the bounded RunX update worker
@@ -57,6 +58,8 @@ documents:
     #65.'
   2026-10-22-runx-smart-and-rxs-launcher.md: Task specification for the runx smart
     command, the rxs launcher, and the authorized 0.17.0 minor release.
+  runx-catalog-formatting-preference.md: Task specification for CG's compact, table-aligned
+    runx.yaml catalog layout preference in the RunX agent skill.
   2026-08-30-rx-and-user-only-commands.md: Prior task specification for the short
     alias and informational userOnly flag, superseded in launcher naming by runx
     smart and rxs.
