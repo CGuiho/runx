@@ -146,6 +146,51 @@ explicit authorization for that command.
 - Do not place secrets in `runx.yaml`.
 - Run `runx check` after every change.
 
+## Compact Catalog Layout (CG preference, 2026-10-24)
+
+CG wants `runx.yaml` command catalogs written and shown as a compact, table-like
+grid. This layout governs both how agents write and update `runx.yaml` catalogs
+and how they show catalogs to CG, and the same lane discipline helps other
+small structured YAML lists CG reads.
+
+- One command entry per line; at most two lines per command.
+- Key order inside each entry: `uid`, `id`, `command`, then the remaining keys
+  (`summary`, `description`, then any others).
+- Every key starts at a fixed column shared by all entries on its line — the
+  uid, id, command, summary, and description lanes — padded with spaces so the
+  columns align like table columns and each field reads straight down its
+  lane ("all the UIDs in the same column").
+- Two-line split rule: when an entry carries long `summary`/`description`
+  values, split at the same key boundary for every entry of that block —
+  `uid`, `id`, `command` on line 1; `summary`, `description` on line 2 — with
+  each line's lanes aligned and the continuation indented five spaces under
+  the entry. Entries without long trailing keys stay on one line.
+- Spaces only, never tabs; no trailing whitespace; the last key on a line is
+  ragged right and unpadded.
+- Never change values, quoting semantics, keys, or the manifest schema to fit
+  the layout. Every example must parse as YAML and `runx check --format json`
+  must still pass.
+
+Two-line form (canonical; long trailing keys):
+
+```yaml
+commands:
+  - {uid: dev,               id: dev,               command: "bun run dev",
+     summary: Inspect development startup,         description: Existing dev includes cleanup and opaque configuration injection.}
+  - {uid: typecheck,         id: typecheck,         command: "bun run typecheck",
+     summary: Inspect route typegen and typecheck, description: Existing typecheck generates route types before TypeScript checking.}
+  - {uid: compile-linux-x64, id: compile-linux-x64, command: "bun run elysia:compile-linux-x64",
+     summary: Inspect Linux x64 compilation,       description: Existing Bun Linux x64 server compilation script.}
+```
+
+One-line form (short entries):
+
+```yaml
+commands:
+  - {uid: dev, id: dev, command: "bun run dev"}
+  - {uid: tc,  id: tc,  command: "bun run _tc"}
+```
+
 ## Agent And Upgrade Commands
 
 ```text
