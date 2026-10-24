@@ -17,6 +17,17 @@ owner: runx
 
 # Changelog
 
+## 0.17.1 - 2026-10-24
+
+### Added
+
+- Bundled `guiho-s-runx` agent skill (`0.6.0`) records CG's compact `runx.yaml`
+  catalog layout preference: one command entry per line (at most two lines per
+  command), key order `uid`, `id`, `command` then `summary`/`description`, and
+  every key aligned in fixed table columns, with verified canonical two-line and
+  one-line example blocks. Instruction-only change; no manifest schema or CLI
+  behavior change.
+
 ## 0.17.0 - 2026-10-22
 
 ### Added
