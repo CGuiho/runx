@@ -98,4 +98,5 @@ keywords:
 - Issue: [CGuiho/runx#68](https://github.com/CGuiho/runx/issues/68), closed as done on human acceptance.
 - Delivery: commits `f7496e9`, `ec77251`, `59ee8d0`, `8b9541d`, `fda8bbb`, `c1e67f3` — the `Compact Catalog Layout (CG preference, 2026-10-24)` agent-skill section, worker brief, verification result note, `metadata.version` 0.6.0, and the testing record.
 - Acceptance: CG accepted the result; mechanical lane-column, YAML-example and `runx check` verification passed and an UltraCode review returned `verified-complete`; the section is byte-identical across `skills/guiho-s-runx/SKILL.md`, `embed/skills/guiho-s-runx.SKILL.md`, and the installed global projection.
+- Final acceptance release: [runx/v0.17.1](https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.17.1), workflow [40123735916](https://github.com/CGuiho/runx/actions/runs/40123735916), 48 assets including `guiho-s-runx.zip` and the `.md` agent release assets; installed locally the same day (`runx 0.17.1`, skill `0.6.0`).
 - Production boundary: agent-skill documentation only; no CLI behavior change.

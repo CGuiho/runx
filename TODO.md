@@ -445,6 +445,7 @@
   - [docs/plans/2026-10-24-runx-catalog-formatting/execution/handoffs/2026-10-24-skill-section-general.md](docs/plans/2026-10-24-runx-catalog-formatting/execution/handoffs/2026-10-24-skill-section-general.md) - Worker brief for the skill-section unit.
   - [docs/plans/2026-10-24-runx-catalog-formatting/execution/results/2026-10-24-skill-section-general.md](docs/plans/2026-10-24-runx-catalog-formatting/execution/results/2026-10-24-skill-section-general.md) - Worker verification transcript, validation evidence, and deviations.
 - Delivery: Native background worker (`general`, `vercel/xiaomi/mimo-v2.6-pro#high`) delivered the section in `59ee8d0` and its result note in `8b9541d`; parent verified byte-identical section text across both repository copies and the installed projection, exact lane columns, YAML examples, and `runx check`, then added the Convention 0002 `metadata.version` 0.6.0 bump in `fda8bbb`. UltraCode review verdict `verified-complete`, no fix units. Accepted by CG and closed as done on 2026-10-24.
+- Release: [runx/v0.17.1](https://github.com/CGuiho/runx/releases/tag/runx%2Fv0.17.1), workflow [40123735916](https://github.com/CGuiho/runx/actions/runs/40123735916) — patch publication carrying the updated bundled agent skill, installed locally on 2026-10-24.
 
 ## Readiness Task Seed — 2026-10-04
 
