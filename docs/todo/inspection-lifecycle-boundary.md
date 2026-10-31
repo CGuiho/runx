@@ -42,12 +42,12 @@ version and target; installation waits for new independent review.
 
 Mode: dnd. Parent expressly authorized the minimum RunX source scheduling fix
 as a separately tracked readiness prerequisite in
-`/tmp/opencode/2026-10-03-readiness-tool-prerequisite-contract.md`, not implicit
+`<local path>/2026-10-03-readiness-tool-prerequisite-contract.md`, not implicit
 source work inside a metadata unit. Default inspection exclusion is the smallest
 reversible interface: no new global opt-out, configuration schema or flag.
 Only the parsed `run --dry-run` flag selects this boundary; `--dry-run=false`
 and post-selector child flags retain existing real-run behavior. The
-[question record](../questions/readiness-tool-prerequisite/2026-10-03-inspection-default.md)
+question record (private `CGuiho/guiho`, `docs/projects/runx/questions/readiness-tool-prerequisite/2026-10-03-inspection-default.md`)
 records the decision and later human-review gate.
 
 ## Guardrails and Review
@@ -75,7 +75,7 @@ and separately owned XDocs/full-readiness setup remain pending.
 
 ## Evidence and Handoff
 
-- [Technical self-review](../reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) — acceptance mapping and scoped findings.
-- [Validation record](../validation/2026-10-04-readiness-runx-prerequisite.md) — meaningful negative/positive regressions, payload filesystem/process evidence and provenance.
-- [Independent-review handoff](../reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) — exact safe commands, pending delivery and installed-build boundaries.
-- [Independent acceptance and activation](../reviews/implementation/2026-10-04-readiness-runx-independent-review.md) — checked installed identity, hashes/backups, real runtime proof, reviewed delivery and remaining gaps.
+- Technical self-review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md`) — acceptance mapping and scoped findings.
+- Validation record (private `CGuiho/guiho`, `docs/projects/runx/validation/2026-10-04-readiness-runx-prerequisite.md`) — meaningful negative/positive regressions, payload filesystem/process evidence and provenance.
+- Independent-review handoff (private `CGuiho/guiho`, `docs/projects/runx/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md`) — exact safe commands, pending delivery and installed-build boundaries.
+- Independent acceptance and activation (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/2026-10-04-readiness-runx-independent-review.md`) — checked installed identity, hashes/backups, real runtime proof, reviewed delivery and remaining gaps.

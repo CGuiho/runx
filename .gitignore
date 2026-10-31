@@ -5,7 +5,21 @@
 # Environment-related
 .env
 **/.env
+.env.*
+!.env.example
+!.env.*.example
 .env.keys
+
+# Plaintext configuration and secrets — never commit
+*.unencrypted.json
+*.unencrypted.jsonc
+
+# Key material
+*.pem
+*.p12
+*.pfx
+id_rsa
+id_ed25519
 
 # Application-related
 **/.temp/

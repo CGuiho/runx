@@ -40,5 +40,5 @@ vertical guides, aligned descriptions, commands, and flags. The legacy ASCII
 
 ## References
 
-- [Implementation review](../reviews/implementation/unicode-help-tree-review.md)
-- [Validation](../validation/unicode-help-tree.md)
+- Implementation review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/unicode-help-tree-review.md`)
+- Validation (private `CGuiho/guiho`, `docs/projects/runx/validation/unicode-help-tree.md`)

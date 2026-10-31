@@ -297,7 +297,7 @@ cleanup helper; it never means replacement was scheduled.
   os      : windows
   arch    : x64
   binary  : runx-windows-x64-baseline.exe
-  path    : C:/Users/crist/.local/bin/runx.exe
+  path    : C:/Users/<user>/.local/bin/runx.exe
   url     : https://github.com/CGuiho/runx/releases/download/%40guiho%2Frunx%400.2.7/runx-windows-x64-baseline.exe
 ------------------------------------------------------------
 Downloading...
@@ -342,7 +342,7 @@ phase lines. The reporter buffers events and produces this shared envelope:
     "arch": "x64",
     "assetName": "runx-windows-x64-baseline.exe",
     "assetUrl": "https://github.com/CGuiho/runx/releases/download/%40guiho%2Frunx%400.2.7/runx-windows-x64-baseline.exe",
-    "executablePath": "C:/Users/crist/.local/bin/runx.exe"
+    "executablePath": "C:/Users/<user>/.local/bin/runx.exe"
   },
   "events": [
     { "sequence": 1, "phase": "plan", "status": "started" },

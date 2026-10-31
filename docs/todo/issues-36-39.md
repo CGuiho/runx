@@ -78,9 +78,9 @@ preserving explicitly configured directories.
 
 ## Related Files
 
-- [docs/questions/issues-36-39/plan-unit-1.md](../questions/issues-36-39/plan-unit-1.md) - Provisional execution answers and question ledger.
+- (private `CGuiho/guiho`, `docs/projects/runx/questions/issues-36-39/plan-unit-1.md`) - Provisional execution answers and question ledger.
 - [docs/todo/issues-36-39-implementation.md](issues-36-39-implementation.md) - Execution progress, validation evidence, and handoff.
-- [docs/plans/manifest-v2-composition.md](../plans/manifest-v2-composition.md) - Existing manifest identity context.
+- (private `CGuiho/guiho`, `docs/projects/runx/plans/manifest-v2-composition.md`) - Existing manifest identity context.
 - [skills/guiho-s-runx/SKILL.md](../../skills/guiho-s-runx/SKILL.md) - Bundled current CLI contract.
 
 ## Watch-outs

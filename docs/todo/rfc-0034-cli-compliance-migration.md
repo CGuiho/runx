@@ -95,7 +95,7 @@ RFC-named binaries plus `guiho-s-runx.md` and `guiho-i-runx.md`.
 
 ## Dependencies And Context
 
-- [Executable migration plan](../plans/rfc-0034-cli-compliance-migration.md)
+- Executable migration plan (private `CGuiho/guiho`, `docs/projects/runx/plans/rfc-0034-cli-compliance-migration.md`)
 - `guiho-a-0001-swe` is the coordinating Software Engineer/SWE agent.
 - `guiho-s-0034-cli-engineer` is the mandatory specialist skill.
 - The current Citty migration, upgrade work, and bundled RunX skill are inputs,
@@ -138,13 +138,13 @@ RFC-named binaries plus `guiho-s-runx.md` and `guiho-i-runx.md`.
 
 ## Related Files
 
-- [Implementation plan](../plans/rfc-0034-cli-compliance-migration.md) -
+- Implementation plan (private `CGuiho/guiho`, `docs/projects/runx/plans/rfc-0034-cli-compliance-migration.md`) -
   Ordered file-level execution units and validation gates.
 - [CLI architecture](../architecture/cli-architecture.md) - Current architecture
   that the migration must revise where it conflicts with RFC 0034.
 - [Previous Citty decision](../decisions/citty-cli-migration.md) - Earlier
   compatibility contract that must be superseded where it conflicts.
-- [Plan review](../reviews/plans/rfc-0034-cli-compliance-migration-review.md) -
+- Plan review (private `CGuiho/guiho`, `docs/projects/runx/reviews/plans/rfc-0034-cli-compliance-migration-review.md`) -
   Ready-for-execution review of sequencing, coverage, and approval gates.
 
 ## References
@@ -152,5 +152,5 @@ RFC-named binaries plus `guiho-s-runx.md` and `guiho-i-runx.md`.
 - [TODO.md](../../TODO.md)
 - [AGENTS.md](../../AGENTS.md)
 - [Implementation notes](./rfc-0034-cli-compliance-migration-implementation.md)
-- [Implementation review](../reviews/implementation/rfc-0034-cli-compliance-migration-review.md)
-- [Validation report](../validation/rfc-0034-cli-compliance-migration.md)
+- Implementation review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/rfc-0034-cli-compliance-migration-review.md`)
+- Validation report (private `CGuiho/guiho`, `docs/projects/runx/validation/rfc-0034-cli-compliance-migration.md`)

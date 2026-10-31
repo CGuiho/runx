@@ -74,10 +74,10 @@ failing the requested command.
 
 ## Related Files
 
-- [Implementation plan](../plans/automatic-agent-maintenance.md)
+- Implementation plan (private `CGuiho/guiho`, `docs/projects/runx/plans/automatic-agent-maintenance.md`)
 - [Implementation notes](./automatic-agent-maintenance-implementation.md)
-- [Implementation review](../reviews/implementation/automatic-agent-maintenance-review.md)
-- [Validation](../validation/automatic-agent-maintenance.md)
+- Implementation review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/automatic-agent-maintenance-review.md`)
+- Validation (private `CGuiho/guiho`, `docs/projects/runx/validation/automatic-agent-maintenance.md`)
 - [CLI architecture](../architecture/cli-architecture.md)
 
 ## References

@@ -47,5 +47,5 @@ after every upgrade outcome in text and JSON.
 ## References
 
 - [Approved design](../superpowers/specs/2026-07-15-upgrade-reliability-design.md)
-- [Implementation plan](../plans/upgrade-reliability-implementation.md)
-- [Umbrella validation](../validation/upgrade-reliability.md)
+- Implementation plan (private `CGuiho/guiho`, `docs/projects/runx/plans/upgrade-reliability-implementation.md`)
+- Umbrella validation (private `CGuiho/guiho`, `docs/projects/runx/validation/upgrade-reliability.md`)

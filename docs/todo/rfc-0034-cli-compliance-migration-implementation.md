@@ -77,6 +77,6 @@ fourteen-name comparison remains unchanged.
 
 ## References
 
-- [Plan](../plans/rfc-0034-cli-compliance-migration.md)
-- [Implementation review](../reviews/implementation/rfc-0034-cli-compliance-migration-review.md)
-- [Validation](../validation/rfc-0034-cli-compliance-migration.md)
+- Plan (private `CGuiho/guiho`, `docs/projects/runx/plans/rfc-0034-cli-compliance-migration.md`)
+- Implementation review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/rfc-0034-cli-compliance-migration-review.md`)
+- Validation (private `CGuiho/guiho`, `docs/projects/runx/validation/rfc-0034-cli-compliance-migration.md`)

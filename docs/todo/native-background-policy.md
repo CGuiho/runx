@@ -38,7 +38,7 @@ Mode: dnd. Parent assigned native General with explicitly authorized
 `openai/gpt-6.1-sol#xhigh`; this leaf has performed shell, Git/GitHub reads and
 filesystem writes without denial. It launches no recursive agent or CLI worker.
 The actual full conventions 0011, 0002, 0007 and CLI 0001 were read from
-`/root/swe/guiho/conventions/`, alongside owning instructions, skills and source.
+`conventions/` in `CGuiho/guiho`, alongside owning instructions, skills and source.
 This is a narrowly authorized policy deployment, not family readiness.
 Commit only owned coherent changes on main; parent forbids push until new
 independent review. Preserve historical task states and release configuration.
@@ -64,7 +64,7 @@ Human acceptance and complete readiness setup remain pending.
 
 ## Evidence and Handoff
 
-- [Technical self-review](../reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md) — assigned acceptance mapping and findings.
-- [Validation record](../validation/2026-10-04-readiness-runx-prerequisite.md) — policy and separate runtime checks, exact build identity and readbacks.
-- [Independent-review handoff](../reviews/handoff/2026-10-04-readiness-runx-prerequisite.md) — safe commands and no-push delivery gate.
-- [Independent acceptance and activation](../reviews/implementation/2026-10-04-readiness-runx-independent-review.md) — actual full policy review, bounded negative probes, reviewed plain delivery and precise remaining gaps.
+- Technical self-review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/2026-10-04-readiness-runx-prerequisite-review.md`) — assigned acceptance mapping and findings.
+- Validation record (private `CGuiho/guiho`, `docs/projects/runx/validation/2026-10-04-readiness-runx-prerequisite.md`) — policy and separate runtime checks, exact build identity and readbacks.
+- Independent-review handoff (private `CGuiho/guiho`, `docs/projects/runx/reviews/handoff/2026-10-04-readiness-runx-prerequisite.md`) — safe commands and no-push delivery gate.
+- Independent acceptance and activation (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/2026-10-04-readiness-runx-independent-review.md`) — actual full policy review, bounded negative probes, reviewed plain delivery and precise remaining gaps.

@@ -50,6 +50,6 @@ the single final Mirror minor release after the complete open-issue sequence.
 ## References
 
 - [Task specification](./automatic-agent-maintenance.md)
-- [Implementation plan](../plans/automatic-agent-maintenance.md)
-- [Implementation review](../reviews/implementation/automatic-agent-maintenance-review.md)
-- [Validation](../validation/automatic-agent-maintenance.md)
+- Implementation plan (private `CGuiho/guiho`, `docs/projects/runx/plans/automatic-agent-maintenance.md`)
+- Implementation review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/automatic-agent-maintenance-review.md`)
+- Validation (private `CGuiho/guiho`, `docs/projects/runx/validation/automatic-agent-maintenance.md`)

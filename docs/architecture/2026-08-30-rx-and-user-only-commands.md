@@ -44,7 +44,7 @@ Both reuse the Go/Cobra stack, convention 0001 lifecycle, and Mirror/XDocs oblig
 
 ### Repositories and Components
 
-- Single repository `C:/GUIHO/runx` — no new repository. All changes are in-place.
+- Single repository (`<local path>`) — no new repository. All changes are in-place.
 - Components touched:
   - `cmd/runx-launcher` (reference for `cmd/rx`), `cmd/rx` (new), `cmd/*` (help/version delegation is not duplicated — rx does not own its own Cobra tree).
   - `pkg/installstate` (pointer remains one file; helpers for rx launcher/payload names).

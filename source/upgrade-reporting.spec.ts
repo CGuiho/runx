@@ -9,7 +9,7 @@ const plan: UpgradePlan = {
   arch: 'x64',
   assetName: 'runx-windows-x64-baseline.exe',
   assetUrl: 'https://example.test/runx.exe',
-  executablePath: 'C:\\Users\\crist\\.local\\bin\\runx.exe',
+  executablePath: 'C:\\Users\\<user>\\.local\\bin\\runx.exe',
 }
 
 describe('upgrade reporting', () => {

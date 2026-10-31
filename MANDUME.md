@@ -6,8 +6,10 @@
 > harnesses, worker rows, permission assumptions, CLI examples, fallback and tail
 > contracts below are retained for chronology only and MUST NOT be executed.
 > The current sole worker authority is [AGENTS.md § Mandume](AGENTS.md#mandume),
-> governed by actual [GUIHO Convention 0011](../guiho/conventions/guiho-convention-0011-agent-readiness.md)
-> and [models Convention 0007](../guiho/conventions/guiho-convention-0007-models.md).
+> governed by actual GUIHO Convention 0011
+> (`guiho-convention-0011-agent-readiness.md` in `CGuiho/guiho`)
+> and models Convention 0007 (`guiho-convention-0007-models.md` in
+> `CGuiho/guiho`).
 > Current support is OpenCode only, always-native background subagents with
 > actual task-capable child permissions, explicit authorized provider/model and
 > available variant, and harness completion notifications. There is no current
@@ -40,8 +42,8 @@ notifications: off  # off | on
 
 User conventions are stored under `conventions/` in repository `CGuiho/guiho`.
 
-* **Local:** `C:/GUIHO/guiho/conventions` — read directly, e.g. `cat /c/GUIHO/guiho/conventions/<file>.md`
-* **Remote:** if `C:/GUIHO/guiho` is not present locally, the repository is remote at `github.com/CGuiho/guiho` — read via GitHub CLI, e.g. `gh api repos/CGuiho/guiho/contents/conventions --jq ".[].name"` or `gh api repos/CGuiho/guiho/contents/conventions/<file>.md --jq .content | base64 -d`
+* **Local:** `<local path>` — the checkout of `CGuiho/guiho`, read directly, e.g. `cat <local path>/conventions/<file>.md`
+* **Remote:** if the local checkout is not present, the repository is remote at `github.com/CGuiho/guiho` — read via GitHub CLI, e.g. `gh api repos/CGuiho/guiho/contents/conventions --jq ".[].name"` or `gh api repos/CGuiho/guiho/contents/conventions/<file>.md --jq .content | base64 -d`
 
 Check local first, then remote via `gh` if missing.
 

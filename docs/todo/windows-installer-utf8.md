@@ -42,4 +42,4 @@ outside the managed RunX block and leaves exactly one canonical RunX block.
 ## References
 
 - [TODO.md](../../TODO.md)
-- [Validation](../validation/windows-installer-utf8.md)
+- Validation (private `CGuiho/guiho`, `docs/projects/runx/validation/windows-installer-utf8.md`)

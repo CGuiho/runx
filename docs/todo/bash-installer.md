@@ -41,5 +41,5 @@ and executable-version checks under a real Bash runtime.
 
 ## References
 
-- [Implementation review](../reviews/implementation/bash-installer-review.md)
-- [Validation](../validation/bash-installer.md)
+- Implementation review (private `CGuiho/guiho`, `docs/projects/runx/reviews/implementation/bash-installer-review.md`)
+- Validation (private `CGuiho/guiho`, `docs/projects/runx/validation/bash-installer.md`)

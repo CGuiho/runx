@@ -25,11 +25,11 @@ func TestBuildShellExecutionWindowsAutoUsesResolvedGitBash(t *testing.T) {
 		},
 	}
 
-	execution, err := buildShellExecution("auto", "node path-probe", []string{"/c/GUIHO"}, deps)
+	execution, err := buildShellExecution("auto", "node path-probe", []string{"/c/<dir>"}, deps)
 
 	require.NoError(t, err)
 	assert.Equal(t, `C:\Program Files\Git\usr\bin\bash.exe`, execution.Program)
-	assert.Equal(t, []string{"-lc", `node path-probe "$@"`, "runx-child", "/c/GUIHO"}, execution.Args)
+	assert.Equal(t, []string{"-lc", `node path-probe "$@"`, "runx-child", "/c/<dir>"}, execution.Args)
 	assert.Empty(t, execution.Env)
 	assert.Empty(t, execution.Script)
 	assert.Equal(t, 1, lookupCalls)
@@ -46,7 +46,7 @@ func TestBuildShellExecutionWindowsAutoFallsBackToCmdWithoutMSYSCaller(t *testin
 		},
 	}
 
-	execution, err := buildShellExecution("auto", "echo ready", []string{"/c/GUIHO"}, deps)
+	execution, err := buildShellExecution("auto", "echo ready", []string{"/c/<dir>"}, deps)
 
 	require.NoError(t, err)
 	assert.Equal(t, "cmd.exe", execution.Program)
@@ -134,7 +134,7 @@ func TestBuildShellExecutionExplicitShellsBypassWindowsAutoInference(t *testing.
 				},
 			}
 
-			execution, err := buildShellExecution(test.name, "echo ready", []string{"/c/GUIHO"}, deps)
+			execution, err := buildShellExecution(test.name, "echo ready", []string{"/c/<dir>"}, deps)
 
 			require.NoError(t, err)
 			assert.Equal(t, test.expected, execution.Program)

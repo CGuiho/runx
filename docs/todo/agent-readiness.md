@@ -31,7 +31,7 @@ keywords:
 - GitHub project item: [Issue #65](https://github.com/CGuiho/runx/issues/65)
 - GitHub component: `runx`
 - Issue node: `I_kwDOTVsvkc8AAAABU3Whtw`
-- Project item: `PVTI_lAHOBUk1ds4AULOgzg-YlUY`
+- Project item: `<project id>`
 - Component option: `580160ad`
 - Readback: `2026-10-04T01:20:19.199606+00:00`; OPEN / Project #2 GUIHO / In Progress.
 

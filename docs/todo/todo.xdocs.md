@@ -2,8 +2,7 @@
 subject: runx-todo
 description: Linked task specifications for the RunX TODO index.
 parent: runx-docs
-children:
-  - runx-todo-done
+children: []
 files:
   bash-installer.md: Completes the GitHub issue 15 Bash shebang, invocation, strict-mode, and executable test contract.
   bounded-update-worker.md: Defines CPU-safe hidden update checks, process coalescing, deadlines, lease ownership, and stale recovery.

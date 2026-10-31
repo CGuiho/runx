@@ -59,6 +59,11 @@ owner: runx
 - Do not publish packages or push tags unless the user explicitly requests a
   release. CI validates pull requests and `main`; protected version tags run the
   `production` workflow that publishes native assets and npm through OIDC.
+- The internal lifecycle records — plans, question ledgers, review handoffs,
+  validation evidence and the completed-task archive — live in the private GUIHO
+  repository `CGuiho/guiho` under `docs/projects/runx/` (see
+  [`docs/internal-records.md`](docs/internal-records.md)); read them there, they
+  are not kept in this public repository.
 
 ## GUIHO Project
 
@@ -70,9 +75,9 @@ owner: runx
 | GUIHO Subject ID | Formal subject ID not declared |
 | GUIHO Subject Name | RunX |
 | Project Family | `guiho` |
-| Repository Directory | `C:\GUIHO\runx` |
+| Repository Directory | `<local path>` |
 | Repository Kind | shared package |
-| Parent Project | GUIHO Root (`C:\GUIHO\guiho`) |
+| Parent Project | GUIHO Root (`CGuiho/guiho`) |
 | Parent Component | GUIHO Root |
 
 ### Component Purpose
@@ -82,8 +87,8 @@ skill, native installers, and package-local documentation.
 
 ### Parent Context
 
-- Parent instructions: [../guiho/AGENTS.md](../guiho/AGENTS.md)
-- Parent TODO: [../guiho/todo.md](../guiho/todo.md)
+- Parent instructions: `AGENTS.md` in `CGuiho/guiho`
+- Parent TODO: `todo.md` in `CGuiho/guiho`
 - Local TODO: [TODO.md](TODO.md)
 
 ### Commands
@@ -99,8 +104,8 @@ skill, native installers, and package-local documentation.
 
 User conventions are stored under `conventions/` in repository `CGuiho/guiho`.
 
-* **Local:** `C:/GUIHO/guiho/conventions` — read directly, e.g. `cat /c/GUIHO/guiho/conventions/<file>.md`
-* **Remote:** if `C:/GUIHO/guiho` is not present locally, the repository is remote at `github.com/CGuiho/guiho` — read via GitHub CLI, e.g. `gh api repos/CGuiho/guiho/contents/conventions --jq ".[].name"` or `gh api repos/CGuiho/guiho/contents/conventions/<file>.md --jq .content | base64 -d`
+* **Local:** `<local path>` — the checkout of `CGuiho/guiho`, read directly, e.g. `cat <local path>/conventions/<file>.md`
+* **Remote:** if the local checkout is not present, the repository is remote at `github.com/CGuiho/guiho` — read via GitHub CLI, e.g. `gh api repos/CGuiho/guiho/contents/conventions --jq ".[].name"` or `gh api repos/CGuiho/guiho/contents/conventions/<file>.md --jq .content | base64 -d`
 
 Check local first, then remote via `gh` if missing.
 
@@ -108,8 +113,8 @@ Check local first, then remote via `gh` if missing.
 
 > **MANDATORY — READ BEFORE ANY WORK:** Every agent working on this project **MUST** read `guiho-convention-0001-cli.md` **before doing anything else** — planning, brainstorming, architecture, implementation, review, validation, or release.
 >
-> * **Local:** `C:/GUIHO/guiho/conventions/guiho-convention-0001-cli.md` — `cat /c/GUIHO/guiho/conventions/guiho-convention-0001-cli.md`
-> * **Remote fallback (if `C:/GUIHO/guiho` missing):** `gh api repos/CGuiho/guiho/contents/conventions/guiho-convention-0001-cli.md --jq .content | base64 -d`
+> * **Local:** `<local path>` — the checkout of `CGuiho/guiho`, e.g. `cat <local path>/conventions/guiho-convention-0001-cli.md`
+> * **Remote fallback (if the local checkout is missing):** `gh api repos/CGuiho/guiho/contents/conventions/guiho-convention-0001-cli.md --jq .content | base64 -d`
 > * **Why this one:** RunX is the GUIHO Go/Cobra CLI (`main.go` + `cmd/` + `pkg/`). `guiho-convention-0001-cli.md` (GUIHO CLI Convention) is the sole authority for technology stack (Go + Cobra), mandatory tooling (`mirror.yaml` / `runx.yaml` / `xdocs.yaml`), flags, help tree, installation lifecycle (`devops/install.sh` / `install.ps1`), stable launcher + versioned payloads, CLI home (`~/.guiho/runx`), configuration, agent artifacts, startup update check, and release channel contracts. No CLI work in this repository is valid without it.
 >
 > **Do not proceed with any task until you have read and understood this convention.**
@@ -134,8 +139,8 @@ This project uses Mandume to handle its SWE work.
 Mandume is the software-engineering swarm. Load `guiho-s-mandume` and use the
 `## Mandume` section below as the current worker authority. `MANDUME.md` retains
 inactive historical guidance only. Read the actual parent
-[Convention 0011](../guiho/conventions/guiho-convention-0011-agent-readiness.md)
-before readiness work; a handoff summary is not a substitute.
+GUIHO Convention 0011 (`guiho-convention-0011-agent-readiness.md` in
+`CGuiho/guiho`) before readiness work; a handoff summary is not a substitute.
 
 ## Semantic Project Versioning -- GUIHO Mirror
 
@@ -232,7 +237,7 @@ denial or infer that every native agent is read-only.
 execution: dnd  # dnd | interruptible — orchestrator NEVER stops during execution/review
 notifications: off  # human-facing only; native completion notifications remain enabled
 harness: opencode  # only current harness; native background subagents always
-tmux-session: runx  # orchestrator session on su-57; convention = this project's name
+tmux-session: runx  # orchestrator session on <host>; convention = this project's name
 ```
 
 ### Coordination
@@ -255,7 +260,7 @@ tmux-session: runx  # orchestrator session on su-57; convention = this project's
 
 Both roles use the same current model; judgment/labor remain distinct roles.
 The canonical authority is
-[Convention 0007](../guiho/conventions/guiho-convention-0007-models.md).
+GUIHO Convention 0007 (`guiho-convention-0007-models.md` in `CGuiho/guiho`).
 The former Muse Spark 1.3 Contributor (`vercel/meta/muse-spark-1.3-contributor`),
 GLM 5.3 Flash (`opencode/glm-5.3-flash`) and DeepSeek V4.1 Flash
 (`opencode/deepseek-v4-flash`) rows are **history only, not fallback capacity**.
@@ -274,7 +279,8 @@ rollout/readiness task only; it is not a future default or silent fallback.
 ### Native Background Completion Contract
 
 1. Write a complete owned-unit brief under
-   `docs/plans/<plan>/execution/handoffs/<date>-<unit>-<worker>.md`, including
+   `docs/projects/runx/plans/<plan>/execution/handoffs/<date>-<unit>-<worker>.md`
+   in `CGuiho/guiho`, including
    `Mode: dnd`, actual Convention 0011, owning instructions, task identity,
    model/variant decision, required capabilities, exclusive paths, acceptance,
    checks and commit/push authority. Launch a capable native child in the background.
@@ -303,5 +309,5 @@ a primary OpenCode session through its CLI are distinct from worker delegation.
 ### Contract
 
 - The orchestrator coordinates on `main`, remains responsive, and integrates the native workers above through `guiho-s-0440-hand-off`; each child's actual permissions must cover its brief.
-- DND execution and technical review never ask CG or wait for a wake-up. Resolve questions with the safest reversible evidence-grounded choice under `docs/questions/`, and continue. Record actual security/data-loss, impossible-specification or missing-security-authorization blockers under `docs/issues/`; continue independent units. Later human review is a distinct phase.
+- DND execution and technical review never ask CG or wait for a wake-up. Resolve questions with the safest reversible evidence-grounded choice under `docs/projects/runx/questions/` in `CGuiho/guiho`, and continue. Record actual security/data-loss, impossible-specification or missing-security-authorization blockers under `docs/projects/runx/` in `CGuiho/guiho`; continue independent units. Later human review is a distinct phase.
 - Use the Mandume skills (`guiho-s-mandume` + lifecycle skills) and the Essentials skills (`guiho-s-0001-guiho`, `guiho-s-0004-working-with-cg`, `guiho-s-0040-explorer`, `guiho-s-0032-git-commit`). Conventions: `conventions/` in `CGuiho/guiho` (`apps.md` for ports).

@@ -174,9 +174,9 @@ publication outside R00, or any requirement to bypass protected-main gates.
 
 ## References
 
-- [Implementation plan](../plans/guiho-convention-0001-cli-compliance-migration.md)
-- [Plan review](../reviews/plans/guiho-convention-0001-cli-compliance-migration-review.md)
+- Implementation plan (private `CGuiho/guiho`, `docs/projects/runx/plans/guiho-convention-0001-cli-compliance-migration.md`)
+- Plan review (private `CGuiho/guiho`, `docs/projects/runx/reviews/plans/guiho-convention-0001-cli-compliance-migration-review.md`)
 - [Architecture](../architecture/guiho-convention-0001-cli-compliance-migration.md)
-- [Architecture review](../reviews/architecture/guiho-convention-0001-cli-compliance-migration-review.md)
-- [Compliance audit](../reviews/guiho-convention-0001-cli-compliance-audit.md)
+- Architecture review (private `CGuiho/guiho`, `docs/projects/runx/reviews/architecture/guiho-convention-0001-cli-compliance-migration-review.md`)
+- Compliance audit (private `CGuiho/guiho`, `docs/projects/runx/reviews/guiho-convention-0001-cli-compliance-audit.md`)
 - [TODO.md](../../TODO.md)

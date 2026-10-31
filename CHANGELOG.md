@@ -335,7 +335,8 @@ owner: runx
 ### Fixed
 
 - Corrected the 0.10.0 validation report to link to the task's permanent
-  `docs/todo/done/` archive location.
+  completed-task archive location (now `docs/projects/runx/todo/done/` in the
+  private `CGuiho/guiho`).
 
 ## 0.10.0 - 2026-08-03
 

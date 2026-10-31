@@ -37,9 +37,9 @@ ergonomics already accepted in the RX planning record.
 - GitHub project item: [RunX #66](https://github.com/CGuiho/runx/issues/66)
 - GitHub component: `runx`
 - Prior record: [2026-08-30 RX short alias and user-only commands](2026-08-30-rx-and-user-only-commands.md)
-- Brainstorm: [2026-08-30 RX brainstorm](../brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md)
+- Brainstorm: 2026-08-30 RX brainstorm (private `CGuiho/guiho`, `docs/projects/runx/brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md`)
 - Architecture: [2026-08-30 RX architecture](../architecture/2026-08-30-rx-and-user-only-commands.md)
-- Plan: [2026-08-30 RX plan](../plans/2026-08-30-rx-and-user-only-commands.md)
+- Plan: 2026-08-30 RX plan (private `CGuiho/guiho`, `docs/projects/runx/plans/2026-08-30-rx-and-user-only-commands.md`)
 
 ## Outcome
 
@@ -130,7 +130,7 @@ and uninstall transactionally, and the next minor release publishes them.
 ## Delivery
 
 - Handoff and evidence:
-  [docs/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md](../reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md)
+  (private `CGuiho/guiho`, `docs/projects/runx/reviews/handoff/2026-10-22-runx-smart-and-rxs-launcher.md`)
 - Release: `runx/v0.17.0`, 48 assets, including eight `rxs-launcher-*` files;
   publish workflow run 39728177667 succeeded.
 - Installed locally at `0.17.0` with both launchers verified.

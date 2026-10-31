@@ -26,10 +26,10 @@ owner: runx-todo
 - Task: `26. RX short alias and user-only commands`
 - Status: in progress
 - Index: [TODO.md](../../TODO.md)
-- Brainstorm: [2026-08-30 RX brainstorm](../brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md)
+- Brainstorm: 2026-08-30 RX brainstorm (private `CGuiho/guiho`, `docs/projects/runx/brainstorm/2026-08-30-rx-short-alias-and-user-only-commands.md`)
 - Requirements: [2026-08-30 requirements](../requirements/2026-08-30-rx-and-user-only-commands.md) (informational)
 - Architecture: [2026-08-30 architecture](../architecture/2026-08-30-rx-and-user-only-commands.md) (informational)
-- Plan: [2026-08-30 plan](../plans/2026-08-30-rx-and-user-only-commands.md)
+- Plan: 2026-08-30 plan (private `CGuiho/guiho`, `docs/projects/runx/plans/2026-08-30-rx-and-user-only-commands.md`)
 - ADRs: ADRs 001–005 inside the architecture (rx launcher, single pointer, two launchers/one payload, `userOnly` informational, no CLI guard)
 
 ## Outcome
