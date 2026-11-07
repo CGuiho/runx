@@ -20,4 +20,5 @@ flags: []
 status: stable
 ---
 
-Neither workflow invokes the legacy Bun/TypeScript domain implementation.
+Neither workflow installs or invokes any Bun toolchain or Bun-built artifact;
+both run the Go implementation and Go release programs only.

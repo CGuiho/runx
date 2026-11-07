@@ -19,7 +19,6 @@ files:
   executor.ts: Historical Bun executor implementation.
   guiho-runx-bin.ts: Historical Bun development entrypoint.
   guiho-runx-native-bin.ts: Historical Bun compiled entrypoint.
-  guiho-runx.spec.ts: Historical Bun integration tests.
   guiho-runx.ts: Historical TypeScript exports.
   help.ts: Historical Citty help generation.
   init.spec.ts: Historical Bun initializer tests.

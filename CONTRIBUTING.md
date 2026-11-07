@@ -32,5 +32,7 @@ revelation) and command execution.
 6. Use Mirror for every version plan or application. Do not edit versions or
    create release tags manually.
 
-The retained `source/` and TypeScript devops files document the former CLI and
-must not become production, CI, or release authority again.
+The retained `source/` TypeScript files document the former CLI and must not
+become production, CI, or release authority again. The Bun release toolchain,
+its Bun tests, and the Bun lockfile have been retired; no Bun-built artifact or
+Bun package dependency remains.

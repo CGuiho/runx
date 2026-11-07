@@ -26,8 +26,10 @@ keywords:
 
 `main.go`, `cmd/`, and `pkg/` are the RunX production implementation. Cobra is
 the only command and flag router. The Node npm entrypoint downloads and delegates
-to a native Go release; it contains no domain logic. Retained Bun/TypeScript
-files are legacy reference and are not used by CI or release publication.
+to a native Go release; it contains no domain logic. The legacy Bun lockfile and
+Bun release toolchain have been retired, so no Bun-built artifact or Bun package
+dependency remains. Retained TypeScript sources under `source/` are historical
+reference only and are not built, tested, installed, or published.
 
 The build injects `version`, `commit`, `buildDate`, and `buildTarget`. The target
 is retained during self-upgrade so Linux ARMv6 and ARMv7 installations select
