@@ -27,7 +27,9 @@ owner: runx
   npm is not an executable or lifecycle distribution; installation is owned by
   the native lifecycle scripts and the stable launcher layout under `.guiho`.
 - Use the Go toolchain for formatting, tests, vetting, builds, and release
-  compilation. TypeScript/Bun sources are retained as legacy reference only.
+  compilation. The legacy Bun lockfile and Bun release toolchain have been
+  retired; retained TypeScript sources under `source/` are historical reference
+  only.
 - `runx` without arguments first performs local-only, idempotent agent
   bootstrap: install the embedded skill in both global tool locations and
   reconcile the bounded RunX block in both existing repository instruction

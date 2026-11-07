@@ -13,12 +13,6 @@ files:
   install.sh: Detects Linux AMD64, ARM64, ARMv7, ARMv6 or Darwin targets, supports --version/--channel selection across full release pagination, verifies checksums and manifest digests, self-tests before activation, installs the canonical runx and rxs launcher layout with both launchers backed up and rolled back together, verifies both launchers after activation, and updates PATH idempotently.
   uninstall.ps1: Shares the uninstallation contract with REMOVE/PRESERVE planning, preservation options, dry-run, fail-closed confirmation, managed-block-only instruction removal, runx and rxs launcher removal, and Windows delete-on-close quarantine semantics.
   uninstall.sh: Shares the uninstallation contract with REMOVE/PRESERVE planning, preservation options, dry-run, fail-closed confirmation, owned-path-only removal including the rxs launcher, and managed-block-only instruction removal.
-  build-binaries.ts: Legacy Bun 14-asset builder retained as migration history and not invoked by current scripts or workflows.
-  verify-release-assets.ts: Legacy Bun asset verifier retained as migration history and not invoked by current scripts or workflows.
-  extract-release-notes.ts: Legacy Bun release-note extractor retained as migration history and not invoked by current workflows.
-  extract-release-notes.spec.ts: Historical Bun release-note tests.
-  installers.spec.ts: Historical Bun installer tests for the retired asset contract.
-  workflows.spec.ts: Historical Bun workflow tests for the retired release path.
 documents: {}
 tags:
   - devops
@@ -45,4 +39,5 @@ installers verify and roll back both launchers as one transaction; all three
 uninstall interfaces remove both launchers while preserving the shared
 `$HOME/.guiho/bin/` directory. Windows CI runs
 the actual PowerShell installer through clean-install and reinstall activation.
-TypeScript files in this directory are retained history only.
+The legacy Bun release programs and their Bun tests have been retired; this
+directory contains no Bun-compile, Bun-packaging, or Bun release-note path.

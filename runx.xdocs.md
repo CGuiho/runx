@@ -16,7 +16,6 @@ children:
   - runx-github
 files:
   .gitignore: Ignores local dependencies, caches, and generated build outputs.
-  bun.lock: Preserved lockfile for the legacy TypeScript reference implementation.
   go.mod: Pins the production Go toolchain and module dependencies.
   go.sum: Records production Go dependency checksums.
   main.go: Thin production entrypoint that supplies embedded build metadata and mapped exit codes to the Cobra tree.
