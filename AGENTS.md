@@ -255,26 +255,12 @@ tmux-session: runx  # orchestrator session on <host>; convention = this project'
 
 | Worker | Class | Model (exact OpenCode ID) | Thinking | Usage |
 | --- | --- | --- | --- | --- |
-| `mastermind` | mastermind | MiMo-V2.6-Pro (`xiaomi/mimo-v2.6-pro`, direct Xiaomi API) | provider default; no variant | CG-authorized default; availability subject to provider/account |
-| `engineer` | workhorse | MiMo-V2.6-Pro (`xiaomi/mimo-v2.6-pro`, direct Xiaomi API) | provider default; no variant | CG-authorized default; availability subject to provider/account |
+| `mastermind` | mastermind | see Convention 0007 | see Convention 0007 | CG-authorized default; availability subject to provider/account |
+| `engineer` | workhorse | see Convention 0007 | see Convention 0007 | CG-authorized default; availability subject to provider/account |
 
-Both roles use the same current model; judgment/labor remain distinct roles.
-The canonical authority is
-GUIHO Convention 0007 (`guiho-convention-0007-models.md` in `CGuiho/guiho`).
-The former Muse Spark 1.3 Contributor (`vercel/meta/muse-spark-1.3-contributor`),
-GLM 5.3 Flash (`opencode/glm-5.3-flash`) and DeepSeek V4.1 Flash
-(`opencode/deepseek-v4-flash`) rows are **history only, not fallback capacity**.
-Do not silently substitute models. Ledger a MiMo provider/quota failure, fail
-that dependent unit safely and continue independent units. Weekly-pool models
-require usage ensured and explicit CG authorization for that run.
+Model selection: read Convention 0007 — Models (`conventions/guiho-convention-0007-models.md`) in `CGuiho/guiho` — the single source of truth. Never duplicate the model list here; verify the live catalog before dispatch. Both roles use the same current model; judgment/labor remain distinct roles. Former worker rows are history only, not fallback capacity. Do not silently substitute models. Ledger a provider/quota failure, fail that dependent unit safely and continue independent units. Weekly-pool models require usage ensured and explicit CG authorization for that run.
 
-Pass the authorized exact provider/model and available reasoning variant
-explicitly through the actual live native tool schema after checking the model
-catalog and registry. MiMo's variants list is empty: omit the variant parameter
-and record provider-default thinking. Thinking enabled is not a differentiated
-maximum tier; never invent MiMo `max`/`xhigh`. Native General
-`openai/gpt-6.1-sol#xhigh` is explicitly authorized for the current
-rollout/readiness task only; it is not a future default or silent fallback.
+Pass the authorized exact provider/model and available reasoning variant explicitly through the actual live native tool schema after checking the model catalog and registry, documenting provider-default thinking when the provider lists no variant; never invent a variant tier the provider does not offer.
 
 ### Native Background Completion Contract
 
